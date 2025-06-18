@@ -6,11 +6,11 @@
     <title>7Chat - Versão Final Otimizada</title>
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#2563eb"/>
+    <meta name="theme-color" content="#1f2937"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Um aplicativo de chat em tempo real.">
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/2563eb/ffffff?text=7C">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/4f46e5/ffffff?text=7C">
     <!-- O manifest.json é gerado e injetado via script no final do body -->
 
     <link rel="icon" href="/favicon.ico" />
@@ -25,6 +25,27 @@
             height: calc(var(--real-vh, 1vh) * 100);
             overflow: hidden;
             font-family: 'Inter', sans-serif;
+        }
+        .messages-container {
+            background-image: url('https://i.imgur.com/kI46opI.png');
+            background-size: cover;
+            background-position: center;
+        }
+        #sidebar, #login-screen {
+             background-image: url('https://i.imgur.com/KAWlxJS.png');
+             background-size: cover;
+             background-position: center;
+        }
+        .friend-item, .room-item {
+            background-color: rgba(17, 24, 39, 0.6); /* bg-gray-900 com 60% de opacidade */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(55, 65, 81, 0.4); /* border-gray-700 com 40% de opacidade */
+        }
+        .header-blur, .form-blur {
+            background-color: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
         .modal, .notification { animation: fadeIn .3s ease-out; }
         .modal-content { animation: slideUp .3s ease-out; }
@@ -51,7 +72,7 @@
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            background-color: red;
+            background-color: #3b82f6; /* Azul para as notificações */
             color: white;
             font-size: 10px;
             display: flex;
@@ -59,115 +80,136 @@
             justify-content: center;
             font-weight: bold;
         }
+        .seen-icon {
+            width: 18px;
+            height: 18px;
+            margin-left: 6px;
+            align-self: flex-end;
+            margin-bottom: 2px;
+        }
+        audio::-webkit-media-controls-panel {
+            background-color: #4b5563;
+        }
+        audio::-webkit-media-controls-play-button,
+        audio::-webkit-media-controls-current-time-display,
+        audio::-webkit-media-controls-time-remaining-display,
+        audio::-webkit-media-controls-timeline,
+        audio::-webkit-media-controls-volume-slider {
+            filter: invert(1) grayscale(1) brightness(1.5);
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 overflow-hidden">
+<body class="bg-black text-gray-200 overflow-hidden">
 
     <!-- ELEMENTOS GLOBAIS -->
     <input type="file" id="image-uploader" class="hidden" accept="image/*" />
+    <input type="file" id="media-uploader" class="hidden" accept="image/*,video/*" />
     <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
         <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
     </div>
-    <div id="notification-toast" class="hidden fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-xl z-[101]"></div>
+    <div id="notification-toast" class="hidden fixed bottom-5 right-5 bg-blue-500 text-white py-2 px-4 rounded-lg shadow-xl z-[101]"></div>
     
     <!-- Menu de Contexto Customizado para Salas -->
-    <div id="room-context-menu" class="hidden absolute bg-white rounded-md shadow-lg py-1 z-50">
-        <a href="#" id="context-pin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"></a>
-        <a href="#" id="context-archive" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"></a>
-        <a href="#" id="context-delete" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50"></a>
+    <div id="room-context-menu" class="hidden absolute bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-700">
+        <a href="#" id="context-pin" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"></a>
+        <a href="#" id="context-archive" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"></a>
+        <a href="#" id="context-clear-chat" class="hidden px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Limpar Conversa</a>
+        <a href="#" id="context-delete" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-900/50"></a>
     </div>
 
     <!-- TELA DE LOGIN -->
     <div id="login-screen" class="hidden items-center justify-center h-full p-4 flex-col">
-        <div id="invite-welcome-card" class="hidden w-full max-w-sm p-8 bg-white rounded-xl shadow-lg space-y-4 mb-4 text-center">
-            <h3 class="text-xl font-bold">Você foi convidado!</h3>
-            <p class="text-gray-600">Para entrar na sala, entre como convidado ou faça login na sua conta.</p>
-            <button id="enter-as-guest-btn" class="w-full px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Entrar como Convidado</button>
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div id="invite-welcome-card" class="hidden w-full max-w-sm p-8 bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg space-y-4 mb-4 text-center z-10 border border-gray-700">
+            <h3 class="text-xl font-bold text-white">Você foi convidado!</h3>
+            <p class="text-gray-400">Para entrar na sala, entre como convidado ou faça login na sua conta.</p>
+            <button id="enter-as-guest-btn" class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75">
+                Entrar como Convidado
+            </button>
         </div>
-        <div class="w-full max-w-sm p-8 bg-white rounded-xl shadow-lg space-y-6">
-            <h2 id="login-title" class="text-3xl font-extrabold text-center">7Chat</h2>
+        <div class="w-full max-w-sm p-8 bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg space-y-6 z-10 border border-gray-700">
+            <h2 id="login-title" class="text-3xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">7Chat</h2>
             <form id="login-form" class="space-y-4">
-                <input id="email-input" type="email" required placeholder="E-mail" autocomplete="email" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500"/>
-                <input id="password-input" type="password" required placeholder="Senha" autocomplete="current-password" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500"/>
-                <button type="submit" class="w-full flex items-center justify-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Entrar</button>
+                <input id="email-input" type="email" required placeholder="E-mail" autocomplete="email" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"/>
+                <input id="password-input" type="password" required placeholder="Senha" autocomplete="current-password" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"/>
+                <button type="submit" class="w-full flex items-center justify-center py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700">Entrar</button>
             </form>
+            <div class="text-center">
+                <span class="text-sm text-gray-500">ou</span>
+                <button id="main-guest-login-btn" class="mt-2 text-blue-400 hover:text-blue-300 font-semibold">Entrar como convidado</button>
+            </div>
         </div>
     </div>
 
     <!-- CONTAINER PRINCIPAL DO APP -->
     <div id="app-container" class="hidden h-full w-full relative overflow-hidden"></div>
     
-    <!-- UI DE CONVIDADO (SIMPLIFICADA) -->
     <div id="guest-container" class="hidden h-full w-full relative overflow-hidden"></div>
 
     <!-- MODAIS -->
-    <!-- Modal de Visualização de Imagem -->
-    <div id="image-viewer-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[50] p-4">
-        <div class="modal-content bg-transparent rounded-lg w-full max-w-xl text-center relative">
-            <div class="w-full h-auto aspect-square overflow-hidden rounded-full mx-auto">
-                 <img id="image-viewer-pic" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/512x512/cccccc/ffffff?text=?'">
+    <div id="image-viewer-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[50] p-4">
+        <div class="modal-content bg-transparent rounded-lg w-full max-w-2xl text-center relative">
+            <div class="w-full h-auto max-h-[85vh] overflow-hidden rounded-lg mx-auto">
+                 <img id="image-viewer-pic" class="w-full h-full object-contain">
             </div>
             <div id="image-viewer-actions" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-4"></div>
-            <button id="close-image-viewer-btn" class="absolute top-0 right-0 m-2 text-white text-3xl font-bold">&times;</button>
+            <button id="close-image-viewer-btn" class="absolute top-2 right-2 m-2 text-white/80 hover:text-white text-4xl font-light">&times;</button>
         </div>
     </div>
 
-    <!-- Modal de Confirmação Customizado -->
     <div id="custom-confirm-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center space-y-4">
+        <div class="modal-content bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center space-y-4 border border-gray-700">
             <h3 id="custom-confirm-title" class="text-xl font-bold"></h3>
-            <p id="custom-confirm-message" class="text-gray-600"></p>
+            <p id="custom-confirm-message" class="text-gray-400"></p>
             <div class="flex justify-center space-x-4">
-                <button id="custom-confirm-cancel-btn" class="px-6 py-2 bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
+                <button id="custom-confirm-cancel-btn" class="px-6 py-2 bg-gray-600 rounded-md hover:bg-gray-500">Cancelar</button>
                 <button id="custom-confirm-ok-btn" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirmar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Prompt Customizado (para nome de convidado) -->
     <div id="custom-prompt-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4">
-            <h3 class="text-xl font-bold text-center">Bem-vindo(a)!</h3>
-            <p class="text-gray-600 text-center">Para entrar na sala como convidado, por favor, digite seu nome abaixo.</p>
-            <input type="text" id="custom-prompt-input" placeholder="Seu nome aqui..." class="w-full border rounded-md px-3 py-2" />
-            <button id="custom-prompt-ok-btn" class="w-full px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Entrar</button>
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4 border border-gray-700">
+            <h3 id="custom-prompt-title" class="text-xl font-bold text-center text-white"></h3>
+            <p id="custom-prompt-message" class="text-gray-400 text-center"></p>
+            <input type="text" id="custom-prompt-input" placeholder="Sua resposta aqui..." class="w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700 text-white" />
+            <button id="custom-prompt-ok-btn" class="w-full px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Confirmar</button>
         </div>
     </div>
 
-    <!-- Modal de Compartilhar Link -->
     <div id="share-link-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-md space-y-4">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Convidar para a Sala</h3><button id="close-share-link-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
-            <p class="text-gray-600">Compartilhe este link para que outros possam entrar:</p>
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
+            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Convidar para a Sala</h3><button id="close-share-link-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
+            <p class="text-gray-400">Compartilhe este link para que outros possam entrar:</p>
             <div class="flex items-center space-x-2">
-                <input type="text" id="share-link-input" readonly class="w-full border bg-gray-100 rounded-md px-3 py-2">
-                <button id="copy-link-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Copiar</button>
+                <input type="text" id="share-link-input" readonly class="w-full border bg-gray-700 border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-300">
+                <button id="copy-link-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0">Copiar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Configurações do Usuário -->
     <div id="user-settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-md space-y-6">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Configurações</h3><button id="close-user-settings-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
-            
+        <div class="modal-content bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-md space-y-6 border border-gray-700">
+            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Configurações</h3><button id="close-user-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
             <div class="flex flex-col items-center space-y-4">
                 <div class="relative group w-24 h-24">
-                    <img id="user-settings-pic" class="w-full h-full rounded-full bg-gray-300 object-cover cursor-pointer">
+                    <img id="user-settings-pic" class="w-full h-full rounded-full bg-gray-600 object-cover cursor-pointer">
                     <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity rounded-full">Trocar</div>
                 </div>
                 <div class="w-full">
-                    <label for="user-settings-name" class="block text-sm font-medium text-gray-700">Nome de Usuário</label>
-                    <input type="text" id="user-settings-name" class="mt-1 w-full border rounded-md px-3 py-2" />
+                    <label for="user-settings-name" class="block text-sm font-medium text-gray-400">Nome de Usuário</label>
+                    <input type="text" id="user-settings-name" class="mt-1 w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700" />
                 </div>
             </div>
-
-            <div class="pt-4 border-t space-y-2">
-                 <button id="cleanup-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    <span>Limpar Mensagens Antigas (24h)</span>
-                </button>
-                <button id="logout-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+            <div id="notifications-section" class="pt-4 border-t border-gray-700 space-y-2">
+                 <button id="enable-notifications-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                     <span>Ativar Notificações</span>
+                 </button>
+                 <p id="notifications-status" class="text-xs text-center text-gray-500"></p>
+            </div>
+            <div class="pt-4 border-t border-gray-700 space-y-2">
+                <button id="logout-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span>Sair</span>
                 </button>
@@ -175,60 +217,64 @@
         </div>
     </div>
 
-    <!-- Modal de Configurações da Sala -->
     <div id="room-settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-lg space-y-6">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Configurações da Sala</h3><button id="close-room-settings-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
-            
+        <div class="modal-content bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-lg space-y-6 border border-gray-700">
+            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Configurações da Sala</h3><button id="close-room-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
             <div class="flex items-center space-x-4">
                 <div class="relative group flex-shrink-0 w-16 h-16">
-                    <img id="room-settings-pic" class="w-full h-full rounded-full bg-gray-300 object-cover cursor-pointer">
+                    <img id="room-settings-pic" class="w-full h-full rounded-full bg-gray-600 object-cover cursor-pointer">
+                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity rounded-full">Trocar</div>
                 </div>
                 <div class="w-full">
-                    <label for="room-settings-name" class="block text-sm font-medium text-gray-700">Nome da Sala</label>
-                    <input type="text" id="room-settings-name" class="mt-1 w-full border rounded-md px-3 py-2" />
+                    <label for="room-settings-name" class="block text-sm font-medium text-gray-400">Nome da Sala</label>
+                    <input type="text" id="room-settings-name" class="mt-1 w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700" />
                 </div>
             </div>
-
-            <div class="pt-4 border-t">
+            <div class="pt-4 border-t border-gray-700">
                 <h4 class="text-lg font-semibold">Membros</h4>
                 <div id="room-members-list" class="mt-2 max-h-48 overflow-y-auto space-y-2"></div>
             </div>
-
-            <div class="pt-4 border-t">
-                <button id="clear-chat-btn" class="w-full text-left px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200">Limpar Histórico de Mensagens</button>
+            <div id="add-member-section" class="hidden pt-4 border-t border-gray-700">
+                 <button id="add-member-btn" class="w-full text-left px-4 py-2 bg-blue-800 text-blue-200 rounded-md hover:bg-blue-700">Adicionar Membro</button>
+            </div>
+            <div class="pt-4 border-t border-gray-700">
+                <button id="clear-chat-btn" class="w-full text-left px-4 py-2 bg-red-900/50 text-red-300 rounded-md hover:bg-red-900/70">Limpar Histórico de Mensagens</button>
             </div>
         </div>
     </div>
+    
+    <div id="add-member-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
+            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Adicionar Amigo ao Grupo</h3><button id="close-add-member-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
+            <div id="add-member-list" class="max-h-60 overflow-y-auto"></div>
+        </div>
+    </div>
 
-    <!-- Modal de Criar Sala -->
     <div id="create-room-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Criar Nova Sala</h3><button id="close-create-modal-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4 border border-gray-700">
+            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Criar Nova Sala</h3><button id="close-create-modal-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
             <form id="create-room-form">
-                <div><label for="room-name-input" class="block text-sm font-medium text-gray-700">Nome da Sala</label><input type="text" id="room-name-input" required class="mt-1 w-full border rounded-md px-3 py-2" /></div>
-                    <div><label for="room-password-input" class="block text-sm font-medium text-gray-700">Senha (Opcional)</label><input type="password" id="room-password-input" placeholder="Deixe em branco para sala pública" class="mt-1 w-full border rounded-md px-3 py-2" /></div>
-                <div class="flex justify-end space-x-3 pt-2"><button type="button" id="cancel-create-room-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Criar</button></div>
+                <div><label for="room-name-input" class="block text-sm font-medium text-gray-400">Nome da Sala</label><input type="text" id="room-name-input" required class="mt-1 w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2" /></div>
+                <div><label for="room-password-input" class="block text-sm font-medium text-gray-400">Senha (Opcional)</label><input type="password" id="room-password-input" placeholder="Deixe em branco para sala pública" class="mt-1 w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2" /></div>
+                <div class="flex justify-end space-x-3 pt-2"><button type="button" id="cancel-create-room-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Criar</button></div>
             </form>
         </div>
     </div>
     
-    <!-- Modal de Busca de Usuários -->
     <div id="user-search-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-md space-y-4">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Encontrar Usuários</h3><button id="close-user-search-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border-gray-700">
+            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Encontrar Usuários</h3><button id="close-user-search-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
             <div class="relative">
-                <input type="search" id="user-search-input" placeholder="Digite o nome de usuário..." class="w-full border rounded-md px-3 py-2 pl-10">
+                <input type="search" id="user-search-input" placeholder="Digite o nome de usuário..." class="w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2 pl-10 text-white">
                 <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
             <div id="user-search-results" class="max-h-60 overflow-y-auto"></div>
         </div>
     </div>
     
-    <!-- NOVO: Modal de Pedidos de Amizade -->
     <div id="friend-requests-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-md space-y-4">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Pedidos de Amizade</h3><button id="close-friend-requests-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
+            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Pedidos de Amizade</h3><button id="close-friend-requests-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
             <div id="friend-requests-list" class="max-h-60 overflow-y-auto"></div>
         </div>
     </div>
@@ -237,32 +283,46 @@
 <script type="module">
     // --- IMPORTAÇÕES ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, where, updateDoc, arrayUnion, writeBatch, getDocs, arrayRemove, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+    import { getDatabase, ref as rtdbRef, onValue, set, onDisconnect, serverTimestamp as rtdbServerTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
     // --- CONFIGURAÇÃO DO FIREBASE ---
     const firebaseConfig = {
-     apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
-     authDomain: "seu-projeto-chat.firebaseapp.com",
-     projectId: "seu-projeto-chat",
-     storageBucket: "seu-projeto-chat.firebasestorage.app",
-     messagingSenderId: "259194791953",
-     appId: "1:259194791953:web:587ea979f1f26aff2629b0"
+      apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
+      authDomain: "seu-projeto-chat.firebaseapp.com",
+      projectId: "seu-projeto-chat",
+      storageBucket: "seu-projeto-chat.firebasestorage.app",
+      messagingSenderId: "259194791953",
+      appId: "1:259194791953:web:587ea979f1f26aff2629b0"
     };
 
     // --- VARIÁVEIS GLOBAIS ---
-    let app, auth, db, storage;
+    let app, auth, db, rtdb, storage, messaging;
     const ui = {};
     const state = { 
         currentUserId: null, 
         currentUserData: null, 
-        currentRoomData: null, 
+        currentRoomData: null,
+        roomsData: [],
+        friendsData: new Map(),
+        usersStatus: {}, 
+        readReceiptObserver: null,
+        imageUploadContext: null,
         unsubscribeRoom: null, 
         unsubscribeMessages: null, 
         unsubscribeUserRooms: null,
         unsubscribeUserData: null,
-        typingTimeout: null 
+        unsubscribePresence: null,
+        unsubscribeSearchListener: null,
+        typingTimeout: null,
+        isRecording: false,
+        mediaRecorder: null,
+        audioChunks: [],
+        recordingStartTime: 0,
+        recordingTimerInterval: null
     };
 
     // --- LÓGICA DE INICIALIZAÇÃO ---
@@ -271,104 +331,118 @@
         auth = getAuth(app);
         db = getFirestore(app);
         storage = getStorage(app);
+        rtdb = getDatabase(app);
+
+        try {
+            messaging = getMessaging(app);
+        } catch (err) {
+            console.warn("Firebase Messaging não é suportado neste ambiente.", err.message);
+            messaging = null;
+        }
+
         bindGlobalUI();
         onAuthStateChanged(auth, handleAuthChange);
     }
+    
+    function getRoomDisplayName(room, currentUserId) {
+        if (!room) return 'Carregando...';
+        if (room.isDirectMessage) {
+            const otherUserId = room.members.find(id => id !== currentUserId);
+            return room.memberDetails?.[otherUserId] || 'Conversa Privada';
+        }
+        return room.name;
+    }
 
-    // --- ROTEADOR PRINCIPAL ---
     async function handleAuthChange(user) {
         const params = new URLSearchParams(window.location.search);
         const roomIdFromUrl = params.get('room');
-
-        const hideAllModals = () => {
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.add('hidden'));
+        const cleanupListeners = () => {
+            if (state.unsubscribeUserRooms) state.unsubscribeUserRooms();
+            if (state.unsubscribeUserData) state.unsubscribeUserData();
+            if (state.unsubscribeRoom) state.unsubscribeRoom();
+            if (state.unsubscribeMessages) state.unsubscribeMessages();
+            if (state.unsubscribeSearchListener) state.unsubscribeSearchListener();
+            if (state.unsubscribePresence) state.unsubscribePresence();
+            if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
         };
 
         if (user) {
             state.currentUserId = user.uid;
             
-            if (!state.currentUserData || state.currentUserData.uid !== user.uid) {
-                let userSnap = await getDoc(doc(db, 'users', user.uid));
-                if (!userSnap.exists()) {
-                    try {
-                        await createUserProfile(user, roomIdFromUrl);
-                        userSnap = await getDoc(doc(db, 'users', user.uid));
-                    } catch (e) { return; } 
-                }
-                state.currentUserData = userSnap.data();
+            let userSnap = await getDoc(doc(db, 'users', user.uid));
+            if (!userSnap.exists()) {
+                try {
+                    await createUserProfile(user);
+                } catch (e) { 
+                    console.error("Failed to create user profile:", e);
+                    await signOut(auth);
+                    return;
+                } 
             }
             
             if (roomIdFromUrl && user.isAnonymous) {
                 const roomSnap = await getDoc(doc(db, 'rooms', roomIdFromUrl));
                 if (!roomSnap.exists()) {
-                    await signOut(auth);
-                    return;
+                    showNotification("A sala para a qual você foi convidado não existe mais.", "error");
+                    await signOut(auth); return;
                 }
                 await setupGuestUI(roomIdFromUrl);
             } else {
                 await setupMainUI(roomIdFromUrl);
             }
-        } else {
-            hideAllModals();
-            state.currentUserData = null;
-            state.currentUserId = null;
-            if (state.unsubscribeUserRooms) state.unsubscribeUserRooms();
-            if (state.unsubscribeUserData) state.unsubscribeUserData();
 
+            if(!user.isAnonymous) {
+                setupPresenceSystem(); 
+                setupPushNotifications();
+            }
+
+        } else {
+            cleanupListeners();
+            Object.assign(state, { currentUserData: null, currentUserId: null, roomsData: [], usersStatus: {}, friendsData: new Map() });
+            
             ['guest-container', 'app-container'].forEach(id => document.getElementById(id).classList.add('hidden'));
             const loginScreen = document.getElementById('login-screen');
             const inviteCard = document.getElementById('invite-welcome-card');
-            const loginTitle = document.getElementById('login-title');
-
+            
             if (roomIdFromUrl) {
                 inviteCard.classList.remove('hidden');
-                loginTitle.textContent = "Ou faça Login";
                 document.getElementById('enter-as-guest-btn').onclick = () => signInAnonymously(auth);
             } else {
                 inviteCard.classList.add('hidden');
-                loginTitle.textContent = "7Chat";
             }
+            document.getElementById('main-guest-login-btn').onclick = () => signInAnonymously(auth);
             loginScreen.classList.remove('hidden');
             loginScreen.classList.add('flex');
             document.getElementById('login-form').onsubmit = handleLogin;
         }
     }
     
-    // --- FUNÇÕES AUXILIARES DE SETUP ---
     async function createUserProfile(user) {
-        const baseProfile = {
-            uid: user.uid,
-            friends: [],
-            friendRequests: [],
-        };
+        const baseProfile = { uid: user.uid, friends: [], friendRequests: [], fcmTokens: [] };
 
         if (user.isAnonymous) {
-            const guestName = await showCustomPrompt();
-            if (!guestName) {
-                await signOut(auth);
-                throw new Error("Guest name not provided.");
-            }
+            const guestName = await showCustomPrompt("Bem-vindo(a)!", "Para entrar, por favor, digite seu nome de convidado.");
+            if (!guestName) { await signOut(auth); throw new Error("Guest name not provided."); }
             Object.assign(baseProfile, {
-                username: `${guestName.trim()}`,
-                username_lowercase: `${guestName.trim().toLowerCase()}`,
+                username: `Convidado: ${guestName.trim()}`,
+                guest_name_lowercase: guestName.trim().toLowerCase(),
                 isGuest: true,
                 photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(guestName.trim()[0])}&background=random&color=fff`
             });
         } else {
             const username = user.email.split('@')[0];
             Object.assign(baseProfile, {
-                username: username,
-                username_lowercase: username.toLowerCase(),
-                email: user.email,
-                isGuest: false,
+                username, username_lowercase: username.toLowerCase(), email: user.email, isGuest: false,
                 photoURL: `https://i.pravatar.cc/150?u=${user.uid}`
             });
         }
         await setDoc(doc(db, 'users', user.uid), baseProfile);
     }
-
+    
     async function setupGuestUI(roomId) {
-        await updateDoc(doc(db, 'rooms', roomId), { members: arrayUnion(state.currentUserId) }).catch(() => {});
+        try {
+            await updateDoc(doc(db, 'rooms', roomId), { members: arrayUnion(state.currentUserId) });
+        } catch(e) { console.warn("Could not add guest to room members, maybe already there.", e); }
         document.getElementById('guest-container').classList.remove('hidden');
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app-container').classList.add('hidden');
@@ -382,8 +456,7 @@
         document.getElementById('app-container').classList.remove('hidden');
         initMainLayout();
         bindMainUI();
-        loadUserProfile();
-        loadUserRooms();
+        setupDataListeners(); 
         if (roomIdFromUrl) {
             await openRoom(roomIdFromUrl);
             history.replaceState(null, '', window.location.pathname);
@@ -394,37 +467,36 @@
         e.preventDefault();
         try {
             await signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value);
-        } catch (err) { alert("Falha no login: " + err.message); }
+        } catch (err) { showNotification("Falha no login: " + err.message, "error"); }
     }
 
-    // --- LÓGICA DE LAYOUT E UI ---
     function initMainLayout() {
         document.getElementById('app-container').innerHTML = `
-        <div id="sidebar" class="w-full md:w-1/3 bg-gray-50 h-full border-r transition-transform duration-300 ease-in-out transform md:translate-x-0 relative flex flex-col">
-            <header class="p-3 flex justify-between items-center bg-white border-b flex-shrink-0">
+        <div id="sidebar" class="w-full md:w-1/3 h-full transition-transform duration-300 ease-in-out transform md:translate-x-0 relative flex flex-col">
+            <header class="p-3 flex justify-between items-center header-blur border-b border-gray-800 flex-shrink-0">
                 <div class="flex items-center space-x-3 min-w-0">
-                    <div class="w-10 h-10 rounded-full bg-gray-300 cursor-pointer overflow-hidden"><img id="my-profile-pic" class="w-full h-full object-cover"></div>
-                    <span id="my-username" class="font-bold text-lg truncate text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">Carregando...</span>
+                    <div class="w-10 h-10 rounded-full bg-gray-600 cursor-pointer overflow-hidden"><img id="my-profile-pic" class="w-full h-full object-cover"></div>
+                    <span id="my-username" class="font-bold text-lg truncate text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500"></span>
                 </div>
-                <div class="flex items-center space-x-2">
-                     <button id="friend-requests-btn" title="Pedidos de Amizade" class="p-2 rounded-full hover:bg-gray-200 relative">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        <span id="friend-requests-badge" class="badge hidden"></span>
-                    </button>
-                     <button id="user-search-btn" title="Buscar Usuário" class="p-2 rounded-full hover:bg-gray-200">
-                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </button>
-                    <button id="user-settings-btn" title="Configurações" class="p-2 rounded-full hover:bg-gray-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <div class="flex items-center space-x-1">
+                     <button id="friend-requests-btn" title="Pedidos de Amizade" class="p-2 rounded-full hover:bg-gray-700 relative">
+                         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                         <span id="friend-requests-badge" class="badge hidden"></span>
+                     </button>
+                     <button id="user-search-btn" title="Buscar Usuário" class="p-2 rounded-full hover:bg-gray-700">
+                         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                     </button>
+                    <button id="user-settings-btn" title="Configurações" class="p-2 rounded-full hover:bg-gray-700">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </button>
                 </div>
             </header>
             <div id="room-list-container" class="overflow-y-auto flex-1 pb-20"></div>
-            <button id="create-room-btn" class="absolute bottom-5 right-5 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700">
+            <button id="create-room-btn" class="absolute bottom-5 right-5 w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg hover:from-blue-600 hover:to-cyan-600">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             </button>
         </div>
-        <div id="chat-panel" class="w-full md:flex-grow absolute md:static inset-0 flex flex-col bg-white transition-transform duration-300 ease-in-out transform translate-x-full md:translate-x-0">
+        <div id="chat-panel" class="w-full md:flex-grow absolute md:static inset-0 flex flex-col bg-black transition-transform duration-300 ease-in-out transform translate-x-full md:translate-x-0">
             <div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>
         </div>`;
     }
@@ -432,15 +504,20 @@
     function bindGlobalUI() {
         document.getElementById('close-user-settings-btn').onclick = () => document.getElementById('user-settings-modal').classList.add('hidden');
         document.getElementById('close-room-settings-btn').onclick = () => document.getElementById('room-settings-modal').classList.add('hidden');
+        document.getElementById('close-add-member-btn').onclick = () => document.getElementById('add-member-modal').classList.add('hidden');
         document.getElementById('close-create-modal-btn').onclick = () => document.getElementById('create-room-modal').classList.add('hidden');
-        document.getElementById('close-user-search-btn').onclick = () => document.getElementById('user-search-modal').classList.add('hidden');
         document.getElementById('cancel-create-room-btn').onclick = () => document.getElementById('create-room-modal').classList.add('hidden');
         document.getElementById('close-image-viewer-btn').onclick = () => document.getElementById('image-viewer-modal').classList.add('hidden');
         document.getElementById('close-share-link-btn').onclick = () => document.getElementById('share-link-modal').classList.add('hidden');
-        document.getElementById('create-room-form').onsubmit = handleCreateRoomSubmit;
-        document.getElementById('image-uploader').onchange = handleImageUpload;
-        window.addEventListener('click', () => document.getElementById('room-context-menu').classList.add('hidden'));
         document.getElementById('close-friend-requests-btn').onclick = () => document.getElementById('friend-requests-modal').classList.add('hidden');
+        document.getElementById('close-user-search-btn').onclick = () => {
+             if (state.unsubscribeSearchListener) state.unsubscribeSearchListener();
+             document.getElementById('user-search-modal').classList.add('hidden');
+        };
+        document.getElementById('create-room-form').onsubmit = handleCreateRoomSubmit;
+        document.getElementById('image-uploader').onchange = handleMediaUpload;
+        document.getElementById('media-uploader').onchange = handleMediaUpload;
+        window.addEventListener('click', () => document.getElementById('room-context-menu').classList.add('hidden'));
     }
 
     function bindMainUI() {
@@ -451,198 +528,264 @@
             userSearchBtn: document.getElementById('user-search-btn'),
             createRoomBtn: document.getElementById('create-room-btn'),
             roomListContainer: document.getElementById('room-list-container'),
-            sidebar: document.getElementById('sidebar'),
-            chatPanel: document.getElementById('chat-panel'),
             friendRequestsBtn: document.getElementById('friend-requests-btn'),
             friendRequestsBadge: document.getElementById('friend-requests-badge')
         });
-        ui.myProfilePic.parentElement.onclick = () => openImageViewer(state.currentUserData.photoURL, { isUser: true });
+        ui.myProfilePic.parentElement.onclick = () => { if(state.currentUserData?.photoURL) openImageViewer(state.currentUserData.photoURL, { isUser: true }); };
         ui.userSettingsBtn.onclick = openUserSettings;
         ui.userSearchBtn.onclick = openUserSearch;
         ui.createRoomBtn.onclick = () => document.getElementById('create-room-modal').classList.remove('hidden');
         ui.friendRequestsBtn.onclick = openFriendRequestsModal;
     }
     
-    // --- LÓGICA DE USUÁRIO E PERFIL ---
-    function loadUserProfile() {
+    function setupDataListeners() {
         if (!state.currentUserId) return;
-        if(state.unsubscribeUserData) state.unsubscribeUserData();
+        cleanupOldListeners();
+
         state.unsubscribeUserData = onSnapshot(doc(db, 'users', state.currentUserId), (docSnap) => {
             if (docSnap.exists()) {
-                state.currentUserData = docSnap.data();
-                if(ui.myUsername) ui.myUsername.textContent = state.currentUserData.username;
-                if(ui.myProfilePic) ui.myProfilePic.src = state.currentUserData.photoURL;
-
-                const requestsCount = state.currentUserData.friendRequests?.length || 0;
-                if (ui.friendRequestsBadge) {
-                    ui.friendRequestsBadge.textContent = requestsCount;
-                    ui.friendRequestsBadge.classList.toggle('hidden', requestsCount === 0);
+                const oldData = state.currentUserData;
+                state.currentUserData = { uid: docSnap.id, ...docSnap.data() };
+                if (JSON.stringify(oldData?.friends) !== JSON.stringify(state.currentUserData.friends)) {
+                    fetchFriendsData(); 
                 }
+                renderApp();
+            } else {
+                console.error("User document not found, signing out.");
+                signOut(auth);
             }
         });
-    }
 
-    function openUserSettings() {
-        const modal = document.getElementById('user-settings-modal');
-        modal.classList.remove('hidden');
-        
-        document.getElementById('user-settings-pic').src = state.currentUserData.photoURL;
-        document.getElementById('user-settings-name').value = state.currentUserData.username;
-        document.getElementById('logout-btn').onclick = () => signOut(auth);
+        const roomsQuery = query(collection(db, 'rooms'), where("members", "array-contains", state.currentUserId));
+        state.unsubscribeUserRooms = onSnapshot(roomsQuery, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "modified") {
+                    const changedRoomData = { id: change.doc.id, ...change.doc.data() };
+                    const lastMessage = changedRoomData.lastMessage;
 
-        document.getElementById('user-settings-pic').parentElement.onclick = () => {
-             state.imageUploadContext = { type: 'user' };
-             document.getElementById('image-uploader').click();
-        };
+                    if (lastMessage && lastMessage.senderId !== state.currentUserId) {
+                        const chatPanel = document.getElementById('chat-panel');
+                        const guestContainer = document.getElementById('guest-container');
+                        const isChatOpen = (chatPanel?.dataset.currentRoomId === changedRoomData.id) || (guestContainer?.dataset.currentRoomId === changedRoomData.id);
 
-        const nameInput = document.getElementById('user-settings-name');
-        nameInput.onblur = async () => {
-            const newName = nameInput.value.trim();
-            if (newName && newName !== state.currentUserData.username) {
-                await updateDoc(doc(db, 'users', state.currentUserId), { 
-                    username: newName,
-                    username_lowercase: newName.toLowerCase()
-                });
-                showNotification("Nome atualizado!");
-            }
-        };
-        
-        document.getElementById('cleanup-btn').onclick = async () => {
-             if (await showCustomConfirm("Limpar Mensagens", "Isso irá apagar todas as mensagens com mais de 24 horas em todas as salas. Esta ação é para manutenção e pode demorar. Continuar?")) {
-                deleteOldMessages();
-             }
-        }
+                        if (!isChatOpen) {
+                            if (navigator.vibrate) {
+                                navigator.vibrate([100, 50, 100]);
+                            }
+                            if (changedRoomData.isDirectMessage && !state.currentUserData.isGuest) {
+                                const otherUserId = changedRoomData.members.find(id => id !== state.currentUserId);
+                                const otherUserDetails = changedRoomData.memberDetails || {};
+                                const otherUserPhoto = changedRoomData.memberPhotos || {};
+                                createOrGetDirectMessageRoom(otherUserId, otherUserDetails[otherUserId], otherUserPhoto[otherUserId]);
+                            }
+                        }
+                    }
+                }
+            });
+
+            state.roomsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderApp();
+        });
+
+        const statusRef = rtdbRef(rtdb, 'status');
+        state.unsubscribePresence = onValue(statusRef, (snapshot) => {
+            state.usersStatus = snapshot.val() || {};
+            renderApp();
+        });
     }
     
-    // --- LÓGICA DE SALAS E AMIGOS ---
-    function getRoomDisplayName(room, currentUserId) {
-        if (room.isDirectMessage) {
-            const otherUserId = room.members.find(id => id !== currentUserId);
-            return room.memberDetails?.[otherUserId] || 'Conversa Privada';
+    async function fetchFriendsData() {
+        const { friends = [] } = state.currentUserData || {};
+        if (friends.length === 0) {
+            state.friendsData.clear();
+            renderApp();
+            return;
         }
-        return room.name;
+        const friendsQuery = query(collection(db, 'users'), where('uid', 'in', friends));
+        const friendsSnapshots = await getDocs(friendsQuery);
+        state.friendsData.clear();
+        friendsSnapshots.forEach(doc => {
+            state.friendsData.set(doc.id, doc.data());
+        });
+        renderApp();
     }
 
-    function loadUserRooms() {
-        if(state.unsubscribeUserRooms) state.unsubscribeUserRooms();
-        
-        let roomsData = [];
-        let userData = state.currentUserData || {};
+    function cleanupOldListeners() {
+        if (state.unsubscribeUserData) state.unsubscribeUserData();
+        if (state.unsubscribeUserRooms) state.unsubscribeUserRooms();
+        if (state.unsubscribePresence) state.unsubscribePresence();
+    }
 
-        const render = () => {
-            if (!document.getElementById('room-list-container')) return;
+    function renderApp() {
+        if (!state.currentUserData || !document.getElementById('sidebar')) return;
+        renderSidebarHeader();
+        renderSidebarLists();
+        const createRoomBtn = document.getElementById('create-room-btn');
+        if (createRoomBtn) {
+            createRoomBtn.style.display = state.currentUserData.isGuest ? 'none' : 'flex';
+        }
+    }
 
-            const pinnedRooms = userData?.pinnedRooms || [];
-            const archivedRooms = userData?.archivedRooms || [];
+    function renderSidebarHeader() {
+        if (!ui.myUsername || !ui.myProfilePic || !state.currentUserData) return;
+        ui.myUsername.textContent = state.currentUserData.username;
+        ui.myProfilePic.src = state.currentUserData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(state.currentUserData.username[0] || '?')}&background=random&color=fff`;
+        if(ui.friendRequestsBadge) {
+            const requestsCount = state.currentUserData.friendRequests?.length || 0;
+            ui.friendRequestsBadge.textContent = requestsCount;
+            ui.friendRequestsBadge.classList.toggle('hidden', requestsCount === 0);
+        }
+    }
 
-            const dms = roomsData.filter(r => r.isDirectMessage);
-            const groups = roomsData.filter(r => !r.isDirectMessage);
-
-            const renderRoomList = (list, title) => {
-                if (list.length === 0) return '';
-                const archived = list.filter(r => archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
-                const pinned = list.filter(r => pinnedRooms.includes(r.id) && !archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
-                const normal = list.filter(r => !pinnedRooms.includes(r.id) && !archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
-
-                let sectionHtml = `<h4 class="px-4 pt-4 text-sm font-bold text-gray-500 uppercase">${title}</h4>`;
-                if (pinned.length > 0) sectionHtml += pinned.map(r => renderRoom(r)).join('');
-                sectionHtml += normal.map(r => renderRoom(r)).join('');
-                if (archived.length > 0) {
-                    sectionHtml += `<details id="archived-drawer-${title.toLowerCase()}" class="px-2"><summary class="px-2 pt-4 text-xs font-bold text-gray-500 uppercase cursor-pointer">Arquivadas</summary>${archived.map(r => renderRoom(r)).join('')}</details>`;
-                }
-                return sectionHtml;
-            };
-
-            const renderRoom = (room) => {
-                const displayName = getRoomDisplayName(room, state.currentUserId);
-                const otherUserId = room.isDirectMessage ? room.members.find(id => id !== state.currentUserId) : null;
-                const photo = room.isDirectMessage ? (room.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0])}&background=A78BFA&color=fff&size=40`) : (room.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A78BFA&color=fff&size=40`);
-                return `<div class="p-3 mx-2 mt-2 rounded-lg flex items-center hover:bg-gray-200 cursor-pointer room-item" data-room-id="${room.id}">
-                    <div class="w-10 h-10 rounded-full bg-gray-300 overflow-hidden mr-3 flex-shrink-0"><img src="${photo}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';"></div>
-                    <span class="truncate flex-1">${displayName}</span>
-                    <button class="p-2 room-actions-btn z-10 text-gray-500 hover:text-black">
+    function renderSidebarLists() {
+        const container = document.getElementById('room-list-container');
+        if (!container || !state.currentUserData) return;
+        const { friends = [], pinnedRooms = [], archivedRooms = [] } = state.currentUserData;
+        const { roomsData = [] } = state;
+        let friendsHtml = `<h4 class="px-4 pt-4 text-sm font-bold text-gray-500 uppercase">AMIGOS</h4>`;
+        if (friends.length > 0 && state.friendsData.size > 0) {
+            friendsHtml += [...state.friendsData.values()].map(friend => {
+                const photo = friend.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.username[0] || '?')}&background=A78BFA&color=fff&size=40`;
+                const isOnline = state.usersStatus[friend.uid]?.state === 'online';
+                const statusIndicator = `<div class="absolute bottom-0 right-0 w-3.5 h-3.5 ${isOnline ? 'bg-green-500' : 'bg-gray-400'} rounded-full border-2 border-black"></div>`;
+                const nameHtml = `<span class="font-semibold truncate flex-1 text-gray-200">${friend.username}</span>`;
+                return `<div class="p-3 mx-2 mt-2 rounded-lg flex items-center hover:bg-gray-800 cursor-pointer friend-item" data-user-id="${friend.uid}" data-username="${friend.username}" data-user-photo="${photo}">
+                    <div class="relative w-10 h-10 rounded-full bg-gray-600 mr-3 flex-shrink-0">
+                       <img src="${photo}" class="w-full h-full object-cover rounded-full" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';">
+                       ${statusIndicator}
+                    </div>
+                    ${nameHtml}
+                    <button class="p-2 friend-actions-btn z-10 text-gray-500 hover:text-white" data-user-id="${friend.uid}">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
                     </button>
                 </div>`;
+            }).join('');
+        } else {
+            friendsHtml += `<p class="text-center text-gray-500 text-sm p-3">Encontre usuários na lupa para adicionar.</p>`;
+        }
+        const groups = roomsData.filter(r => !r.isDirectMessage);
+        let groupsHtml = `<h4 class="px-4 pt-4 text-sm font-bold text-gray-500 uppercase">GRUPOS</h4>`;
+        if (groups.length === 0) {
+            groupsHtml += `<p class="text-center text-gray-500 text-sm p-3">Crie um grupo no botão de mais.</p>`;
+        } else {
+            const renderItemFunc = (room) => {
+                const displayName = getRoomDisplayName(room, state.currentUserId);
+                const photo = room.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`;
+                const nameHtml = `<span class="font-semibold truncate flex-1 text-gray-200">${displayName}</span>`;
+                return `<div class="p-3 mx-2 mt-2 rounded-lg flex items-center hover:bg-gray-800 cursor-pointer room-item" data-room-id="${room.id}">
+                    <div class="w-10 h-10 rounded-full bg-gray-600 overflow-hidden mr-3 flex-shrink-0"><img src="${photo}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';"></div>
+                    ${nameHtml}
+                    <button class="p-2 room-actions-btn z-10 text-gray-500 hover:text-white" data-room-id="${room.id}">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+                    </button>
+                </div>`;
+            };
+            const archivedItems = groups.filter(r => archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
+            const pinnedItems = groups.filter(r => pinnedRooms.includes(r.id) && !archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
+            const normalItems = groups.filter(r => !pinnedRooms.includes(r.id) && !archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
+            if (pinnedItems.length > 0) groupsHtml += pinnedItems.map(renderItemFunc).join('');
+            groupsHtml += normalItems.map(renderItemFunc).join('');
+            if (archivedItems.length > 0) {
+                groupsHtml += `<details class="px-2"><summary class="px-2 pt-4 text-xs font-bold text-gray-500 uppercase cursor-pointer">Arquivadas</summary>${archivedItems.map(renderItemFunc).join('')}</details>`;
             }
-
-            let html = renderRoomList(dms, "AMIGOS") + renderRoomList(groups, "GRUPOS");
-            document.getElementById('room-list-container').innerHTML = html || `<p class="text-center text-gray-500 p-4">Nenhuma conversa encontrada.</p>`;
-
-            document.querySelectorAll('.room-item').forEach(el => {
-                el.onclick = (e) => { if (!e.target.closest('button')) openRoom(el.dataset.roomId); }
-            });
-            document.querySelectorAll('.room-actions-btn').forEach(btn => {
-                btn.onclick = (e) => { e.stopPropagation(); handleRoomContextMenu(e, btn.closest('.room-item').dataset.roomId); }
-            });
-        };
-        
-        state.unsubscribeUserData = onSnapshot(doc(db, 'users', state.currentUserId), (userDoc) => {
-            userData = userDoc.data();
-            render();
+        }
+        container.innerHTML = friendsHtml + groupsHtml;
+        bindSidebarEvents(container);
+    }
+    
+    function bindSidebarEvents(container) {
+        container.querySelectorAll('.friend-item').forEach(el => {
+            el.onclick = (e) => { 
+                if (e.target.closest('button')) return;
+                createOrGetDirectMessageRoom(el.dataset.userId, el.dataset.username, el.dataset.userPhoto);
+            }
         });
-
-        const q = query(collection(db, 'rooms'), where("members", "array-contains", state.currentUserId));
-        state.unsubscribeUserRooms = onSnapshot(q, (snapshot) => {
-            roomsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            render();
+        container.querySelectorAll('.room-item').forEach(el => {
+            el.onclick = (e) => { 
+                if (e.target.closest('button')) return;
+                openRoom(el.dataset.roomId);
+            }
+        });
+        container.querySelectorAll('.friend-actions-btn, .room-actions-btn').forEach(btn => {
+            btn.onclick = (e) => { 
+                e.stopPropagation(); 
+                handleRoomContextMenu(e, btn.dataset.roomId || `dm_${[state.currentUserId, btn.dataset.userId].sort().join('_')}`); 
+            }
         });
     }
-
 
     async function handleRoomContextMenu(event, roomId) {
         const roomRef = doc(db, 'rooms', roomId);
         const roomSnap = await getDoc(roomRef);
         if(!roomSnap.exists()) return;
         const roomData = roomSnap.data();
-
         const menu = document.getElementById('room-context-menu');
-        
-        const menuWidth = 140; 
-        const menuHeight = 120;
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-
-        let left = event.clientX;
-        let top = event.clientY;
-
+        const menuWidth = 160; const menuHeight = 150;
+        const screenWidth = window.innerWidth; const screenHeight = window.innerHeight;
+        let left = event.clientX; let top = event.clientY;
         if (left + menuWidth > screenWidth) left = screenWidth - menuWidth - 10;
         if (top + menuHeight > screenHeight) top = screenHeight - menuHeight - 10;
-
         menu.style.top = `${top}px`;
         menu.style.left = `${left}px`;
         menu.classList.remove('hidden');
-
         const isPinned = state.currentUserData.pinnedRooms?.includes(roomId);
         const isArchived = state.currentUserData.archivedRooms?.includes(roomId);
-        const isOwner = roomData.creatorUid === state.currentUserId;
-        
+        const clearChatBtn = document.getElementById('context-clear-chat');
         document.getElementById('context-pin').textContent = isPinned ? 'Desafixar' : 'Fixar';
         document.getElementById('context-archive').textContent = isArchived ? 'Desarquivar' : 'Arquivar';
-        document.getElementById('context-delete').textContent = isOwner && !roomData.isDirectMessage ? 'Apagar Sala' : 'Sair da Sala';
-
+        clearChatBtn.classList.toggle('hidden', !roomData.isDirectMessage);
+        const deleteBtn = document.getElementById('context-delete');
+        if (roomData.isDirectMessage) {
+            deleteBtn.textContent = 'Remover Amigo';
+        } else {
+            deleteBtn.textContent = roomData.creatorUid === state.currentUserId ? 'Apagar Sala' : 'Sair da Sala';
+        }
         document.getElementById('context-pin').onclick = (e) => { e.stopPropagation(); menu.classList.add('hidden'); togglePinRoom(roomId); };
         document.getElementById('context-archive').onclick = (e) => { e.stopPropagation(); menu.classList.add('hidden'); toggleArchiveRoom(roomId); };
-        document.getElementById('context-delete').onclick = async (e) => { 
-            e.stopPropagation(); 
-            menu.classList.add('hidden');
-            if (isOwner && !roomData.isDirectMessage) {
-                if (await showCustomConfirm('Apagar Sala', 'Esta ação é permanente e removerá todos os membros e mensagens. Continuar?')) {
-                    await deleteRoom(roomId);
-                }
+        clearChatBtn.onclick = async (e) => {
+            e.stopPropagation(); menu.classList.add('hidden');
+            if (await showCustomConfirm('Limpar Conversa', 'Isso apagará todas as mensagens desta conversa para todos. Deseja continuar?')) {
+                await clearChatForEveryone(roomId);
+            }
+        };
+        deleteBtn.onclick = async (e) => { 
+            e.stopPropagation(); menu.classList.add('hidden');
+            if (roomData.isDirectMessage) {
+                 if (await showCustomConfirm('Remover Amigo', `Isso irá desfazer a amizade e apagar a conversa permanentemente. Continuar?`)) {
+                     await removeFriendAndDeleteDM(roomId, roomData);
+                 }
             } else {
-                 if (await showCustomConfirm('Sair da Sala', `Tem certeza que deseja sair de "${getRoomDisplayName(roomData, state.currentUserId)}"?`)) {
-                    await updateDoc(doc(db, 'rooms', roomId), { 
-                        members: arrayRemove(state.currentUserId),
-                        admins: arrayRemove(state.currentUserId)
-                    });
-                    await updateDoc(doc(db, 'users', state.currentUserId), {
-                        pinnedRooms: arrayRemove(roomId),
-                        archivedRooms: arrayRemove(roomId)
-                    });
+                if (roomData.creatorUid === state.currentUserId) {
+                    if (await showCustomConfirm('Apagar Sala', 'Esta ação é permanente e removerá todos os membros e mensagens. Continuar?')) {
+                        await deleteRoom(roomId);
+                    }
+                } else {
+                     if (await showCustomConfirm('Sair da Sala', `Tem certeza que deseja sair de "${getRoomDisplayName(roomData, state.currentUserId)}"?`)) {
+                         await updateDoc(doc(db, 'rooms', roomId), { members: arrayRemove(state.currentUserId), admins: arrayRemove(state.currentUserId) });
+                         await updateDoc(doc(db, 'users', state.currentUserId), { pinnedRooms: arrayRemove(roomId), archivedRooms: arrayRemove(roomId) });
+                     }
                 }
             }
         };
+    }
+
+    async function removeFriendAndDeleteDM(roomId, roomData) {
+        const otherUserId = roomData.members.find(id => id !== state.currentUserId);
+        if (!otherUserId) return;
+        const batch = writeBatch(db);
+        const currentUserRef = doc(db, 'users', state.currentUserId);
+        batch.update(currentUserRef, { friends: arrayRemove(otherUserId), pinnedRooms: arrayRemove(roomId), archivedRooms: arrayRemove(roomId) });
+        const otherUserRef = doc(db, 'users', otherUserId);
+        batch.update(otherUserRef, { friends: arrayRemove(state.currentUserId), pinnedRooms: arrayRemove(roomId), archivedRooms: arrayRemove(roomId) });
+        await clearChatForEveryone(roomId);
+        const roomRef = doc(db, 'rooms', roomId);
+        batch.delete(roomRef);
+        await batch.commit();
+        showNotification("Amigo removido e conversa apagada.");
+        if(document.getElementById('chat-panel')?.dataset.currentRoomId === roomId) {
+            document.getElementById('chat-panel').innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>`;
+            delete document.getElementById('chat-panel').dataset.currentRoomId;
+        }
     }
 
     async function togglePinRoom(roomId) {
@@ -656,15 +799,10 @@
         const isArchived = state.currentUserData.archivedRooms?.includes(roomId);
         await updateDoc(userRef, { archivedRooms: isArchived ? arrayRemove(roomId) : arrayUnion(roomId) });
     }
-
+    
     async function deleteRoom(roomId) {
         showNotification("Apagando sala...");
-        const messagesRef = collection(db, `rooms/${roomId}/messages`);
-        const messagesSnap = await getDocs(messagesRef);
-        const batch = writeBatch(db);
-        messagesSnap.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
-
+        await clearChatForEveryone(roomId);
         await deleteDoc(doc(db, 'rooms', roomId));
         showNotification("Sala apagada com sucesso.");
         if(document.getElementById('chat-panel')) document.getElementById('chat-panel').innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>`;
@@ -676,16 +814,7 @@
         const password = document.getElementById('room-password-input').value.trim();
         if (!name) return;
         const roomData = { 
-            name,
-            password: password || null,
-            isPrivate: !!password,
-            isDirectMessage: false,
-            photoURL: '', 
-            creatorUid: state.currentUserId, 
-            admins: [state.currentUserId],
-            members: [state.currentUserId], 
-            typing: [],
-            createdAt: serverTimestamp() 
+            name, password: password || null, isPrivate: !!password, isDirectMessage: false, photoURL: '', creatorUid: state.currentUserId, admins: [state.currentUserId], members: [state.currentUserId], typing: [], createdAt: serverTimestamp() 
         };
         const newRoomRef = await addDoc(collection(db, "rooms"), roomData);
         document.getElementById('create-room-modal').classList.add('hidden');
@@ -696,114 +825,108 @@
     async function openRoom(roomId, isGuestView = false) {
         if (state.unsubscribeMessages) state.unsubscribeMessages();
         if (state.unsubscribeRoom) state.unsubscribeRoom();
-
+        if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
         const container = isGuestView ? document.getElementById('guest-container') : document.getElementById('chat-panel');
-        
         if (!isGuestView && document.getElementById('sidebar')) {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
             container.classList.remove('translate-x-full');
         }
-        
         container.innerHTML = `<div class="h-full flex items-center justify-center"><div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div></div>`;
-        
         const roomRef = doc(db, "rooms", roomId);
         
         try {
             const initialDocSnap = await getDoc(roomRef);
-
             if (!initialDocSnap.exists() || !initialDocSnap.data().members.includes(state.currentUserId)) {
-                container.innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Esta sala não existe ou você não tem acesso.</p></div>`;
-                if (!isGuestView) {
-                    container.innerHTML += `<button onclick="document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('chat-panel').classList.add('translate-x-full');" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md">Voltar</button>`;
-                }
+                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-4"><p class="text-gray-500">Esta sala não existe ou você não tem acesso.</p></div>`;
+                if (!isGuestView) { container.innerHTML += `<button onclick="document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('chat-panel').classList.add('translate-x-full');" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md">Voltar</button>`; }
                 return;
             }
-
             state.currentRoomData = { id: initialDocSnap.id, ...initialDocSnap.data() };
             renderChatView(container, state.currentRoomData, isGuestView);
             container.dataset.currentRoomId = roomId;
             subscribeToMessages(roomId, container.querySelector('.messages-container'));
-
             state.unsubscribeRoom = onSnapshot(roomRef, (docSnap) => {
                 if (docSnap.exists()) {
+                    const oldData = state.currentRoomData;
                     state.currentRoomData = { id: docSnap.id, ...docSnap.data() };
-                    updateChatView(container, state.currentRoomData);
+                    if(oldData?.photoURL !== state.currentRoomData.photoURL || oldData?.name !== state.currentRoomData.name) {
+                        updateChatView(container, state.currentRoomData);
+                    }
                 } else {
                     if (state.unsubscribeRoom) state.unsubscribeRoom();
-                    if(isGuestView) {
-                        signOut(auth);
-                    } else {
-                        container.innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Esta sala foi removida.</p></div>`;
-                        delete container.dataset.currentRoomId;
-                    }
+                    if(isGuestView) { signOut(auth); } 
+                    else { container.innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Esta sala foi removida.</p></div>`; delete container.dataset.currentRoomId; }
                 }
             });
-        } catch (error) {
-            console.error("Error opening room:", error);
-            container.innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Ocorreu um erro ao abrir a sala.</p></div>`;
-        }
+        } catch (error) { container.innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Ocorreu um erro ao abrir a sala.</p></div>`; }
     }
     
     function updateChatView(container, roomData) {
-        if (!roomData || !state.currentUserId) return; // FIX: Add guard clause
+        if (!roomData || !state.currentUserId) return;
         const displayName = getRoomDisplayName(roomData, state.currentUserId);
         const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
-        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0])}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A78BFA&color=fff&size=40`);
-
+        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`);
         const headerPic = container.querySelector('#room-header-pic');
         if (headerPic) headerPic.src = photo;
-        
         const headerName = container.querySelector('#room-header-name');
         if (headerName) headerName.textContent = displayName;
-        
         const shareBtn = container.querySelector('#share-room-btn');
         if(shareBtn) shareBtn.style.display = roomData.isDirectMessage ? 'none' : 'block';
-
         updateTypingIndicator(roomData.typing);
     }
 
     function renderChatView(container, roomData, isGuestView = false) {
-        if (!state.currentUserData) return; // FIX: Add guard clause
+        if (!state.currentUserData) return;
         const displayName = getRoomDisplayName(roomData, state.currentUserId);
-        const isAdmin = roomData.admins.includes(state.currentUserId); // Error was here
+        const isAdmin = (roomData.admins || []).includes(state.currentUserId);
         const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
-        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0])}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A78BFA&color=fff&size=40`);
-
-        let headerButtons = !state.currentUserData.isGuest ? `<button id="share-room-btn" title="Convidar" class="p-2 rounded-full hover:bg-gray-100" style="display: ${roomData.isDirectMessage ? 'none' : 'block'}"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg></button>` : '';
+        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`);
+        let headerButtons = !state.currentUserData.isGuest ? `<button id="share-room-btn" title="Convidar" class="p-2 rounded-full hover:bg-gray-700" style="display: ${roomData.isDirectMessage ? 'none' : 'block'}"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg></button>` : '';
         if (isAdmin && !roomData.isDirectMessage) {
-            headerButtons += `<button id="room-settings-btn" title="Configurações da Sala" class="p-2 rounded-full hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>`;
+            headerButtons += `<button id="room-settings-btn" title="Configurações da Sala" class="p-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>`;
         }
-        let backButton = isGuestView ? `<button id="guest-settings-btn" title="Configurações" class="p-2 -ml-2 rounded-full hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>` : `<button id="back-to-list-btn" class="md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100">&larr;</button>`;
-        
-        container.innerHTML = `<div class="flex flex-col h-full">
-            <header class="p-3 border-b flex items-center space-x-3 flex-shrink-0">
+        let backButton = isGuestView ? `<button id="guest-settings-btn" title="Configurações" class="p-2 -ml-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>` 
+        : `<button id="back-to-list-btn" class="md:hidden p-2 -ml-2 rounded-full hover:bg-gray-700 text-gray-400 text-2xl font-bold">&larr;</button>`;
+        container.innerHTML = `<div class="flex flex-col h-full bg-black">
+            <header class="p-3 border-b border-gray-800 header-blur flex items-center space-x-3 flex-shrink-0">
                 ${backButton}
-                <div class="w-10 h-10 rounded-full bg-gray-300 cursor-pointer overflow-hidden"><img id="room-header-pic" src="${photo}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';"></div>
-                <span id="room-header-name" class="font-bold flex-1 truncate">${displayName}</span>
+                <div class="w-10 h-10 rounded-full bg-gray-600 cursor-pointer overflow-hidden"><img id="room-header-pic" src="${photo}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';"></div>
+                <div class="flex-1 min-w-0">
+                    <span id="room-header-name" class="font-bold truncate text-white block">${displayName}</span>
+                    <div class="typing-indicator-container text-xs text-gray-400 h-4"></div>
+                </div>
                 <div class="flex items-center">${headerButtons}</div>
             </header>
             <div class="messages-container flex-1 overflow-y-auto p-4 space-y-4"></div>
-            <div class="typing-indicator-container px-4 pb-2 h-6 text-sm text-gray-500"></div>
-            <form class="chat-form p-3 border-t flex space-x-2 flex-shrink-0">
-                <input type="text" placeholder="Mensagem..." class="chat-input flex-1 border rounded-lg px-3 py-2"/>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Enviar</button>
+            <div id="recording-indicator" class="hidden items-center justify-center p-2 bg-red-900/50 text-red-300"><div class="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></div><span id="recording-timer">00:00</span></div>
+            <form class="chat-form p-3 border-t border-gray-800 form-blur flex space-x-2 flex-shrink-0">
+                 <button type="button" id="attach-media-btn" class="p-2 rounded-full hover:bg-gray-700">
+                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                 </button>
+                <input type="text" placeholder="Mensagem" class="chat-input flex-1 bg-gray-800 border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"/>
+                <button type="button" id="audio-record-btn" class="p-2 rounded-full hover:bg-gray-700">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                </button>
+                <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700">Enviar</button>
             </form>
         </div>`;
-        
         if(!isGuestView) {
             container.querySelector('#back-to-list-btn').onclick = () => { 
-                document.getElementById('sidebar').classList.remove('-translate-x-full');
-                document.getElementById('chat-panel').classList.add('translate-x-full'); 
-                delete container.dataset.currentRoomId; 
+                document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('chat-panel').classList.add('translate-x-full'); delete container.dataset.currentRoomId; 
             };
         } else {
              container.querySelector('#guest-settings-btn').onclick = openUserSettings;
         }
-
         container.querySelector('#room-header-pic').parentElement.onclick = () => openImageViewer(photo, { isRoom: true, isAdmin });
         container.querySelector('.chat-form').onsubmit = sendMessage;
-        const shareBtn = container.querySelector('#share-room-btn');
-        if(shareBtn) shareBtn.onclick = () => shareRoom(roomData.id);
+        container.querySelector('#attach-media-btn').onclick = () => document.getElementById('media-uploader').click();
+        
+        const audioBtn = container.querySelector('#audio-record-btn');
+        audioBtn.addEventListener('mousedown', startRecording);
+        audioBtn.addEventListener('mouseup', stopRecording);
+        audioBtn.addEventListener('touchstart', startRecording, { passive: false });
+        audioBtn.addEventListener('touchend', stopRecording);
+
         const roomSettingsBtn = container.querySelector('#room-settings-btn');
         if (roomSettingsBtn) roomSettingsBtn.onclick = openRoomSettings;
         container.querySelector('.chat-input').oninput = handleTyping;
@@ -811,25 +934,69 @@
 
     function subscribeToMessages(roomId, container) {
         if(state.unsubscribeMessages) state.unsubscribeMessages();
+        if(state.readReceiptObserver) state.readReceiptObserver.disconnect();
         const q = query(collection(db, `rooms/${roomId}/messages`), orderBy('createdAt', 'asc'));
         state.unsubscribeMessages = onSnapshot(q, snapshot => {
             if(!container) return;
             let lastSenderId = null;
             const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
-
             container.innerHTML = snapshot.docs.map(doc => {
                 const msg = doc.data();
                 const sentByMe = msg.senderId === state.currentUserId;
                 const showSender = msg.senderId !== lastSenderId && !sentByMe;
                 lastSenderId = msg.senderId;
-                return `<div class="flex flex-col w-full ${sentByMe ? 'items-end' : 'items-start'}">
+                let contentHtml = '';
+                if(msg.type === 'image') {
+                    contentHtml = `<img src="${msg.mediaUrl}" class="chat-image rounded-lg max-w-xs max-h-64 object-cover cursor-pointer" data-src="${msg.mediaUrl}" />`;
+                } else if (msg.type === 'video') {
+                    contentHtml = `<video src="${msg.mediaUrl}" class="rounded-lg max-w-xs max-h-64" controls></video>`;
+                } else if (msg.type === 'audio') {
+                    contentHtml = `<audio src="${msg.mediaUrl}" controls class="max-w-xs"></audio>`;
+                } else {
+                    contentHtml = `<div class="max-w-[75%] p-3 rounded-lg ${sentByMe ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-200'}">${msg.content}</div>`;
+                }
+                let seenHtml = '';
+                if(sentByMe) {
+                    const allMembers = state.currentRoomData?.members || [];
+                    const seenByCount = Object.keys(msg.seenBy || {}).length;
+                    const allHaveSeen = seenByCount >= allMembers.length - 1;
+                    const seenColor = allHaveSeen ? 'text-blue-400' : 'text-gray-400';
+                    seenHtml = `<svg class="seen-icon ${seenColor}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
+                }
+                return `<div class="flex flex-col w-full ${sentByMe ? 'items-end' : 'items-start'} message-item" data-id="${doc.id}">
                     ${showSender ? `<div class="text-xs text-gray-500 mb-1 px-1">${msg.senderName || 'Usuário'}</div>` : ''}
-                    <div class="max-w-[75%] p-3 rounded-lg ${sentByMe ? 'bg-blue-500 text-white' : 'bg-gray-200'}">${msg.content}</div>
+                    <div class="flex items-center">
+                        ${contentHtml}
+                        ${sentByMe ? seenHtml : ''}
+                    </div>
                 </div>`;
             }).join('');
-
-            if (isScrolledToBottom) {
-                 container.scrollTop = container.scrollHeight;
+            container.querySelectorAll('.chat-image').forEach(img => {
+                img.onclick = () => openImageViewer(img.dataset.src);
+            });
+            setupReadReceipts(snapshot.docs);
+            if (isScrolledToBottom) { container.scrollTop = container.scrollHeight; }
+        });
+    }
+    
+    function setupReadReceipts(messageDocs) {
+        if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
+        const observerCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const messageId = entry.target.dataset.id;
+                    const messageRef = doc(db, `rooms/${state.currentRoomData.id}/messages`, messageId);
+                    updateDoc(messageRef, { [`seenBy.${state.currentUserId}`]: true });
+                    observer.unobserve(entry.target);
+                }
+            });
+        };
+        state.readReceiptObserver = new IntersectionObserver(observerCallback, { threshold: 0.8 });
+        messageDocs.forEach(messageDoc => {
+            const messageData = messageDoc.data();
+            if (messageData.senderId !== state.currentUserId && !(messageData.seenBy && messageData.seenBy[state.currentUserId])) {
+                const el = document.querySelector(`.message-item[data-id="${messageDoc.id}"]`);
+                if(el) state.readReceiptObserver.observe(el);
             }
         });
     }
@@ -837,20 +1004,94 @@
     async function sendMessage(e) {
         e.preventDefault();
         const input = e.target.querySelector('.chat-input');
-        const text = input.value.trim();
-        if(!text) return;
+        const text = input.value;
+        if(!text.trim()) return;
         input.value = '';
+
+        const roomId = state.currentRoomData.id;
+        const batch = writeBatch(db);
+        const roomRef = doc(db, 'rooms', roomId);
+        const newMsgRef = doc(collection(db, `rooms/${roomId}/messages`));
+
+        batch.set(newMsgRef, {
+            content: text, type: 'text', senderId: state.currentUserId, 
+            senderName: state.currentUserData.username,
+            senderPhoto: state.currentUserData.photoURL,
+            seenBy: {}, createdAt: serverTimestamp()
+        });
+
+        batch.update(roomRef, { 
+            lastMessage: {
+                text: text.substring(0, 40),
+                senderId: state.currentUserId,
+                senderName: state.currentUserData.username,
+                senderPhoto: state.currentUserData.photoURL,
+                createdAt: serverTimestamp()
+            }
+        });
+
+        await batch.commit();
         
         const userTypingRef = doc(db, 'rooms', state.currentRoomData.id);
         await updateDoc(userTypingRef, { typing: arrayRemove({uid: state.currentUserId, name: state.currentUserData.username}) });
         clearTimeout(state.typingTimeout);
+    }
+    
+    async function sendAudioMessage(url, duration) {
+        if(!state.currentRoomData) return;
+        const roomId = state.currentRoomData.id;
+        const batch = writeBatch(db);
+        const roomRef = doc(db, 'rooms', roomId);
+        const newMsgRef = doc(collection(db, `rooms/${roomId}/messages`));
+        const contentText = `🎤 Áudio (${duration}s)`;
 
-        await addDoc(collection(db, `rooms/${state.currentRoomData.id}/messages`), {
-            content: text, 
-            senderId: state.currentUserId, 
-            senderName: state.currentUserData.username, 
-            createdAt: serverTimestamp()
+        batch.set(newMsgRef, {
+            type: 'audio', mediaUrl: url, duration: duration, 
+            senderId: state.currentUserId, senderName: state.currentUserData.username,
+            senderPhoto: state.currentUserData.photoURL,
+            seenBy: {}, createdAt: serverTimestamp()
         });
+
+        batch.update(roomRef, { 
+            lastMessage: {
+                text: contentText,
+                senderId: state.currentUserId,
+                senderName: state.currentUserData.username,
+                senderPhoto: state.currentUserData.photoURL,
+                createdAt: serverTimestamp()
+            }
+        });
+        
+        await batch.commit();
+    }
+
+
+    async function sendMediaMessage(type, url, fileName) {
+        if(!state.currentRoomData) return;
+        const roomId = state.currentRoomData.id;
+        const batch = writeBatch(db);
+        const roomRef = doc(db, 'rooms', roomId);
+        const newMsgRef = doc(collection(db, `rooms/${roomId}/messages`));
+        const contentText = type === 'image' ? '📷 Imagem' : '📹 Vídeo';
+
+        batch.set(newMsgRef, {
+            type: type, mediaUrl: url, fileName: fileName, 
+            senderId: state.currentUserId, senderName: state.currentUserData.username,
+            senderPhoto: state.currentUserData.photoURL,
+            seenBy: {}, createdAt: serverTimestamp()
+        });
+
+        batch.update(roomRef, { 
+            lastMessage: {
+                text: contentText,
+                senderId: state.currentUserId,
+                senderName: state.currentUserData.username,
+                senderPhoto: state.currentUserData.photoURL,
+                createdAt: serverTimestamp()
+            }
+        });
+        
+        await batch.commit();
     }
 
     function shareRoom(roomId) {
@@ -858,10 +1099,8 @@
         const input = document.getElementById('share-link-input');
         const copyBtn = document.getElementById('copy-link-btn');
         const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-        
         input.value = link;
         modal.classList.remove('hidden');
-
         copyBtn.onclick = () => {
              if (navigator.clipboard) {
                  navigator.clipboard.writeText(link).then(() => {
@@ -872,7 +1111,6 @@
         };
     }
 
-    // --- INDICADOR DE "DIGITANDO" ---
     function handleTyping() {
         if(!state.currentRoomData) return;
         const userTypingRef = doc(db, 'rooms', state.currentRoomData.id);
@@ -886,100 +1124,140 @@
     function updateTypingIndicator(typingUsers) {
         const chatPanel = document.getElementById('chat-panel');
         const guestPanel = document.getElementById('guest-container');
-        const container = chatPanel.dataset.currentRoomId ? chatPanel.querySelector('.typing-indicator-container') : guestPanel.querySelector('.typing-indicator-container');
-
+        const container = chatPanel?.dataset.currentRoomId ? chatPanel.querySelector('.typing-indicator-container') : guestPanel.querySelector('.typing-indicator-container');
         if (!container) return;
         const otherTypingUsers = (typingUsers || []).filter(u => u.uid !== state.currentUserId);
-        
-        if (otherTypingUsers.length === 0) {
-            container.innerHTML = '';
-        } else {
+        if (otherTypingUsers.length === 0) { container.innerHTML = ''; } 
+        else {
             const names = otherTypingUsers.map(u => u.name.split(' ')[0]).join(', ');
             const verb = otherTypingUsers.length > 1 ? 'estão' : 'está';
-            container.innerHTML = `<div class="flex items-center space-x-2">
-                <div class="typing-indicator"><span></span><span></span><span></span></div>
-                <p>${names} ${verb} digitando...</p>
-            </div>`;
+            container.innerHTML = `<p>${names} ${verb} digitando...</p>`;
         }
     }
+    
+    function openUserSettings() {
+        const modal = document.getElementById('user-settings-modal');
+        modal.classList.remove('hidden');
+        document.getElementById('user-settings-pic').src = state.currentUserData.photoURL;
+        const nameInput = document.getElementById('user-settings-name');
+        nameInput.value = state.currentUserData.username;
+        document.getElementById('logout-btn').onclick = () => {
+            document.getElementById('user-settings-modal').classList.add('hidden');
+            signOut(auth);
+        };
+        const notificationsSection = document.getElementById('notifications-section');
+        notificationsSection.style.display = state.currentUserData.isGuest ? 'none' : 'block';
+        document.getElementById('enable-notifications-btn').onclick = setupPushNotifications;
+        document.getElementById('user-settings-pic').parentElement.onclick = () => {
+             state.imageUploadContext = { type: 'user' };
+             document.getElementById('image-uploader').click();
+        };
+        nameInput.onblur = async () => {
+            let newName = nameInput.value.trim();
+            if (state.currentUserData.isGuest) {
+                const guestPrefix = "Convidado: ";
+                let rawName = newName.startsWith(guestPrefix) ? newName.substring(guestPrefix.length) : newName;
+                rawName = rawName.trim();
 
+                if (!rawName) {
+                    nameInput.value = state.currentUserData.username;
+                    showNotification("O nome de convidado não pode ser vazio.", "error");
+                    return;
+                }
+                newName = guestPrefix + rawName;
+            }
 
-    // --- LÓGICA DE BUSCA E AMIGOS ---
+            if (newName && newName !== state.currentUserData.username) {
+                const updateData = { username: newName };
+                if (state.currentUserData.isGuest) {
+                    updateData.guest_name_lowercase = newName.replace("Convidado: ", "").trim().toLowerCase();
+                } else {
+                    updateData.username_lowercase = newName.toLowerCase();
+                }
+                await updateDoc(doc(db, 'users', state.currentUserId), updateData);
+                showNotification("Nome atualizado!");
+            }
+            nameInput.value = newName;
+        };
+    }
+
     function openUserSearch() {
         const modal = document.getElementById('user-search-modal');
         modal.classList.remove('hidden');
         const searchInput = document.getElementById('user-search-input');
         const resultsContainer = document.getElementById('user-search-results');
         let searchTimeout;
-
-        searchInput.onkeyup = () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                if (!searchTerm) {
-                    resultsContainer.innerHTML = ''; return;
-                }
-                const q = query(collection(db, 'users'), where('username_lowercase', '>=', searchTerm), where('username_lowercase', '<=', searchTerm + '\uf8ff'));
-                const querySnapshot = await getDocs(q);
-                resultsContainer.innerHTML = querySnapshot.empty
-                    ? `<p class="p-4 text-center text-gray-500">Nenhum usuário encontrado.</p>`
-                    : querySnapshot.docs.map(doc => {
-                        const user = doc.data();
-                        if(user.uid === state.currentUserId) return '';
-                        
-                        return `<div class="p-3 flex items-center hover:bg-gray-100 cursor-pointer user-search-item" data-user-id="${user.uid}" data-username="${user.username}" data-user-photo="${user.photoURL}">
-                            <div class="w-10 h-10 rounded-full overflow-hidden mr-3"><img src="${user.photoURL}" class="w-full h-full object-cover"></div>
-                            <span>${user.username}</span>
-                        </div>`;
-                    }).join('');
-                
-                document.querySelectorAll('.user-search-item').forEach(item => {
-                    item.onclick = async () => {
-                        const targetUserId = item.dataset.userId;
-                        const roomMembers = [state.currentUserId, targetUserId].sort();
-                        const roomId = `dm_${roomMembers.join('_')}`;
-                        const roomRef = doc(db, 'rooms', roomId);
-                        
-                        const docSnap = await getDoc(roomRef);
-                        if (!docSnap.exists()) {
-                            await setDoc(roomRef, {
-                                isDirectMessage: true,
-                                members: roomMembers,
-                                admins: roomMembers, // FIX: Added admins array
-                                memberDetails: {
-                                    [state.currentUserId]: state.currentUserData.username,
-                                    [targetUserId]: item.dataset.username
-                                },
-                                memberPhotos: {
-                                    [state.currentUserId]: state.currentUserData.photoURL,
-                                    [targetUserId]: item.dataset.userPhoto
-                                },
-                                typing: [],
-                                createdAt: serverTimestamp()
-                            });
-                        }
-                        modal.classList.add('hidden');
-                        searchInput.value = '';
-                        resultsContainer.innerHTML = '';
-                        openRoom(roomId);
-                    };
-                });
-            }, 300);
+        const performSearch = async () => {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            if (!searchTerm) { resultsContainer.innerHTML = ''; return; }
+            const regularSearch = query(collection(db, 'users'), where('username_lowercase', '>=', searchTerm), where('username_lowercase', '<=', searchTerm + '\uf8ff'));
+            const guestSearch = query(collection(db, 'users'), where('guest_name_lowercase', '>=', searchTerm), where('guest_name_lowercase', '<=', searchTerm + '\uf8ff'));
+            const [regularResults, guestResults] = await Promise.all([getDocs(regularSearch), getDocs(guestSearch)]);
+            const combinedResults = new Map();
+            regularResults.forEach(doc => combinedResults.set(doc.id, doc.data()));
+            guestResults.forEach(doc => combinedResults.set(doc.id, doc.data()));
+            const me = state.currentUserData;
+            resultsContainer.innerHTML = combinedResults.size === 0
+                ? `<p class="p-4 text-center text-gray-500">Nenhum usuário encontrado.</p>`
+                : [...combinedResults.values()].map(user => {
+                    if (user.uid === state.currentUserId) return '';
+                    const isFriend = me.friends?.includes(user.uid);
+                    const hasPendingRequestToMe = me.friendRequests?.some(req => req.from === user.uid);
+                    const hasIPendingRequestToThem = user.friendRequests?.some(req => req.from === state.currentUserId);
+                    let actionButton = '';
+                    if (isFriend) {
+                        actionButton = `<button class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-md" disabled>Amigo</button>`;
+                    } else if (hasPendingRequestToMe || hasIPendingRequestToThem) {
+                        actionButton = `<button class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-md" disabled>Pendente</button>`;
+                    } else if (!me.isGuest) {
+                        actionButton = `<button class="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-md add-friend-btn" data-user-id="${user.uid}">Adicionar</button>`;
+                    }
+                    return `<div class="p-3 flex items-center hover:bg-gray-700 rounded-lg">
+                        <div class="flex-1 flex items-center space-x-3 cursor-pointer user-chat-opener" data-user-id="${user.uid}" data-username="${user.username}" data-user-photo="${user.photoURL}">
+                            <div class="w-10 h-10 rounded-full overflow-hidden"><img src="${user.photoURL}" class="w-full h-full object-cover"></div>
+                            <span class="text-gray-200">${user.username}</span>
+                        </div>
+                        ${actionButton}
+                    </div>`;
+                }).join('');
+            document.querySelectorAll('.add-friend-btn').forEach(btn => {
+                btn.onclick = (e) => { e.stopPropagation(); sendFriendRequest(btn.dataset.userId); };
+            });
+            document.querySelectorAll('.user-chat-opener').forEach(item => {
+                item.onclick = async () => {
+                    const targetUserId = item.dataset.userId;
+                    try {
+                        await createOrGetDirectMessageRoom(targetUserId, item.dataset.username, item.dataset.userPhoto);
+                        modal.classList.add('hidden'); searchInput.value = ''; resultsContainer.innerHTML = '';
+                    } catch (error) { showNotification("Não foi possível iniciar a conversa."); }
+                };
+            });
         };
+        searchInput.onkeyup = () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(performSearch, 300); };
     }
     
-    // --- FUNÇÕES DE AMIZADE ---
+    async function createOrGetDirectMessageRoom(targetUserId, targetUsername, targetUserPhoto) {
+        const roomMembers = [state.currentUserId, targetUserId].sort();
+        const roomId = `dm_${roomMembers.join('_')}`;
+        const roomRef = doc(db, 'rooms', roomId);
+        const docSnap = await getDoc(roomRef);
+        if (!docSnap.exists()) {
+            await setDoc(roomRef, {
+                isDirectMessage: true, members: roomMembers, admins: roomMembers, 
+                memberDetails: { [state.currentUserId]: state.currentUserData.username, [targetUserId]: targetUsername },
+                memberPhotos: { [state.currentUserId]: state.currentUserData.photoURL, [targetUserId]: targetUserPhoto },
+                typing: [], createdAt: serverTimestamp()
+            });
+        }
+        openRoom(roomId);
+    }
+
     async function sendFriendRequest(targetUserId) {
         const targetUserRef = doc(db, 'users', targetUserId);
-        const request = {
-            from: state.currentUserId,
-            username: state.currentUserData.username,
-            photoURL: state.currentUserData.photoURL,
-            timestamp: Timestamp.now()
-        };
-        await updateDoc(targetUserRef, {
-            friendRequests: arrayUnion(request)
-        });
+        const request = { from: state.currentUserId, username: state.currentUserData.username, photoURL: state.currentUserData.photoURL, timestamp: Timestamp.now() };
+        await updateDoc(targetUserRef, { friendRequests: arrayUnion(request) });
+        const searchInput = document.getElementById('user-search-input');
+        if(searchInput) searchInput.dispatchEvent(new Event('keyup'));
         showNotification('Pedido de amizade enviado!');
     }
     
@@ -988,73 +1266,49 @@
         modal.classList.remove('hidden');
         const listContainer = document.getElementById('friend-requests-list');
         const requests = state.currentUserData.friendRequests || [];
-
-        if (requests.length === 0) {
-            listContainer.innerHTML = `<p class="p-4 text-center text-gray-500">Nenhum pedido de amizade.</p>`;
-            return;
-        }
-        
-        const requestUserIds = requests.map(req => req.from);
-        if (requestUserIds.length === 0) return;
-
-        const usersQuery = query(collection(db, 'users'), where('uid', 'in', requestUserIds));
-        const usersSnap = await getDocs(usersQuery);
-        const usersData = {};
-        usersSnap.forEach(doc => {
-            usersData[doc.id] = doc.data();
-        });
-
+        if (requests.length === 0) { listContainer.innerHTML = `<p class="p-4 text-center text-gray-500">Nenhum pedido de amizade.</p>`; return; }
         listContainer.innerHTML = requests.map(req => {
-            const requester = usersData[req.from];
-            if (!requester) return '';
-
-            return `
-            <div class="p-3 flex items-center border-b">
-                <div class="w-10 h-10 rounded-full overflow-hidden mr-3"><img src="${requester.photoURL}" class="w-full h-full object-cover"></div>
-                <span class="flex-1">${requester.username}</span>
+            return `<div class="p-3 flex items-center border-b border-gray-700">
+                <div class="w-10 h-10 rounded-full overflow-hidden mr-3"><img src="${req.photoURL}" class="w-full h-full object-cover"></div>
+                <span class="flex-1">${req.username}</span>
                 <button class="bg-green-500 text-white px-3 py-1 rounded-md mr-2 accept-friend-btn" data-requester-id="${req.from}">Aceitar</button>
                 <button class="bg-red-500 text-white px-3 py-1 rounded-md decline-friend-btn" data-requester-id="${req.from}">Recusar</button>
-            </div>
-        `}).join('');
-
+            </div>`;
+        }).join('');
         document.querySelectorAll('.accept-friend-btn').forEach(btn => {
             btn.onclick = async () => {
                 const requesterId = btn.dataset.requesterId;
                 const batch = writeBatch(db);
-
                 batch.update(doc(db, 'users', state.currentUserId), { friends: arrayUnion(requesterId) });
                 batch.update(doc(db, 'users', requesterId), { friends: arrayUnion(state.currentUserId) });
-                
                 const myRequestList = state.currentUserData.friendRequests.filter(r => r.from !== requesterId);
                 batch.update(doc(db, 'users', state.currentUserId), { friendRequests: myRequestList });
-                
                 await batch.commit();
                 showNotification("Amigo adicionado!");
-                openFriendRequestsModal(); 
+                modal.classList.add('hidden');
             };
         });
-
         document.querySelectorAll('.decline-friend-btn').forEach(btn => {
             btn.onclick = async () => {
                 const requesterId = btn.dataset.requesterId;
                 const myRequestList = state.currentUserData.friendRequests.filter(r => r.from !== requesterId);
                 await updateDoc(doc(db, 'users', state.currentUserId), { friendRequests: myRequestList });
                 showNotification("Pedido recusado.");
-                openFriendRequestsModal();
+                modal.classList.add('hidden');
             };
         });
     }
 
-    // --- LÓGICA DE CONFIGURAÇÕES DA SALA ---
     async function openRoomSettings() {
         const modal = document.getElementById('room-settings-modal');
         modal.classList.remove('hidden');
         const room = state.currentRoomData;
-        
-        document.getElementById('room-settings-pic').src = room.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(room.name)}&background=A78BFA&color=fff&size=40`;
+        const addMemberSection = document.getElementById('add-member-section');
+        addMemberSection.classList.toggle('hidden', room.isDirectMessage);
+        document.getElementById('add-member-btn').onclick = openAddMemberModal;
+        document.getElementById('room-settings-pic').src = room.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(room.name[0] || '?')}&background=A78BFA&color=fff&size=40`;
         const nameInput = document.getElementById('room-settings-name');
         nameInput.value = room.name;
-
         nameInput.onblur = async () => {
             const newName = nameInput.value.trim();
             if (newName && newName !== state.currentRoomData.name) {
@@ -1062,38 +1316,33 @@
                 showNotification("Nome da sala atualizado!");
             }
         };
-
-        document.getElementById('room-settings-pic').onclick = () => {
+        document.getElementById('room-settings-pic').parentElement.onclick = () => {
             state.imageUploadContext = { type: 'room', id: room.id };
             document.getElementById('image-uploader').click();
         };
         document.getElementById('clear-chat-btn').onclick = async () => {
              if(await showCustomConfirm('Limpar Mensagens', `Tem certeza que deseja apagar TODAS as mensagens da sala "${room.name}"? Esta ação não pode ser desfeita.`)) {
-                await clearChatForEveryone(room.id);
+                 await clearChatForEveryone(room.id);
              }
         };
-        
         const membersList = document.getElementById('room-members-list');
-        membersList.innerHTML = `<p>Carregando membros...</p>`;
+        membersList.innerHTML = `<p>A carregar membros...</p>`;
         const usersQuery = query(collection(db, 'users'), where('uid', 'in', room.members));
         const usersSnapshot = await getDocs(usersQuery);
         const usersData = usersSnapshot.docs.map(d => d.data());
-
         membersList.innerHTML = usersData.map(user => {
             const isAdmin = room.admins.includes(user.uid);
             let userActions = '';
             if (user.uid !== room.creatorUid && room.admins.includes(state.currentUserId)) {
-                userActions += `<button class="ml-auto px-3 py-1 text-sm rounded-md ${isAdmin ? 'bg-yellow-500 text-white' : 'bg-gray-200'} admin-toggle-btn" data-uid="${user.uid}">${isAdmin ? 'Rebaixar' : 'Promover'}</button>`;
-                userActions += `<button class="ml-2 px-3 py-1 text-sm rounded-md bg-red-500 text-white remove-user-btn" data-uid="${user.uid}" data-username="${user.username}">&times;</button>`;
+                userActions += `<button class="ml-auto px-3 py-1 text-sm rounded-md ${isAdmin ? 'bg-yellow-500 text-white' : 'bg-gray-600'} admin-toggle-btn" data-uid="${user.uid}">${isAdmin ? 'Rebaixar' : 'Promover'}</button>`;
+                userActions += `<button class="ml-2 px-3 py-1 text-sm rounded-md bg-red-600 text-white remove-user-btn" data-uid="${user.uid}" data-username="${user.username}">&times;</button>`;
             }
-
-            return `<div class="flex items-center p-2 rounded-lg hover:bg-gray-50">
+            return `<div class="flex items-center p-2 rounded-lg hover:bg-gray-700">
                 <div class="w-8 h-8 rounded-full overflow-hidden mr-3"><img src="${user.photoURL}" class="w-full h-full object-cover"></div>
-                <span class="flex-1">${user.username} ${user.uid === state.currentUserId ? '(Você)' : ''} ${user.uid === room.creatorUid ? '<span class="text-xs text-yellow-600 font-bold">Dono</span>' : ''}</span>
+                <span class="flex-1">${user.username} ${user.uid === state.currentUserId ? '(Você)' : ''} ${user.uid === room.creatorUid ? '<span class="text-xs text-yellow-400 font-bold">Dono</span>' : ''}</span>
                 <div class="flex items-center space-x-2">${userActions}</div>
             </div>`
         }).join('');
-        
         membersList.querySelectorAll('.admin-toggle-btn').forEach(btn => {
             btn.onclick = async () => {
                 const targetUid = btn.dataset.uid;
@@ -1108,12 +1357,39 @@
                 const targetUid = btn.dataset.uid;
                 const targetUsername = btn.dataset.username;
                  if (await showCustomConfirm('Remover Usuário', `Tem certeza que deseja remover ${targetUsername} da sala?`)) {
-                    await updateDoc(doc(db, 'rooms', room.id), { 
-                        members: arrayRemove(targetUid),
-                        admins: arrayRemove(targetUid)
-                    });
-                    showNotification(`${targetUsername} foi removido(a) da sala.`);
+                     await updateDoc(doc(db, 'rooms', room.id), { members: arrayRemove(targetUid), admins: arrayRemove(targetUid) });
+                     showNotification(`${targetUsername} foi removido(a) da sala.`);
                  }
+            };
+        });
+    }
+
+    async function openAddMemberModal() {
+        const modal = document.getElementById('add-member-modal');
+        modal.classList.remove('hidden');
+        const listContainer = document.getElementById('add-member-list');
+        listContainer.innerHTML = `<p>A carregar amigos...</p>`;
+        const friends = state.currentUserData.friends || [];
+        const currentMembers = state.currentRoomData.members || [];
+        const friendsToAdd = friends.filter(id => !currentMembers.includes(id));
+        if (friendsToAdd.length === 0) { listContainer.innerHTML = `<p class="p-4 text-center text-gray-500">Todos os seus amigos já estão neste grupo.</p>`; return; }
+        const usersQuery = query(collection(db, 'users'), where('uid', 'in', friendsToAdd));
+        const usersSnap = await getDocs(usersQuery);
+        listContainer.innerHTML = usersSnap.docs.map(doc => {
+            const user = doc.data();
+            return `<div class="p-3 flex items-center border-b border-gray-700">
+                <div class="w-10 h-10 rounded-full overflow-hidden mr-3"><img src="${user.photoURL}" class="w-full h-full object-cover"></div>
+                <span class="flex-1">${user.username}</span>
+                <button class="bg-blue-500 text-white px-3 py-1 rounded-md add-to-group-btn" data-user-id="${user.uid}">Adicionar</button>
+            </div>`;
+        }).join('');
+        listContainer.querySelectorAll('.add-to-group-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const userId = btn.dataset.userId;
+                await updateDoc(doc(db, 'rooms', state.currentRoomData.id), { members: arrayUnion(userId) });
+                showNotification("Membro adicionado!");
+                btn.disabled = true;
+                btn.textContent = 'Adicionado';
             };
         });
     }
@@ -1130,41 +1406,15 @@
         document.getElementById('room-settings-modal').classList.add('hidden');
     }
     
-    // --- FUNÇÃO DE LIMPEZA DE MENSAGENS ANTIGAS (SIMULADO) ---
-    async function deleteOldMessages() {
-        document.getElementById('loading-overlay').classList.remove('hidden');
-        showNotification("Iniciando limpeza de mensagens antigas...");
-        const twentyFourHoursAgo = Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
-        const roomsRef = collection(db, 'rooms');
-        const roomsSnap = await getDocs(roomsRef);
-        let deletedCount = 0;
-
-        for (const roomDoc of roomsSnap.docs) {
-            const messagesRef = collection(db, `rooms/${roomDoc.id}/messages`);
-            const q = query(messagesRef, where("createdAt", "<", twentyFourHoursAgo));
-            const oldMessagesSnap = await getDocs(q);
-            if (!oldMessagesSnap.empty) {
-                const batch = writeBatch(db);
-                oldMessagesSnap.forEach(doc => batch.delete(doc.ref));
-                await batch.commit();
-                deletedCount += oldMessagesSnap.size;
-            }
-        }
-        document.getElementById('loading-overlay').classList.add('hidden');
-        showNotification(`${deletedCount} mensagens antigas foram apagadas.`);
-    }
-
-    // --- UTILITÁRIOS ---
     function openImageViewer(src, { isUser = false, isRoom = false, isAdmin = false } = {}) {
         const modal = document.getElementById('image-viewer-modal');
         document.getElementById('image-viewer-pic').src = src;
         const actionsContainer = document.getElementById('image-viewer-actions');
         actionsContainer.innerHTML = '';
-
         if ((isUser) || (isRoom && isAdmin)) {
             const changeButton = document.createElement('button');
             changeButton.className = 'p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-lg';
-            changeButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`;
+            changeButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2-2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`;
             changeButton.onclick = () => {
                 state.imageUploadContext = { type: isUser ? 'user' : 'room', id: isUser ? state.currentUserId : state.currentRoomData.id };
                 document.getElementById('image-uploader').click();
@@ -1175,190 +1425,272 @@
         modal.classList.remove('hidden');
     }
 
-    function showNotification(message) {
+    async function handleMediaUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const isProfileUpload = state.imageUploadContext?.type;
+        if (!isProfileUpload && !state.currentRoomData) {
+            showNotification("Você precisa estar em uma sala para enviar mídias.", "error");
+            return;
+        }
+        document.getElementById('loading-overlay').classList.remove('hidden');
+        const fileType = file.type.startsWith('image/') ? 'image' : (file.type.startsWith('video/') ? 'video' : null);
+        
+        if (isProfileUpload) {
+            if (fileType !== 'image') {
+                showNotification("Apenas imagens são permitidas para fotos de perfil.", "error");
+                document.getElementById('loading-overlay').classList.add('hidden');
+                return;
+            }
+            const { type, id } = state.imageUploadContext;
+            const path = `${type}_photos/${id || state.currentUserId}/${Date.now()}_${file.name}`;
+            try {
+                const fileRef = storageRef(storage, path);
+                await uploadBytes(fileRef, file);
+                const downloadURL = await getDownloadURL(fileRef);
+                if (type === 'user') {
+                    await updateDoc(doc(db, 'users', state.currentUserId), { photoURL: downloadURL });
+                    showNotification("Foto de perfil atualizada!");
+                } else if (type === 'room') {
+                    await updateDoc(doc(db, 'rooms', id), { photoURL: downloadURL });
+                    showNotification("Foto da sala atualizada!");
+                }
+            } catch (error) { showNotification("Falha ao atualizar a foto.", "error"); }
+        } else {
+            if (!fileType) {
+                showNotification("Tipo de arquivo não suportado.", "error");
+                document.getElementById('loading-overlay').classList.add('hidden');
+                return;
+            }
+            const path = `chat_media/${state.currentRoomData.id}/${Date.now()}_${file.name}`;
+            try {
+                const fileRef = storageRef(storage, path);
+                await uploadBytes(fileRef, file);
+                const downloadURL = await getDownloadURL(fileRef);
+                await sendMediaMessage(fileType, downloadURL, file.name);
+            } catch (error) { showNotification("Falha ao enviar mídia.", "error"); }
+        }
+        document.getElementById('loading-overlay').classList.add('hidden');
+        state.imageUploadContext = null;
+        e.target.value = '';
+    }
+
+    function setupPresenceSystem() {
+       if (!auth.currentUser || auth.currentUser.isAnonymous) return;
+       const myUid = auth.currentUser.uid;
+       const userStatusRef = rtdbRef(rtdb, 'status/' + myUid);
+       const isOfflineForRTDB = { state: 'offline', last_changed: rtdbServerTimestamp() };
+       const isOnlineForRTDB = { state: 'online', last_changed: rtdbServerTimestamp() };
+       onValue(rtdbRef(rtdb, '.info/connected'), (snapshot) => {
+           if (snapshot.val() === false) { set(userStatusRef, isOfflineForRTDB); return; }
+           onDisconnect(userStatusRef).set(isOfflineForRTDB).then(() => { set(userStatusRef, isOnlineForRTDB); });
+       });
+    }
+    
+    async function setupPushNotifications() {
+        if (!messaging) {
+            const statusEl = document.getElementById('notifications-status');
+            if (statusEl) statusEl.textContent = 'Notificações não suportadas neste ambiente.';
+            return;
+        }
+
+        const statusEl = document.getElementById('notifications-status');
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                if (statusEl) statusEl.textContent = 'Notificações ativadas.';
+                const vapidKey = "BBo4U4SIypBpGZvoVaAXWee9fmBOEsl8ck9GzYiGF0s7mQaUm5l3Mc0tDGA-zb6VzhJpAIeQXgD4t4AgANHj8Z0";
+                const currentToken = await getToken(messaging, { vapidKey: vapidKey });
+
+                if (currentToken) {
+                    await updateDoc(doc(db, 'users', state.currentUserId), {
+                        fcmTokens: arrayUnion(currentToken)
+                    });
+                    console.log('Token de notificação salvo:', currentToken);
+                } else {
+                    if (statusEl) statusEl.textContent = 'Falha ao obter token. Tente novamente.';
+                }
+            } else {
+                if (statusEl) statusEl.textContent = 'Permissão para notificações negada.';
+            }
+        } catch (err) {
+            console.error('Ocorreu um erro ao configurar as notificações.', err);
+            if (statusEl) statusEl.textContent = 'Erro ao ativar notificações.';
+        }
+
+        onMessage(messaging, (payload) => {
+            console.log('Mensagem recebida em primeiro plano. ', payload);
+            showNotification(`${payload.notification.title}: ${payload.notification.body}`);
+        });
+    }
+
+
+    function showNotification(message, type = 'success') {
         const toast = document.getElementById('notification-toast');
         toast.textContent = message;
+        toast.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl z-[101] ${type === 'success' ? 'bg-blue-500' : 'bg-red-500'}`;
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 3000);
     }
-    
+
     function showCustomConfirm(title, message) {
         return new Promise(resolve => {
             const modal = document.getElementById('custom-confirm-modal');
             document.getElementById('custom-confirm-title').textContent = title;
             document.getElementById('custom-confirm-message').textContent = message;
             modal.classList.remove('hidden');
-
-            const onOk = () => {
+            const onOk = () => { cleanup(); resolve(true); };
+            const onCancel = () => { cleanup(); resolve(false); };
+            const cleanup = () => {
                 modal.classList.add('hidden');
                 document.getElementById('custom-confirm-ok-btn').removeEventListener('click', onOk);
                 document.getElementById('custom-confirm-cancel-btn').removeEventListener('click', onCancel);
-                resolve(true);
             };
-            const onCancel = () => {
-                modal.classList.add('hidden');
-                document.getElementById('custom-confirm-ok-btn').removeEventListener('click', onOk);
-                document.getElementById('custom-confirm-cancel-btn').removeEventListener('click', onCancel);
-                resolve(false);
-            };
-
             document.getElementById('custom-confirm-ok-btn').addEventListener('click', onOk);
             document.getElementById('custom-confirm-cancel-btn').addEventListener('click', onCancel);
         });
     }
 
-    function showCustomPrompt() {
+    function showCustomPrompt(title, message) {
         return new Promise(resolve => {
             const modal = document.getElementById('custom-prompt-modal');
+            document.getElementById('custom-prompt-title').textContent = title;
+            document.getElementById('custom-prompt-message').textContent = message;
             const input = document.getElementById('custom-prompt-input');
             input.value = '';
-            modal.classList.remove('hidden');
-            input.focus();
-
+            modal.classList.remove('hidden'); input.focus();
             const submit = () => {
                 const value = input.value.trim();
-                if (value) {
-                    modal.classList.add('hidden');
-                    document.getElementById('custom-prompt-ok-btn').removeEventListener('click', submit);
-                    input.removeEventListener('keyup', onEnter);
-                    resolve(value);
-                }
+                if (value) { cleanup(value); }
             };
             const onEnter = (e) => { if (e.key === 'Enter') submit(); };
-
+            const cleanup = (value) => {
+                 modal.classList.add('hidden');
+                 document.getElementById('custom-prompt-ok-btn').removeEventListener('click', submit);
+                 input.removeEventListener('keyup', onEnter);
+                 resolve(value);
+            }
             document.getElementById('custom-prompt-ok-btn').addEventListener('click', submit);
             input.addEventListener('keyup', onEnter);
         });
     }
 
-
-    async function handleImageUpload(e) {
-        const file = e.target.files[0];
-        if (!file || !state.imageUploadContext) return;
-        document.getElementById('loading-overlay').classList.remove('hidden');
-        const { type, id } = state.imageUploadContext;
-        const path = (type === 'user') ? `profile_pics/${state.currentUserId}/${file.name}` : `room_avatars/${id}/${file.name}`;
-        const docRef = (type === 'user') ? doc(db, 'users', state.currentUserId) : doc(db, 'rooms', id);
+    async function startRecording(e) {
+        e.preventDefault();
+        if (state.isRecording) return;
+        
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showNotification("Gravação de áudio não é suportada neste navegador.", "error");
+            console.error("MediaDevices API not supported.");
+            return;
+        }
 
         try {
-            const fileRef = storageRef(storage, path);
-            await uploadBytes(fileRef, file);
-            const downloadURL = await getDownloadURL(fileRef);
-            await updateDoc(docRef, { photoURL: downloadURL });
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            state.isRecording = true;
+            state.audioChunks = [];
+            state.mediaRecorder = new MediaRecorder(stream);
 
-            if (type === 'user') {
-                state.currentUserData.photoURL = downloadURL;
-                if(document.getElementById('my-profile-pic')) document.getElementById('my-profile-pic').src = downloadURL;
-                if(document.getElementById('user-settings-pic')) document.getElementById('user-settings-pic').src = downloadURL;
-            } else if (type === 'room' && state.currentRoomData && id === state.currentRoomData.id) {
-                state.currentRoomData.photoURL = downloadURL;
-                 if(document.getElementById('room-header-pic')) document.getElementById('room-header-pic').src = downloadURL;
-                 if(document.getElementById('room-settings-pic')) document.getElementById('room-settings-pic').src = downloadURL;
-            }
+            state.mediaRecorder.ondataavailable = event => {
+                state.audioChunks.push(event.data);
+            };
 
-            showNotification("Imagem atualizada!");
-        } catch (error) {
-            console.error("Erro no upload:", error);
-            alert("Falha ao enviar imagem.");
-        } finally {
-            document.getElementById('image-uploader').value = '';
-            document.getElementById('loading-overlay').classList.add('hidden');
+            state.mediaRecorder.onstop = async () => {
+                const duration = Math.round((Date.now() - state.recordingStartTime) / 1000);
+                const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
+                
+                document.getElementById('loading-overlay').classList.remove('hidden');
+                
+                const path = `chat_audio/${state.currentRoomData.id}/${Date.now()}.webm`;
+                const fileRef = storageRef(storage, path);
+                try {
+                    await uploadBytes(fileRef, audioBlob);
+                    const downloadURL = await getDownloadURL(fileRef);
+                    await sendAudioMessage(downloadURL, duration);
+                } catch (error) {
+                    showNotification("Falha ao enviar áudio.", "error");
+                    console.error("Audio upload error:", error);
+                } finally {
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                }
+                
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            state.recordingStartTime = Date.now();
+            state.mediaRecorder.start();
+            updateRecordingUI(true);
+
+        } catch (err) {
+            console.error("Error accessing microphone:", err);
+            showNotification("Não foi possível acessar o microfone. Verifique as permissões.", "error");
         }
     }
 
-    // --- INICIA A APLICAÇÃO ---
-    main();
+    function stopRecording(e) {
+        e.preventDefault();
+        if (!state.isRecording || !state.mediaRecorder) return;
+        
+        state.mediaRecorder.stop();
+        state.isRecording = false;
+        updateRecordingUI(false);
+    }
+    
+    function updateRecordingUI(isRecording) {
+        const indicator = document.getElementById('recording-indicator');
+        const timerEl = document.getElementById('recording-timer');
+        if (!indicator || !timerEl) return;
+        if (isRecording) {
+            indicator.classList.remove('hidden');
+            indicator.classList.add('flex');
+            state.recordingTimerInterval = setInterval(() => {
+                const seconds = Math.floor((Date.now() - state.recordingStartTime) / 1000);
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                timerEl.textContent = `${mins}:${secs}`;
+            }, 1000);
+        } else {
+            indicator.classList.add('hidden');
+            indicator.classList.remove('flex');
+            clearInterval(state.recordingTimerInterval);
+            timerEl.textContent = '00:00';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', main);
 </script>
 <script>
+    // --- Lógica para ajuste de altura do viewport em celulares ---
+    function setRealViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--real-vh', `${vh}px`);
+    }
+    window.addEventListener('resize', setRealViewportHeight);
+    setRealViewportHeight(); // Executa no carregamento inicial
+
     // --- PWA Service Worker & Manifest ---
     const MANIFEST_DATA = {
-        "name": "7Chat",
-        "short_name": "7Chat",
-        "description": "Um aplicativo de chat em tempo real.",
-        "start_url": ".",
-        "scope": "/",
-        "display": "standalone",
-        "background_color": "#f3f4f6",
-        "theme_color": "#2563eb",
+        "name": "7Chat", "short_name": "7Chat", "description": "Um aplicativo de chat em tempo real.",
+        "start_url": ".", "scope": "/", "display": "standalone", "background_color": "#000000", "theme_color": "#111827",
         "icons": [
-            { "src": "https://placehold.co/192x192/2563eb/ffffff?text=7C", "sizes": "192x192", "type": "image/png" },
-            { "src": "https://placehold.co/512x512/2563eb/ffffff?text=7Chat", "sizes": "512x512", "type": "image/png" },
-            { "src": "https://placehold.co/512x512/2563eb/ffffff?text=7Chat&maskable=true", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+            { "src": "https://placehold.co/192x192/4f46e5/ffffff?text=7C", "sizes": "192x192", "type": "image/png" },
+            { "src": "https://placehold.co/512x512/4f46e5/ffffff?text=7Chat", "sizes": "512x512", "type": "image/png" },
+            { "src": "https://placehold.co/512x512/4f46e5/ffffff?text=7Chat&maskable=true", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
         ]
     };
-
     const manifestBlob = new Blob([JSON.stringify(MANIFEST_DATA)], { type: 'application/json' });
     const manifestURL = URL.createObjectURL(manifestBlob);
     const link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = manifestURL;
+    link.rel = 'manifest'; link.href = manifestURL;
     document.head.appendChild(link);
-
+    
     if ('serviceWorker' in navigator) {
-      const CACHE_NAME = '7chat-cache-v3';
-      const urlsToCache = [
-          '.',
-          'https://cdn.tailwindcss.com',
-          'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
-      ];
-
-      const swCode = `
-        const CACHE_NAME = '${CACHE_NAME}';
-        const URLS_TO_CACHE = ${JSON.stringify(urlsToCache)};
-
-        self.addEventListener('install', event => {
-          event.waitUntil(
-            caches.open(CACHE_NAME).then(cache => {
-              console.log('Opened cache');
-              return cache.addAll(URLS_TO_CACHE);
-            })
-          );
-        });
-
-        self.addEventListener('fetch', event => {
-            if (event.request.mode === 'navigate') {
-                event.respondWith(
-                    fetch(event.request).catch(() => caches.match(event.request))
-                );
-                return;
-            }
-
-            event.respondWith(
-                caches.match(event.request).then(response => {
-                    return response || fetch(event.request);
-                })
-            );
-        });
-        
-        self.addEventListener('activate', event => {
-            const cacheWhitelist = [CACHE_NAME];
-            event.waitUntil(
-                caches.keys().then(cacheNames => Promise.all(
-                    cacheNames.map(cacheName => {
-                        if (cacheWhitelist.indexOf(cacheName) === -1) {
-                            return caches.delete(cacheName);
-                        }
-                    })
-                ))
-            );
-        });
-      `;
-      
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swURL = URL.createObjectURL(blob);
-
-      window.addEventListener('load', () => {
-        function setRealViewportHeight() {
-            let vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--real-vh', `${vh}px`);
-        }
-        window.addEventListener('resize', setRealViewportHeight);
-        setRealViewportHeight();
-
-        navigator.serviceWorker.register(swURL)
-          .then(registration => console.log('ServiceWorker registration successful'))
-          .catch(err => console.log('ServiceWorker registration failed: ', err));
-      });
+        navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            .then((registration) => {
+                console.log('Service Worker registrado com sucesso:', registration);
+            }).catch((err) => {
+                console.warn('Falha no registro do Service Worker: ', err);
+            });
     }
 </script>
 </body>
