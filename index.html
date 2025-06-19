@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>7Chat - Versão Final Otimizada</title>
+    <title>7Chat - Versão Final Otimizada (Atualizado)</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1f2937"/>
@@ -15,16 +15,29 @@
 
     <link rel="icon" href="/favicon.ico" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin': 'spin 1s linear infinite',
+                        'ping': 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --real-vh: 1vh;
-        }
-        html, body {
+        }        html, body {
             height: 100vh; /* Fallback */
             height: calc(var(--real-vh, 1vh) * 100);
             overflow: hidden;
             font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
         }
         .messages-container {
             background-image: url('https://i.imgur.com/kI46opI.png');
@@ -35,15 +48,8 @@
              background-image: url('https://i.imgur.com/KAWlxJS.png');
              background-size: cover;
              background-position: center;
-        }
-        .friend-item, .room-item {
-            background-color: rgba(17, 24, 39, 0.6); /* bg-gray-900 com 60% de opacidade */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(55, 65, 81, 0.4); /* border-gray-700 com 40% de opacidade */
-        }
-        .header-blur, .form-blur {
-            background-color: rgba(17, 24, 39, 0.75);
+        }        .header-blur, .form-blur {
+            /* Backdrop blur mantido mas permitindo sobrescrita */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
@@ -64,21 +70,72 @@
         @keyframes typing-bounce {
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-6px); }
+        }        /* Badge genérico - removido estilo específico para permitir customização */
+        
+        /* Estilos modernos forçados */
+        .group:hover .group-hover\:scale-105 {
+            transform: scale(1.05) !important;
         }
-        #friend-requests-btn .badge {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: #3b82f6; /* Azul para as notificações */
-            color: white;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
+        
+        .group:hover .group-hover\:text-blue-400 {
+            color: #60a5fa !important;
+        }
+        
+        .group:hover .group-hover\:text-emerald-400 {
+            color: #34d399 !important;
+        }
+        
+        .group:hover .group-hover\:text-purple-400 {
+            color: #c084fc !important;
+        }
+        
+        .group:hover .group-hover\:text-indigo-400 {
+            color: #818cf8 !important;
+        }
+        
+        .group:hover .group-hover\:text-red-400 {
+            color: #f87171 !important;
+        }
+        
+        .group:hover .group-hover\:text-green-400 {
+            color: #4ade80 !important;
+        }
+        
+        .transition-all {
+            transition: all 0.3s ease !important;
+        }
+        
+        .hover\:scale-110:hover {
+            transform: scale(1.1) !important;
+        }
+        
+        .hover\:scale-105:hover {
+            transform: scale(1.05) !important;
+        }
+          .backdrop-blur-xl {
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+        }
+        
+        /* Estilos para mensagens */
+        .message-item {
+            margin-bottom: 0.75rem;
+        }
+        
+        .message-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Quebra de linha para mensagens longas */
+        .break-words {
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+        
+        /* Animação suave para troca de ícones */
+        #dynamic-action-btn svg {
+            transition: opacity 0.2s ease-in-out;
         }
         .seen-icon {
             width: 18px;
@@ -277,8 +334,133 @@
             <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Pedidos de Amizade</h3><button id="close-friend-requests-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
             <div id="friend-requests-list" class="max-h-60 overflow-y-auto"></div>
         </div>
-    </div>
+    </div>    <!-- Modal de Configurações da Conversa -->
+    <div id="conversation-settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[55] p-4">
+        <div class="modal-content bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-2xl shadow-2xl p-0 w-full max-w-md border border-gray-600 overflow-hidden">
+            <!-- Header do Modal -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 relative">
+                <button id="close-conversation-settings-btn" class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-all duration-200">&times;</button>
+                <h3 class="text-2xl font-bold text-white">Configurações</h3>
+                <p class="text-blue-100 text-sm mt-1">Personalize sua conversa</p>
+            </div>
+            
+            <!-- Informações do Chat -->
+            <div class="p-6 bg-gray-800/50 border-b border-gray-700">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5">
+                            <div class="w-full h-full rounded-full overflow-hidden bg-gray-800">
+                                <img id="conversation-settings-pic" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-800"></div>
+                    </div>                    <div class="flex-1 min-w-0">
+                        <h4 id="conversation-settings-name" class="text-lg font-semibold text-white truncate"></h4>
+                        <p id="conversation-settings-type" class="text-sm text-gray-400"></p>
+                        <div id="user-status-indicator" class="flex items-center space-x-2 mt-1">
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <span class="text-xs text-green-400">Online</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Opções da Conversa -->
+            <div class="p-6 space-y-4">
+                <!-- Notificações -->
+                <div class="flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 transition-all duration-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="font-medium text-white">Notificações</span>
+                            <p class="text-xs text-gray-400">Receber alertas desta conversa</p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="conversation-notifications-toggle" class="sr-only peer">
+                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600 shadow-lg"></div>
+                    </label>
+                </div>
+
+                <!-- Sons -->
+                <div class="flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 transition-all duration-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.464 8.464a5 5 0 000 7.072"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="font-medium text-white">Sons</span>
+                            <p class="text-xs text-gray-400">Tocar sons de notificação</p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="conversation-sounds-toggle" class="sr-only peer" checked>
+                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600 shadow-lg"></div>
+                    </label>
+                </div>
+
+                <!-- Arquivos de Mídia -->
+                <button class="w-full flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 hover:border-blue-500/50 transition-all duration-200 group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-white">Arquivos de Mídia</span>
+                            <p class="text-xs text-gray-400">Fotos, vídeos e documentos</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+
+                <!-- Buscar Mensagens -->
+                <button class="w-full flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 hover:border-blue-500/50 transition-all duration-200 group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-white">Buscar Mensagens</span>
+                            <p class="text-xs text-gray-400">Encontrar mensagens específicas</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Ações da Conversa -->
+            <div class="p-6 pt-0 space-y-3 border-t border-gray-700/50">
+                <button id="clear-chat-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-medium hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    <span>Limpar Conversa</span>
+                </button>
+                
+                <button id="block-user-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
+                    </svg>
+                    <span>Bloquear Usuário</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
 <script type="module">
     // --- IMPORTAÇÕES ---
@@ -323,9 +505,7 @@
         audioChunks: [],
         recordingStartTime: 0,
         recordingTimerInterval: null
-    };
-
-    // --- LÓGICA DE INICIALIZAÇÃO ---
+    };    // --- LÓGICA DE INICIALIZAÇÃO ---
     function main() {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
@@ -342,6 +522,40 @@
 
         bindGlobalUI();
         onAuthStateChanged(auth, handleAuthChange);
+        
+        // Monitorar mudanças no botão dinâmico
+        setTimeout(() => {
+            const dynamicBtn = document.getElementById('dynamic-action-btn');
+            if (dynamicBtn) {
+                console.log('🔍 [MONITOR] Iniciando monitoramento do botão dinâmico');
+                  // Usar MutationObserver para detectar mudanças nas classes
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const newClasses = dynamicBtn.className;
+                            console.log('🔍 [MONITOR] Classes do botão alteradas para:', newClasses);
+                            
+                            // Detectar se ficou vermelho quando não deveria
+                            if ((newClasses.includes('red') || newClasses.includes('pulse')) && !state.isRecording) {
+                                console.log('⚠️ [MONITOR] ALERTA: Botão ficou vermelho sem estar gravando!');
+                                console.log('⚠️ [MONITOR] state.isRecording:', state.isRecording);
+                                console.log('⚠️ [MONITOR] Aplicando correção imediata');
+                                
+                                // Correção imediata e agressiva
+                                setTimeout(() => {
+                                    forceResetMicrophoneButton();
+                                }, 10);
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(dynamicBtn, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            }
+        }, 2000);
     }
     
     function getRoomDisplayName(room, currentUserId) {
@@ -472,41 +686,72 @@
 
     function initMainLayout() {
         document.getElementById('app-container').innerHTML = `
-        <div id="sidebar" class="w-full md:w-1/3 h-full transition-transform duration-300 ease-in-out transform md:translate-x-0 relative flex flex-col">
-            <header class="p-3 flex justify-between items-center header-blur border-b border-gray-800 flex-shrink-0">
-                <div class="flex items-center space-x-3 min-w-0">
-                    <div class="w-10 h-10 rounded-full bg-gray-600 cursor-pointer overflow-hidden"><img id="my-profile-pic" class="w-full h-full object-cover"></div>
-                    <span id="my-username" class="font-bold text-lg truncate text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500"></span>
-                </div>
-                <div class="flex items-center space-x-1">
-                     <button id="friend-requests-btn" title="Pedidos de Amizade" class="p-2 rounded-full hover:bg-gray-700 relative">
-                         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                         <span id="friend-requests-badge" class="badge hidden"></span>
+        <div id="sidebar" class="w-full md:w-1/3 h-full transition-transform duration-300 ease-in-out transform md:translate-x-0 relative flex flex-col">            <header class="relative p-4 flex justify-between items-center header-blur border-b border-gray-800/50 flex-shrink-0 backdrop-blur-xl bg-gradient-to-r from-gray-900/90 via-gray-800/90 to-gray-900/90">
+                <!-- Efeito de gradiente sutil no fundo -->
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/3 via-purple-600/3 to-indigo-600/3"></div>
+                
+                <!-- Botões de ação à esquerda -->
+                <div class="flex items-center space-x-1 relative z-10">
+                     <button id="friend-requests-btn" title="Pedidos de Amizade" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-indigo-600/20 transition-all duration-300 hover:scale-110">
+                         <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                         </svg>
+                         <span id="friend-requests-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg hidden"></span>
+                         <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                      </button>
-                     <button id="user-search-btn" title="Buscar Usuário" class="p-2 rounded-full hover:bg-gray-700">
-                         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                     <button id="user-search-btn" title="Buscar Usuário" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-emerald-600/20 hover:to-green-600/20 transition-all duration-300 hover:scale-110">
+                         <svg class="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                         </svg>
+                         <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                      </button>
-                    <button id="user-settings-btn" title="Configurações" class="p-2 rounded-full hover:bg-gray-700">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <button id="user-settings-btn" title="Configurações" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-pink-600/20 transition-all duration-300 hover:scale-110">
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
                 </div>
+                
+                <!-- Nome do usuário no centro -->
+                <div class="flex-1 flex justify-center min-w-0 mx-4 relative z-10">
+                    <span id="my-username" class="font-bold text-lg truncate text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 text-center hover:from-blue-400 hover:to-cyan-400 transition-all duration-300 cursor-pointer"></span>
+                </div>
+                
+                <!-- Foto do perfil -->
+                <div class="relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-0.5 hover:scale-105 transition-transform duration-300 cursor-pointer">
+                        <div class="w-full h-full rounded-full overflow-hidden bg-gray-600 ring-2 ring-gray-700/50 hover:ring-blue-500/30 transition-all duration-300">
+                            <img id="my-profile-pic" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Linha decorativa -->
+                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
             </header>
-            <div id="room-list-container" class="overflow-y-auto flex-1 pb-20"></div>
-            <button id="create-room-btn" class="absolute bottom-5 right-5 w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg hover:from-blue-600 hover:to-cyan-600">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <div id="room-list-container" class="overflow-y-auto flex-1 pb-20"></div>            <button id="create-room-btn" class="group absolute bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-110 hover:rotate-90 border-2 border-blue-400/20">
+                <!-- Efeito de brilho -->
+                <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-cyan-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+                
+                <!-- Ícone -->
+                <svg class="w-8 h-8 relative z-10 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                
+                <!-- Borda animada -->
+                <div class="absolute inset-0 rounded-full border-2 border-transparent bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 opacity-0 group-hover:opacity-50 group-hover:animate-spin transition-opacity duration-300" style="animation-duration: 3s;"></div>
             </button>
         </div>
         <div id="chat-panel" class="w-full md:flex-grow absolute md:static inset-0 flex flex-col bg-black transition-transform duration-300 ease-in-out transform translate-x-full md:translate-x-0">
             <div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>
         </div>`;
-    }
-
-    function bindGlobalUI() {
+    }    function bindGlobalUI() {
         document.getElementById('close-user-settings-btn').onclick = () => document.getElementById('user-settings-modal').classList.add('hidden');
         document.getElementById('close-room-settings-btn').onclick = () => document.getElementById('room-settings-modal').classList.add('hidden');
         document.getElementById('close-add-member-btn').onclick = () => document.getElementById('add-member-modal').classList.add('hidden');
         document.getElementById('close-create-modal-btn').onclick = () => document.getElementById('create-room-modal').classList.add('hidden');
-        document.getElementById('cancel-create-room-btn').onclick = () => document.getElementById('create-room-modal').classList.add('hidden');
         document.getElementById('close-image-viewer-btn').onclick = () => document.getElementById('image-viewer-modal').classList.add('hidden');
         document.getElementById('close-share-link-btn').onclick = () => document.getElementById('share-link-modal').classList.add('hidden');
         document.getElementById('close-friend-requests-btn').onclick = () => document.getElementById('friend-requests-modal').classList.add('hidden');
@@ -518,6 +763,14 @@
         document.getElementById('image-uploader').onchange = handleMediaUpload;
         document.getElementById('media-uploader').onchange = handleMediaUpload;
         window.addEventListener('click', () => document.getElementById('room-context-menu').classList.add('hidden'));
+        
+        // Event listeners para o modal de configurações da conversa
+        const conversationModal = document.getElementById('conversation-settings-modal');
+        conversationModal.onclick = (e) => {
+            if (e.target === conversationModal) {
+                conversationModal.classList.add('hidden');
+            }
+        };
     }
 
     function bindMainUI() {
@@ -642,31 +895,69 @@
         if (!container || !state.currentUserData) return;
         const { friends = [], pinnedRooms = [], archivedRooms = [] } = state.currentUserData;
         const { roomsData = [] } = state;
-        let friendsHtml = `<h4 class="px-4 pt-4 text-sm font-bold text-gray-500 uppercase">AMIGOS</h4>`;
-        if (friends.length > 0 && state.friendsData.size > 0) {
-            friendsHtml += [...state.friendsData.values()].map(friend => {
+        let friendsHtml = `<div class="px-4 pt-6 pb-2">
+            <h4 class="text-sm font-bold text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text uppercase tracking-wider">
+                👥 Amigos
+            </h4>
+        </div>`;
+        if (friends.length > 0 && state.friendsData.size > 0) {            friendsHtml += [...state.friendsData.values()].map(friend => {
                 const photo = friend.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.username[0] || '?')}&background=A78BFA&color=fff&size=40`;
                 const isOnline = state.usersStatus[friend.uid]?.state === 'online';
-                const statusIndicator = `<div class="absolute bottom-0 right-0 w-3.5 h-3.5 ${isOnline ? 'bg-green-500' : 'bg-gray-400'} rounded-full border-2 border-black"></div>`;
-                const nameHtml = `<span class="font-semibold truncate flex-1 text-gray-200">${friend.username}</span>`;
-                return `<div class="p-3 mx-2 mt-2 rounded-lg flex items-center hover:bg-gray-800 cursor-pointer friend-item" data-user-id="${friend.uid}" data-username="${friend.username}" data-user-photo="${photo}">
-                    <div class="relative w-10 h-10 rounded-full bg-gray-600 mr-3 flex-shrink-0">
-                       <img src="${photo}" class="w-full h-full object-cover rounded-full" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';">
-                       ${statusIndicator}
+                const statusIndicator = `<div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'} rounded-full border-2 border-gray-900 shadow-lg"></div>`;
+                const nameHtml = `<span class="font-semibold truncate flex-1 text-gray-200 group-hover:text-white transition-colors duration-300">${friend.username}</span>`;
+                return `<div class="group relative p-3 mx-2 mt-2 rounded-xl flex items-center hover:bg-gradient-to-r hover:from-gray-800/80 hover:to-gray-700/80 cursor-pointer friend-item transition-all duration-300 hover:scale-[1.02] hover:shadow-lg backdrop-blur-sm border border-gray-700/30 hover:border-gray-600/50" data-user-id="${friend.uid}" data-username="${friend.username}" data-user-photo="${photo}">
+                    <!-- Efeito de fundo sutil -->
+                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    <!-- Foto do amigo -->
+                    <div class="relative z-10">
+                        <div class="relative w-11 h-11 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-0.5 group-hover:scale-105 transition-transform duration-300">
+                            <div class="w-full h-full rounded-full overflow-hidden bg-gray-600 ring-1 ring-gray-600 group-hover:ring-blue-500/30 transition-all duration-300">
+                                <img src="${photo}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" onerror="this.src='https://placehold.co/44x44/cccccc/ffffff?text=?';">
+                            </div>
+                            ${statusIndicator}
+                        </div>
                     </div>
-                    ${nameHtml}
-                    <button class="p-2 friend-actions-btn z-10 text-gray-500 hover:text-white" data-user-id="${friend.uid}">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+                    
+                    <!-- Nome do amigo -->
+                    <div class="flex-1 ml-3 min-w-0 relative z-10">
+                        ${nameHtml}
+                        <div class="text-xs text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                            ${isOnline ? '● Online' : '○ Offline'}
+                        </div>
+                    </div>
+                    
+                    <!-- Botão de ações -->
+                    <button class="relative z-10 p-2 rounded-lg friend-actions-btn text-gray-500 hover:text-white hover:bg-gray-700/50 transition-all duration-300 opacity-0 group-hover:opacity-100" data-user-id="${friend.uid}">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                        </svg>
                     </button>
                 </div>`;
             }).join('');
         } else {
-            friendsHtml += `<p class="text-center text-gray-500 text-sm p-3">Encontre usuários na lupa para adicionar.</p>`;
+            friendsHtml += `<div class="text-center p-6 mx-2 my-4 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-700/50 border border-gray-600/30 backdrop-blur-sm">
+                <div class="text-4xl mb-3">👤</div>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Encontre usuários na lupa 🔍<br>
+                    <span class="text-xs text-gray-500">para adicionar como amigos</span>
+                </p>
+            </div>`;
         }
         const groups = roomsData.filter(r => !r.isDirectMessage);
-        let groupsHtml = `<h4 class="px-4 pt-4 text-sm font-bold text-gray-500 uppercase">GRUPOS</h4>`;
+        let groupsHtml = `<div class="px-4 pt-6 pb-2">
+            <h4 class="text-sm font-bold text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text uppercase tracking-wider">
+                🏢 Grupos
+            </h4>
+        </div>`;
         if (groups.length === 0) {
-            groupsHtml += `<p class="text-center text-gray-500 text-sm p-3">Crie um grupo no botão de mais.</p>`;
+            groupsHtml += `<div class="text-center p-6 mx-2 my-4 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-700/50 border border-gray-600/30 backdrop-blur-sm">
+                <div class="text-4xl mb-3">➕</div>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Crie um grupo no botão<br>
+                    <span class="text-xs text-gray-500">de adicionar acima</span>
+                </p>
+            </div>`;
         } else {
             const renderItemFunc = (room) => {
                 const displayName = getRoomDisplayName(room, state.currentUserId);
@@ -865,7 +1156,9 @@
         if (!roomData || !state.currentUserId) return;
         const displayName = getRoomDisplayName(roomData, state.currentUserId);
         const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
-        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`);
+        const photo = roomData.isDirectMessage ? 
+            (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`) : 
+            (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`);
         const headerPic = container.querySelector('#room-header-pic');
         if (headerPic) headerPic.src = photo;
         const headerName = container.querySelector('#room-header-name');
@@ -880,56 +1173,308 @@
         const displayName = getRoomDisplayName(roomData, state.currentUserId);
         const isAdmin = (roomData.admins || []).includes(state.currentUserId);
         const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
-        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`);
-        let headerButtons = !state.currentUserData.isGuest ? `<button id="share-room-btn" title="Convidar" class="p-2 rounded-full hover:bg-gray-700" style="display: ${roomData.isDirectMessage ? 'none' : 'block'}"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg></button>` : '';
+        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`);        let headerButtons = !state.currentUserData.isGuest ? `<button id="share-room-btn" title="Convidar" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 transition-all duration-300 hover:scale-110" style="display: ${roomData.isDirectMessage ? 'none' : 'block'}">
+            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+            </svg>
+            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </button>` : '';
         if (isAdmin && !roomData.isDirectMessage) {
-            headerButtons += `<button id="room-settings-btn" title="Configurações da Sala" class="p-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>`;
+            headerButtons += `<button id="room-settings-btn" title="Configurações da Sala" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-green-600/20 hover:to-emerald-600/20 transition-all duration-300 hover:scale-110">
+                <svg class="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </button>`;
         }
-        let backButton = isGuestView ? `<button id="guest-settings-btn" title="Configurações" class="p-2 -ml-2 rounded-full hover:bg-gray-700"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>` 
-        : `<button id="back-to-list-btn" class="md:hidden p-2 -ml-2 rounded-full hover:bg-gray-700 text-gray-400 text-2xl font-bold">&larr;</button>`;
-        container.innerHTML = `<div class="flex flex-col h-full bg-black">
-            <header class="p-3 border-b border-gray-800 header-blur flex items-center space-x-3 flex-shrink-0">
-                ${backButton}
-                <div class="w-10 h-10 rounded-full bg-gray-600 cursor-pointer overflow-hidden"><img id="room-header-pic" src="${photo}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';"></div>
-                <div class="flex-1 min-w-0">
-                    <span id="room-header-name" class="font-bold truncate text-white block">${displayName}</span>
-                    <div class="typing-indicator-container text-xs text-gray-400 h-4"></div>
+        let backButton = isGuestView ? `<button id="guest-settings-btn" title="Configurações" class="group relative p-3 -ml-2 rounded-xl hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-pink-600/20 transition-all duration-300 hover:scale-110">
+            <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </button>` 
+        : `<button id="back-to-list-btn" class="group relative md:hidden p-3 -ml-2 rounded-xl hover:bg-gradient-to-r hover:from-indigo-600/20 hover:to-blue-600/20 transition-all duration-300 hover:scale-110">
+            <svg class="w-6 h-6 text-gray-400 group-hover:text-indigo-400 transition-all duration-300 transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </button>`;        container.innerHTML = `<div class="flex flex-col h-full bg-black">
+            <header class="relative p-4 border-b border-gray-800/50 header-blur flex items-center flex-shrink-0 backdrop-blur-xl bg-gradient-to-r from-gray-900/80 via-gray-800/80 to-gray-900/80">
+                <!-- Efeito de gradiente sutil no fundo -->
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-indigo-600/5"></div>
+                
+                <!-- Botão de voltar -->
+                <div class="relative z-10">
+                    ${backButton}
                 </div>
-                <div class="flex items-center">${headerButtons}</div>
+                  <!-- Área central com nome centralizado -->
+                <div class="flex-1 flex items-center justify-center min-w-0 mx-4 relative z-10">
+                    <div class="text-center cursor-pointer group" onclick="document.querySelector('#room-header-name').click()">
+                        <!-- Nome centralizado -->
+                        <span id="room-header-name" class="font-bold text-lg text-white truncate max-w-[200px] group-hover:text-blue-400 transition-colors duration-300 bg-gradient-to-r from-white to-gray-200 bg-clip-text block">${displayName}</span>
+                        <div class="typing-indicator-container text-xs text-gray-400 h-4 w-full">
+                            ${roomData.isDirectMessage ? '<span class="text-gray-500 text-xs">Toque para ver detalhes</span>' : `<span class="text-gray-500">${roomData.members?.length || 0} membros</span>`}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Foto do usuário no canto direito (sem indicador verde) -->
+                <div class="flex items-center space-x-2 relative z-10">
+                    ${headerButtons}
+                    <div class="relative cursor-pointer" onclick="document.querySelector('#room-header-pic').click()">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-0.5 hover:scale-105 transition-transform duration-300">
+                            <div class="w-full h-full rounded-full overflow-hidden bg-gray-800 ring-2 ring-gray-700/50 hover:ring-blue-500/30 transition-all duration-300">
+                                <img id="room-header-pic" src="${photo}" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300" onerror="this.src='https://placehold.co/48x48/cccccc/ffffff?text=?';">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Linha decorativa sutil -->
+                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
             </header>
             <div class="messages-container flex-1 overflow-y-auto p-4 space-y-4"></div>
-            <div id="recording-indicator" class="hidden items-center justify-center p-2 bg-red-900/50 text-red-300"><div class="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></div><span id="recording-timer">00:00</span></div>
-            <form class="chat-form p-3 border-t border-gray-800 form-blur flex space-x-2 flex-shrink-0">
-                 <button type="button" id="attach-media-btn" class="p-2 rounded-full hover:bg-gray-700">
-                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                 </button>
-                <input type="text" placeholder="Mensagem" class="chat-input flex-1 bg-gray-800 border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"/>
-                <button type="button" id="audio-record-btn" class="p-2 rounded-full hover:bg-gray-700">
-                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+            <div id="recording-indicator" class="hidden items-center justify-center p-4 bg-gradient-to-r from-red-900/80 via-red-800/80 to-red-900/80 text-red-100 backdrop-blur-xl border-t border-red-700/50">
+                <!-- Efeito de gradiente sutil -->
+                <div class="absolute inset-0 bg-gradient-to-r from-red-600/10 via-pink-600/10 to-red-600/10"></div>
+                
+                <div class="flex items-center space-x-3 relative z-10">
+                    <div class="relative">
+                        <div class="w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50"></div>
+                        <div class="absolute inset-0 w-4 h-4 bg-red-400 rounded-full animate-ping"></div>
+                    </div>
+                    <span id="recording-timer" class="font-semibold text-lg">00:00</span>
+                    <span class="text-red-300 text-sm">Gravando áudio...</span>
+                </div>
+                
+                <!-- Linha decorativa -->
+                <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent"></div>
+            </div>            <form class="chat-form relative p-3 border-t border-gray-800/50 form-blur flex items-center space-x-3 flex-shrink-0 backdrop-blur-xl bg-gradient-to-r from-gray-900/90 via-gray-800/90 to-gray-900/90">
+                <!-- Efeito de gradiente sutil no fundo -->
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/3 via-purple-600/3 to-indigo-600/3"></div>
+                  <!-- Botão de anexar mídia -->
+                <button type="button" id="attach-media-btn" class="group relative p-2.5 rounded-full hover:bg-gradient-to-r hover:from-emerald-600/20 hover:to-green-600/20 transition-all duration-300 hover:scale-110 z-10">
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                    </svg>
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/10 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button><!-- Input de mensagem -->
+                <div class="flex-1 relative z-10">
+                    <input type="text" placeholder="Digite sua mensagem..." class="chat-input w-full bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-gray-600/50 rounded-full px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 hover:border-gray-500/70 text-sm"/>
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                </div>
+                
+                <!-- Botão dinâmico (microfone/enviar) -->
+                <button type="button" id="dynamic-action-btn" class="group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10">
+                    <!-- Ícone do microfone (padrão) -->
+                    <svg id="mic-icon" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                    </svg>                    <!-- Ícone de enviar (oculto inicialmente) -->
+                    <svg id="send-icon" class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-red-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </button>
-                <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700">Enviar</button>
+                
+                <!-- Linha decorativa sutil -->
+                <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
             </form>
-        </div>`;
-        if(!isGuestView) {
-            container.querySelector('#back-to-list-btn').onclick = () => { 
-                document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('chat-panel').classList.add('translate-x-full'); delete container.dataset.currentRoomId; 
-            };
+        </div>`;        if(!isGuestView) {
+            const backBtn = container.querySelector('#back-to-list-btn');
+            if(backBtn) {
+                backBtn.onclick = () => { 
+                    document.getElementById('sidebar').classList.remove('-translate-x-full'); 
+                    document.getElementById('chat-panel').classList.add('translate-x-full'); 
+                    delete container.dataset.currentRoomId; 
+                };
+            }
         } else {
-             container.querySelector('#guest-settings-btn').onclick = openUserSettings;
+            const guestBtn = container.querySelector('#guest-settings-btn');
+            if(guestBtn) {
+                guestBtn.onclick = openUserSettings;
+            }
+        }        
+        // Event listeners para o cabeçalho
+        const headerPic = container.querySelector('#room-header-pic');
+        if(headerPic) {
+            headerPic.parentElement.onclick = () => openImageViewer(photo, { isRoom: true, isAdmin });
         }
-        container.querySelector('#room-header-pic').parentElement.onclick = () => openImageViewer(photo, { isRoom: true, isAdmin });
+        
+        const headerName = container.querySelector('#room-header-name');
+        if(headerName) {
+            headerName.onclick = () => openConversationSettings(roomData);
+        }
+        
+        // Event listeners para o formulário
         container.querySelector('.chat-form').onsubmit = sendMessage;
         container.querySelector('#attach-media-btn').onclick = () => document.getElementById('media-uploader').click();
         
-        const audioBtn = container.querySelector('#audio-record-btn');
-        audioBtn.addEventListener('mousedown', startRecording);
-        audioBtn.addEventListener('mouseup', stopRecording);
-        audioBtn.addEventListener('touchstart', startRecording, { passive: false });
-        audioBtn.addEventListener('touchend', stopRecording);
-
+        // Input e botão dinâmico
+        const chatInput = container.querySelector('.chat-input');
+        const dynamicBtn = container.querySelector('#dynamic-action-btn');
+        const micIcon = container.querySelector('#mic-icon');
+        const sendIcon = container.querySelector('#send-icon');        // Função para alternar entre microfone e enviar
+        function toggleButtonState() {
+            const hasText = chatInput.value.trim().length > 0;
+            
+            console.log('🔄 [TOGGLE] Iniciando toggleButtonState');
+            console.log('🔄 [TOGGLE] hasText:', hasText, 'value:', chatInput.value);
+            console.log('🔄 [TOGGLE] state.isRecording:', state.isRecording);
+            console.log('🔄 [TOGGLE] Classes atuais do botão:', dynamicBtn.className);
+            
+            if (hasText) {
+                console.log('📤 [TOGGLE] Mostrando botão de enviar');
+                // Mostrar botão de enviar
+                micIcon.classList.add('hidden');
+                sendIcon.classList.remove('hidden');
+                
+                // Atualizar classes do botão para estilo azul
+                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-blue-600/20 transition-all duration-300 hover:scale-110 z-10';
+                console.log('📤 [TOGGLE] Classes do botão definidas para ENVIAR:', dynamicBtn.className);
+                
+                // Remover todos os event listeners de áudio
+                dynamicBtn.removeEventListener('mousedown', startRecording);
+                dynamicBtn.removeEventListener('mouseup', stopRecording);
+                dynamicBtn.removeEventListener('touchstart', startRecording);
+                dynamicBtn.removeEventListener('touchend', stopRecording);
+                console.log('📤 [TOGGLE] Listeners de gravação removidos');
+                
+                // Definir como botão de enviar
+                dynamicBtn.onclick = (e) => {
+                    e.preventDefault();
+                    console.log('📤 [CLICK] Enviando mensagem via botão dinâmico');
+                    
+                    // Verificar se há texto antes de enviar
+                    if (chatInput.value.trim()) {
+                        // Simular envio da mensagem
+                        const form = container.querySelector('.chat-form');
+                        const event = new Event('submit', { bubbles: true, cancelable: true });
+                        form.dispatchEvent(event);
+                    }
+                };            } else {
+                console.log('🎤 [TOGGLE] Mostrando botão de microfone');
+                // Mostrar botão de microfone
+                micIcon.classList.remove('hidden');
+                sendIcon.classList.add('hidden');
+                
+                // Garantir que o estado de gravação esteja limpo
+                if (state.isRecording) {
+                    console.log('⚠️ [TOGGLE] Limpando estado de gravação forçadamente');
+                    state.isRecording = false;
+                }
+                
+                // Forçar reset da UI de gravação
+                console.log('🎤 [TOGGLE] Chamando updateRecordingUI(false)');
+                updateRecordingUI(false);
+                  // Atualizar classes do botão para estilo neutro (cinza)
+                const oldClassName = dynamicBtn.className;
+                
+                // MÉTODO AGRESSIVO: Limpar TODAS as classes primeiro
+                dynamicBtn.className = '';
+                dynamicBtn.classList.remove('animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90');
+                
+                // Aplicar apenas as classes corretas do microfone
+                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                
+                console.log('🎤 [TOGGLE] Classes do botão alteradas de:', oldClassName);
+                console.log('🎤 [TOGGLE] Classes do botão definidas para MICROFONE:', dynamicBtn.className);
+                
+                // Remover onclick de enviar
+                dynamicBtn.onclick = null;
+                console.log('🎤 [TOGGLE] onClick removido');
+                
+                // Remover listeners antigos para evitar duplicação
+                dynamicBtn.removeEventListener('mousedown', startRecording);
+                dynamicBtn.removeEventListener('mouseup', stopRecording);
+                dynamicBtn.removeEventListener('touchstart', startRecording);
+                dynamicBtn.removeEventListener('touchend', stopRecording);
+                console.log('🎤 [TOGGLE] Listeners antigos removidos');
+                
+                // Adicionar event listeners para gravação de áudio
+                dynamicBtn.addEventListener('mousedown', startRecording);
+                dynamicBtn.addEventListener('mouseup', stopRecording);
+                dynamicBtn.addEventListener('touchstart', startRecording, { passive: false });
+                dynamicBtn.addEventListener('touchend', stopRecording);
+                console.log('🎤 [TOGGLE] Novos listeners de gravação adicionados');
+            }
+            
+            console.log('🔄 [TOGGLE] toggleButtonState finalizado');
+        }        // Monitorar mudanças no input
+        chatInput.addEventListener('input', () => {
+            console.log('🔤 [INPUT] Event input disparado, valor atual:', chatInput.value);
+            console.log('🔤 [INPUT] state.isRecording antes do toggle:', state.isRecording);
+            toggleButtonState();
+            handleTyping();
+        });
+        
+        // Monitorar quando o campo perde o foco ou é limpo
+        chatInput.addEventListener('blur', () => {
+            console.log('🔤 [BLUR] Campo perdeu foco');
+            setTimeout(() => {
+                console.log('🔤 [BLUR] Timeout executado, chamando toggleButtonState');
+                toggleButtonState();
+            }, 100);
+        });
+        
+        chatInput.addEventListener('keyup', () => {
+            console.log('🔤 [KEYUP] Event keyup disparado');
+            toggleButtonState();
+        });
+          // Garantir estado inicial (microfone visível, enviar oculto)
+        chatInput.value = ''; // Limpar qualquer valor
+        micIcon.classList.remove('hidden');
+        sendIcon.classList.add('hidden');
+        console.log('🎯 [INIT] Estado inicial forçado: microfone visível');
+        console.log('🎯 [INIT] Classes iniciais do botão antes do toggle:', dynamicBtn.className);
+        
+        // Estado inicial
+        toggleButtonState();
+          // Event listener para configurações da sala
         const roomSettingsBtn = container.querySelector('#room-settings-btn');
         if (roomSettingsBtn) roomSettingsBtn.onclick = openRoomSettings;
-        container.querySelector('.chat-input').oninput = handleTyping;
+          // Debug final - verificar estado após configuração completa
+        setTimeout(() => {
+            console.log('🎯 [FINAL_CHECK] Verificação final da configuração do chat:');
+            console.log('🎯 [FINAL_CHECK] chatInput.value:', chatInput.value);
+            console.log('🎯 [FINAL_CHECK] micIcon.hidden:', micIcon.classList.contains('hidden'));
+            console.log('🎯 [FINAL_CHECK] sendIcon.hidden:', sendIcon.classList.contains('hidden'));
+            console.log('🎯 [FINAL_CHECK] dynamicBtn.className:', dynamicBtn.className);
+            console.log('🎯 [FINAL_CHECK] state.isRecording:', state.isRecording);
+            
+            // Testar se os listeners estão funcionando
+            console.log('🎯 [FINAL_CHECK] Listeners ativos no botão:', {
+                mousedown: !!dynamicBtn.onmousedown,
+                mouseup: !!dynamicBtn.onmouseup,
+                onclick: !!dynamicBtn.onclick
+            });
+              // Adicionar função global de emergência para debug
+            window.forceResetButton = function() {
+                console.log('🚨 [EMERGENCY] Função de emergência chamada pelo usuário');
+                forceResetMicrophoneButton();
+            };
+            console.log('🎯 [FINAL_CHECK] Função de emergência criada: window.forceResetButton()');
+            
+            // Monitoramento contínuo para auto-correção
+            const continuousMonitor = setInterval(() => {
+                const btn = document.querySelector('#dynamic-action-btn');
+                const input = document.querySelector('.chat-input');
+                
+                if (btn && input && input.value.trim() === '' && !state.isRecording) {
+                    if (btn.className.includes('red') || btn.className.includes('pulse')) {
+                        console.log('🔄 [AUTO_MONITOR] Detectado botão vermelho incorreto - auto-corrigindo');
+                        forceResetMicrophoneButton();
+                    }
+                }
+            }, 1000); // Verificar a cada segundo
+            
+            // Parar o monitor após 2 minutos (para não sobrecarregar)
+            setTimeout(() => {
+                clearInterval(continuousMonitor);
+                console.log('🔄 [AUTO_MONITOR] Monitor contínuo desativado após 2 minutos');
+            }, 120000);
+        }, 1000);
     }
 
     function subscribeToMessages(roomId, container) {
@@ -951,9 +1496,8 @@
                 } else if (msg.type === 'video') {
                     contentHtml = `<video src="${msg.mediaUrl}" class="rounded-lg max-w-xs max-h-64" controls></video>`;
                 } else if (msg.type === 'audio') {
-                    contentHtml = `<audio src="${msg.mediaUrl}" controls class="max-w-xs"></audio>`;
-                } else {
-                    contentHtml = `<div class="max-w-[75%] p-3 rounded-lg ${sentByMe ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-200'}">${msg.content}</div>`;
+                    contentHtml = `<audio src="${msg.mediaUrl}" controls class="max-w-xs"></audio>`;                } else {
+                    contentHtml = `<div class="max-w-[280px] sm:max-w-[320px] p-3 rounded-2xl ${sentByMe ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg' : 'bg-gradient-to-br from-gray-800 to-gray-700 text-gray-100 border border-gray-600/30'} break-words overflow-wrap-anywhere whitespace-pre-wrap leading-relaxed">${msg.content}</div>`;
                 }
                 let seenHtml = '';
                 if(sentByMe) {
@@ -999,14 +1543,93 @@
                 if(el) state.readReceiptObserver.observe(el);
             }
         });
-    }
-
-    async function sendMessage(e) {
+    }    async function sendMessage(e) {
         e.preventDefault();
+        console.log('📬 [SEND] sendMessage iniciada');
+        
         const input = e.target.querySelector('.chat-input');
         const text = input.value;
-        if(!text.trim()) return;
-        input.value = '';
+        console.log('📬 [SEND] Texto da mensagem:', text);
+        
+        if(!text.trim()) {
+            console.log('📬 [SEND] Texto vazio, cancelando envio');
+            return;
+        }
+        
+        console.log('📬 [SEND] Limpando input');
+        input.value = '';        // Disparar evento de input para atualizar o botão
+        console.log('📬 [SEND] Disparando evento input para atualizar botão');
+        const inputEvent = new Event('input', { bubbles: true });
+        input.dispatchEvent(inputEvent);
+        
+        // Verificação imediata após o evento input
+        setTimeout(() => {
+            const dynamicBtn = document.querySelector('#dynamic-action-btn');
+            console.log('📬 [SEND] Verificação imediata - classes do botão após input event:', dynamicBtn?.className);
+            console.log('📬 [SEND] state.isRecording:', state.isRecording);
+        }, 10);
+          // Garantir que o botão volte para microfone após o envio
+        setTimeout(() => {
+            console.log('📬 [SEND] Timeout de 150ms executado - verificando estado do botão');
+            
+            const dynamicBtn = document.querySelector('#dynamic-action-btn');
+            const micIcon = document.querySelector('#mic-icon');
+            const sendIcon = document.querySelector('#send-icon');
+            
+            console.log('📬 [SEND] Elementos encontrados:', {
+                dynamicBtn: !!dynamicBtn,
+                micIcon: !!micIcon,
+                sendIcon: !!sendIcon,
+                inputValue: input.value
+            });
+            
+            if (dynamicBtn && micIcon && sendIcon && input.value.trim() === '') {
+                console.log('📬 [SEND] Forçando retorno ao microfone após envio');
+                console.log('📬 [SEND] state.isRecording antes da limpeza:', state.isRecording);
+                
+                // Garantir que não está em modo de gravação
+                state.isRecording = false;
+                console.log('📬 [SEND] state.isRecording definido como false');
+                
+                // Resetar UI de gravação
+                console.log('📬 [SEND] Chamando updateRecordingUI(false)');
+                updateRecordingUI(false);
+                
+                // Mostrar ícone correto
+                micIcon.classList.remove('hidden');
+                sendIcon.classList.add('hidden');
+                console.log('📬 [SEND] Ícones ajustados - microfone visível, enviar oculto');
+                
+                // Forçar classes neutras do microfone (não vermelho)
+                const oldClassName = dynamicBtn.className;
+                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                console.log('📬 [SEND] Classes do botão alteradas de:', oldClassName);
+                console.log('📬 [SEND] Classes do botão alteradas para:', dynamicBtn.className);
+                
+                // Remover onclick de enviar
+                dynamicBtn.onclick = null;
+                console.log('📬 [SEND] onClick removido');
+                
+                // Limpar todos os listeners antigos
+                dynamicBtn.removeEventListener('mousedown', startRecording);
+                dynamicBtn.removeEventListener('mouseup', stopRecording);
+                dynamicBtn.removeEventListener('touchstart', startRecording);
+                dynamicBtn.removeEventListener('touchend', stopRecording);
+                console.log('📬 [SEND] Listeners antigos removidos');
+                
+                // Adicionar event listeners para gravação de áudio
+                dynamicBtn.addEventListener('mousedown', startRecording);
+                dynamicBtn.addEventListener('mouseup', stopRecording);
+                dynamicBtn.addEventListener('touchstart', startRecording, { passive: false });
+                dynamicBtn.addEventListener('touchend', stopRecording);
+                console.log('📬 [SEND] Novos listeners de gravação adicionados');
+            } else {
+                console.log('📬 [SEND] Condições não atendidas para reset do botão:', {
+                    hasElements: !!(dynamicBtn && micIcon && sendIcon),
+                    inputEmpty: input.value.trim() === ''
+                });
+            }
+        }, 150);
 
         const roomId = state.currentRoomData.id;
         const batch = writeBatch(db);
@@ -1028,16 +1651,124 @@
                 senderPhoto: state.currentUserData.photoURL,
                 createdAt: serverTimestamp()
             }
-        });
-
-        await batch.commit();
+        });        await batch.commit();
+        
+        console.log('📬 [SEND] Mensagem enviada para o Firebase, campo limpo');        console.log('📬 [SEND] sendMessage finalizada');
+        
+        // CORREÇÃO AGRESSIVA: Forçar reset do botão após envio
+        setTimeout(() => {
+            console.log('🔧 [AGGRESSIVE_FIX] Aplicando correção agressiva após envio');
+            forceResetMicrophoneButton();
+        }, 100);
+        
+        setTimeout(() => {
+            console.log('🔧 [AGGRESSIVE_FIX] Segunda verificação e correção');
+            forceResetMicrophoneButton();
+        }, 300);
         
         const userTypingRef = doc(db, 'rooms', state.currentRoomData.id);
         await updateDoc(userTypingRef, { typing: arrayRemove({uid: state.currentUserId, name: state.currentUserData.username}) });
         clearTimeout(state.typingTimeout);
     }
-    
-    async function sendAudioMessage(url, duration) {
+      // Função para forçar reset do botão do microfone
+    function forceResetMicrophoneButton() {
+        console.log('🔧 [FORCE_RESET] forceResetMicrophoneButton chamada');
+        
+        const dynamicBtn = document.querySelector('#dynamic-action-btn');
+        const micIcon = document.querySelector('#mic-icon');
+        const sendIcon = document.querySelector('#send-icon');
+        const chatInput = document.querySelector('.chat-input');
+        
+        if (!dynamicBtn || !micIcon || !sendIcon || !chatInput) {
+            console.log('🔧 [FORCE_RESET] Elementos não encontrados, cancelando reset');
+            return;
+        }
+        
+        const currentValue = chatInput.value.trim();
+        console.log('🔧 [FORCE_RESET] Valor atual do input:', currentValue);
+        console.log('🔧 [FORCE_RESET] state.isRecording:', state.isRecording);
+        console.log('🔧 [FORCE_RESET] Classes atuais do botão:', dynamicBtn.className);
+        
+        // Se o input está vazio, deve ser microfone
+        if (currentValue === '') {
+            console.log('🔧 [FORCE_RESET] Input vazio - forçando modo microfone');
+            
+            // Limpar estado de gravação
+            state.isRecording = false;
+            
+            // Parar qualquer timer de gravação
+            if (state.recordingTimerInterval) {
+                clearInterval(state.recordingTimerInterval);
+                state.recordingTimerInterval = null;
+            }
+            
+            // Esconder indicador de gravação
+            const indicator = document.getElementById('recording-indicator');
+            if (indicator) {
+                indicator.classList.add('hidden');
+                indicator.classList.remove('flex');
+            }
+            
+            // Resetar timer
+            const timerEl = document.getElementById('recording-timer');
+            if (timerEl) {
+                timerEl.textContent = '00:00';
+            }
+            
+            // Mostrar ícone correto
+            micIcon.classList.remove('hidden');
+            sendIcon.classList.add('hidden');
+            console.log('🔧 [FORCE_RESET] Ícones ajustados');
+            
+            // MÉTODO SUPER AGRESSIVO: Remover TODAS as classes CSS possíveis que podem causar vermelho
+            const redClasses = [
+                'animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 
+                'hover:from-red-600/90', 'hover:to-red-700/90', 'bg-red-500', 'bg-red-600', 'bg-red-700',
+                'text-red-500', 'text-red-600', 'border-red-500', 'border-red-600'
+            ];
+            
+            // Remover todas as classes vermelhas possíveis
+            redClasses.forEach(cls => {
+                dynamicBtn.classList.remove(cls);
+            });
+            
+            // Limpar completamente e re-aplicar
+            dynamicBtn.className = '';
+            dynamicBtn.setAttribute('class', 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10');
+            console.log('🔧 [FORCE_RESET] Classes forçadas para:', dynamicBtn.className);
+            
+            // Remover todos os event listeners clonando o elemento
+            const newBtn = dynamicBtn.cloneNode(true);
+            dynamicBtn.parentNode.replaceChild(newBtn, dynamicBtn);
+            console.log('🔧 [FORCE_RESET] Botão clonado para remover todos os listeners');
+            
+            // Re-aplicar event listeners corretos
+            newBtn.onclick = null;
+            newBtn.addEventListener('mousedown', startRecording);
+            newBtn.addEventListener('mouseup', stopRecording);
+            newBtn.addEventListener('touchstart', startRecording, { passive: false });
+            newBtn.addEventListener('touchend', stopRecording);
+            console.log('🔧 [FORCE_RESET] Novos listeners aplicados');
+            
+            // Verificação final múltipla
+            const checkAndForce = () => {
+                const finalBtn = document.querySelector('#dynamic-action-btn');
+                if (finalBtn && (finalBtn.className.includes('red') || finalBtn.className.includes('pulse') || finalBtn.style.backgroundColor.includes('red'))) {
+                    console.log('⚠️ [FORCE_RESET] AINDA VERMELHO! Aplicando reset FINAL');
+                    finalBtn.className = '';
+                    finalBtn.setAttribute('class', 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10');
+                    finalBtn.style.backgroundColor = '';
+                    finalBtn.style.background = '';
+                }
+            };
+            
+            setTimeout(checkAndForce, 50);
+            setTimeout(checkAndForce, 100);
+            setTimeout(checkAndForce, 200);
+        }
+    }
+      async function sendAudioMessage(url, duration) {
+        console.log('🎵 [AUDIO_MSG] sendAudioMessage iniciada');
         if(!state.currentRoomData) return;
         const roomId = state.currentRoomData.id;
         const batch = writeBatch(db);
@@ -1063,6 +1794,25 @@
         });
         
         await batch.commit();
+        console.log('🎵 [AUDIO_MSG] Mensagem de áudio enviada para o Firebase');
+        
+        // Verificar se o botão ainda está vermelho após envio de áudio
+        setTimeout(() => {
+            const dynamicBtn = document.getElementById('dynamic-action-btn');
+            if (dynamicBtn) {
+                console.log('🎵 [AUDIO_MSG] Verificação pós-envio - classes do botão:', dynamicBtn.className);
+                console.log('🎵 [AUDIO_MSG] state.isRecording:', state.isRecording);
+                
+                // Forçar reset se necessário
+                if (dynamicBtn.className.includes('red') || dynamicBtn.className.includes('pulse')) {
+                    console.log('🎵 [AUDIO_MSG] PROBLEMA: Botão ainda vermelho após envio de áudio!');
+                    console.log('🎵 [AUDIO_MSG] Forçando reset das classes');
+                    
+                    state.isRecording = false;
+                    updateRecordingUI(false);
+                }
+            }
+        }, 200);
     }
 
 
@@ -1109,14 +1859,14 @@
                  });
              }
         };
-    }
-
-    function handleTyping() {
+    }    function handleTyping() {
+        console.log('⌨️ [TYPING] handleTyping chamada');
         if(!state.currentRoomData) return;
         const userTypingRef = doc(db, 'rooms', state.currentRoomData.id);
         clearTimeout(state.typingTimeout);
         updateDoc(userTypingRef, { typing: arrayUnion({uid: state.currentUserId, name: state.currentUserData.username}) });
         state.typingTimeout = setTimeout(() => {
+            console.log('⌨️ [TYPING] Timeout de typing executado - removendo usuário da lista');
             updateDoc(userTypingRef, { typing: arrayRemove({uid: state.currentUserId, name: state.currentUserData.username}) });
         }, 2000);
     }
@@ -1178,6 +1928,117 @@
                 showNotification("Nome atualizado!");
             }
             nameInput.value = newName;
+        };
+    }    function openConversationSettings(roomData) {
+        const modal = document.getElementById('conversation-settings-modal');
+        const displayName = getRoomDisplayName(roomData, state.currentUserId);
+        const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
+        const photo = roomData.isDirectMessage ? 
+            (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`) : 
+            (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`);
+        
+        // Preencher informações da conversa
+        document.getElementById('conversation-settings-pic').src = photo;
+        document.getElementById('conversation-settings-name').textContent = displayName;
+        document.getElementById('conversation-settings-type').textContent = roomData.isDirectMessage ? 'Conversa Direta' : 'Sala de Chat';
+          // Atualizar status online/offline do usuário
+        const statusIndicator = document.getElementById('user-status-indicator');
+        if (roomData.isDirectMessage && otherUserId) {
+            const isOnline = state.usersStatus[otherUserId]?.state === 'online';
+            const statusDot = statusIndicator.querySelector('.w-2');
+            const statusText = statusIndicator.querySelector('.text-xs');
+            
+            if (statusDot && statusText) {
+                if (isOnline) {
+                    statusDot.className = 'w-2 h-2 bg-green-500 rounded-full animate-pulse';
+                    statusText.className = 'text-xs text-green-400';
+                    statusText.textContent = 'Online';
+                } else {
+                    statusDot.className = 'w-2 h-2 bg-gray-400 rounded-full';
+                    statusText.className = 'text-xs text-gray-400';
+                    statusText.textContent = 'Offline';
+                }
+            }
+            statusIndicator.style.display = 'flex';
+        } else {
+            // Ocultar status para conversas em grupo
+            statusIndicator.style.display = 'none';
+        }
+        
+        // Mostrar/esconder botão de bloquear baseado no tipo de conversa
+        const blockBtn = document.getElementById('block-user-btn');
+        if (roomData.isDirectMessage && !state.currentUserData.isGuest) {
+            blockBtn.style.display = 'flex';
+            blockBtn.textContent = 'Bloquear Usuário';
+        } else {
+            blockBtn.style.display = 'none';
+        }
+        
+        modal.classList.remove('hidden');
+        
+        // Event listeners do modal
+        document.getElementById('close-conversation-settings-btn').onclick = () => {
+            modal.classList.add('hidden');
+        };
+        
+        document.getElementById('clear-chat-btn').onclick = async () => {
+            const confirmed = await showCustomConfirm('Limpar Conversa', 'Tem certeza que deseja limpar todas as mensagens desta conversa? Esta ação não pode ser desfeita.');
+            if (confirmed) {
+                try {
+                    // Buscar todas as mensagens
+                    const messagesRef = collection(db, `rooms/${roomData.id}/messages`);
+                    const messagesSnapshot = await getDocs(messagesRef);
+                    
+                    // Deletar mensagens em lote
+                    const batch = writeBatch(db);
+                    messagesSnapshot.docs.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                    
+                    showNotification('Conversa limpa com sucesso!');
+                    modal.classList.add('hidden');
+                } catch (error) {
+                    console.error('Erro ao limpar conversa:', error);
+                    showNotification('Erro ao limpar conversa.', 'error');
+                }
+            }
+        };
+        
+        document.getElementById('block-user-btn').onclick = async () => {
+            if (!roomData.isDirectMessage) return;
+            
+            const confirmed = await showCustomConfirm('Bloquear Usuário', 'Tem certeza que deseja bloquear este usuário? Vocês não poderão mais se enviar mensagens.');
+            if (confirmed) {
+                try {
+                    // Adicionar à lista de bloqueados
+                    await updateDoc(doc(db, 'users', state.currentUserId), {
+                        blockedUsers: arrayUnion(otherUserId)
+                    });
+                    
+                    // Adicionar o usuário atual à lista de bloqueados do outro usuário
+                    await updateDoc(doc(db, 'users', otherUserId), {
+                        blockedUsers: arrayUnion(state.currentUserId)
+                    });
+                    
+                    showNotification('Usuário bloqueado com sucesso.');
+                    modal.classList.add('hidden');
+                    
+                    // Voltar à lista de conversas
+                    document.getElementById('sidebar').classList.remove('-translate-x-full');
+                    document.getElementById('chat-panel').classList.add('translate-x-full');
+                } catch (error) {
+                    console.error('Erro ao bloquear usuário:', error);
+                    showNotification('Erro ao bloquear usuário.', 'error');
+                }
+            }
+        };
+        
+        // Fechar modal ao clicar fora
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
         };
     }
 
@@ -1573,29 +2434,38 @@
             document.getElementById('custom-prompt-ok-btn').addEventListener('click', submit);
             input.addEventListener('keyup', onEnter);
         });
-    }
-
-    async function startRecording(e) {
+    }    async function startRecording(e) {
         e.preventDefault();
-        if (state.isRecording) return;
+        console.log('🎙️ [START_REC] startRecording chamada');
+        console.log('🎙️ [START_REC] state.isRecording atual:', state.isRecording);
+        
+        if (state.isRecording) {
+            console.log('🎙️ [START_REC] Já está gravando, cancelando');
+            return;
+        }
         
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             showNotification("Gravação de áudio não é suportada neste navegador.", "error");
-            console.error("MediaDevices API not supported.");
+            console.error("🎙️ [START_REC] MediaDevices API not supported.");
             return;
         }
 
         try {
+            console.log('🎙️ [START_REC] Solicitando permissão do microfone');
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            console.log('🎙️ [START_REC] Permissão concedida, configurando gravação');
             state.isRecording = true;
             state.audioChunks = [];
             state.mediaRecorder = new MediaRecorder(stream);
 
             state.mediaRecorder.ondataavailable = event => {
+                console.log('🎙️ [START_REC] Dados de áudio disponíveis');
                 state.audioChunks.push(event.data);
             };
 
             state.mediaRecorder.onstop = async () => {
+                console.log('🎙️ [START_REC] Gravação parada, processando áudio');
                 const duration = Math.round((Date.now() - state.recordingStartTime) / 1000);
                 const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
                 
@@ -1607,54 +2477,115 @@
                     await uploadBytes(fileRef, audioBlob);
                     const downloadURL = await getDownloadURL(fileRef);
                     await sendAudioMessage(downloadURL, duration);
+                    console.log('🎙️ [START_REC] Áudio enviado com sucesso');
                 } catch (error) {
                     showNotification("Falha ao enviar áudio.", "error");
-                    console.error("Audio upload error:", error);
+                    console.error("🎙️ [START_REC] Audio upload error:", error);
                 } finally {
                     document.getElementById('loading-overlay').classList.add('hidden');
                 }
                 
                 stream.getTracks().forEach(track => track.stop());
+                console.log('🎙️ [START_REC] Stream fechado');
             };
 
             state.recordingStartTime = Date.now();
             state.mediaRecorder.start();
+            console.log('🎙️ [START_REC] Gravação iniciada, chamando updateRecordingUI(true)');
             updateRecordingUI(true);
 
         } catch (err) {
-            console.error("Error accessing microphone:", err);
+            console.error("🎙️ [START_REC] Error accessing microphone:", err);
             showNotification("Não foi possível acessar o microfone. Verifique as permissões.", "error");
         }
     }
 
     function stopRecording(e) {
         e.preventDefault();
-        if (!state.isRecording || !state.mediaRecorder) return;
+        console.log('🛑 [STOP_REC] stopRecording chamada');
+        console.log('🛑 [STOP_REC] state.isRecording:', state.isRecording);
+        console.log('🛑 [STOP_REC] state.mediaRecorder:', !!state.mediaRecorder);
         
+        if (!state.isRecording || !state.mediaRecorder) {
+            console.log('🛑 [STOP_REC] Não está gravando ou sem MediaRecorder, cancelando');
+            return;
+        }
+        
+        console.log('🛑 [STOP_REC] Parando gravação');
         state.mediaRecorder.stop();
         state.isRecording = false;
+        console.log('🛑 [STOP_REC] state.isRecording definido como false, chamando updateRecordingUI(false)');
         updateRecordingUI(false);
-    }
-    
-    function updateRecordingUI(isRecording) {
+    }    function updateRecordingUI(isRecording) {
         const indicator = document.getElementById('recording-indicator');
         const timerEl = document.getElementById('recording-timer');
-        if (!indicator || !timerEl) return;
-        if (isRecording) {
+        const dynamicBtn = document.getElementById('dynamic-action-btn');
+        
+        console.log('🎨 [UI] updateRecordingUI chamada - isRecording:', isRecording);
+        console.log('🎨 [UI] state.isRecording:', state.isRecording);
+        console.log('🎨 [UI] Elementos encontrados:', {
+            indicator: !!indicator,
+            timerEl: !!timerEl,
+            dynamicBtn: !!dynamicBtn
+        });
+        
+        if (!indicator || !timerEl) {
+            console.log('🎨 [UI] Elementos não encontrados, cancelando');
+            return;
+        }
+        
+        if (isRecording && state.isRecording) {
+            console.log('🔴 [UI] Ativando modo de gravação - botão vermelho');
             indicator.classList.remove('hidden');
             indicator.classList.add('flex');
+            
+            // Mudar estilo do botão para vermelho durante gravação
+            if (dynamicBtn) {
+                const oldClassName = dynamicBtn.className;
+                dynamicBtn.className = 'group relative p-2.5 rounded-full bg-gradient-to-r from-red-500/80 to-red-600/80 hover:from-red-600/90 hover:to-red-700/90 transition-all duration-300 scale-110 z-10 animate-pulse';
+                console.log('🔴 [UI] Classes do botão alteradas de:', oldClassName);
+                console.log('🔴 [UI] Classes do botão alteradas para:', dynamicBtn.className);
+            }
+            
             state.recordingTimerInterval = setInterval(() => {
                 const seconds = Math.floor((Date.now() - state.recordingStartTime) / 1000);
                 const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
                 const secs = (seconds % 60).toString().padStart(2, '0');
                 timerEl.textContent = `${mins}:${secs}`;
-            }, 1000);
-        } else {
+            }, 1000);        } else {
+            console.log('⚪ [UI] Desativando modo de gravação - botão cinza');
             indicator.classList.add('hidden');
             indicator.classList.remove('flex');
+            
+            // Voltar estilo do botão para neutro após gravação - SEMPRE aplicar
+            if (dynamicBtn) {
+                const oldClassName = dynamicBtn.className;
+                
+                // MÉTODO AGRESSIVO: Remover TODAS as classes e re-aplicar apenas as corretas
+                dynamicBtn.className = '';
+                dynamicBtn.classList.remove('animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90');
+                
+                // Re-aplicar apenas as classes corretas
+                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                
+                console.log('⚪ [UI] Classes do botão alteradas de:', oldClassName);
+                console.log('⚪ [UI] Classes do botão alteradas para:', dynamicBtn.className);
+                console.log('⚪ [UI] Classes resetadas para cinza - MÉTODO AGRESSIVO');
+                
+                // Verificação extra - se ainda tem vermelho, forçar novamente
+                setTimeout(() => {
+                    if (dynamicBtn.className.includes('red') || dynamicBtn.className.includes('pulse')) {
+                        console.log('⚠️ [UI] AINDA VERMELHO após reset! Forçando novamente...');
+                        dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                    }
+                }, 50);
+            }
+            
             clearInterval(state.recordingTimerInterval);
             timerEl.textContent = '00:00';
         }
+        
+        console.log('🎨 [UI] updateRecordingUI finalizada');
     }
 
     document.addEventListener('DOMContentLoaded', main);
