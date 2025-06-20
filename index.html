@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>    <meta charset="UTF-8">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>7Chat - Versão Final Otimizada (Atualizado)</title>
+    <title>7Chat - Versão Final Otimizada</title>
     
-    <!-- PWA Meta Tags -->    <meta name="theme-color" content="#1f2937"/>
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1f2937"/>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Um aplicativo de chat em tempo real.">    <link rel="apple-touch-icon" href="https://placehold.co/192x192/4f46e5/ffffff?text=7C">
-    <!-- O manifest.json é gerado e injetado via script no final do body -->    <!-- Favicon inline para evitar erro 404 -->
-    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3e%3ctext y='24' font-size='24' fill='%234f46e5'%3e7%3c/text%3e%3c/svg%3e" type="image/svg+xml">
-    <link rel="icon" href="/favicon.ico" />
+    <meta name="description" content="Um aplicativo de chat em tempo real.">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/4f46e5/ffffff?text=7C">
     
-    <!-- Tailwind CSS via CDN - Nota: Para produção, recomenda-se usar PostCSS ou Tailwind CLI -->
+    <!-- Favicon inline -->
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3e%3ctext y='24' font-size='24' fill='%234f46e5'%3e7%3c/text%3e%3c/svg%3e" type="image/svg+xml" />
+    
+    <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -29,252 +32,40 @@
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
     <style>
-        :root {
-            --real-vh: 1vh;
-        }        html, body {
-            height: 100vh; /* Fallback */
-            height: calc(var(--real-vh, 1vh) * 100);
-            overflow: hidden;
+        html, body {
+            height: 100vh;
+            overflow: auto;
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
         }
-        .messages-container {
-            background-image: url('https://i.imgur.com/kI46opI.png');
-            background-size: cover;
-            background-position: center;
+        
+        .hidden {
+            display: none !important;
         }
-        #sidebar, #login-screen {
-             background-image: url('https://i.imgur.com/KAWlxJS.png');
-             background-size: cover;
-             background-position: center;
-        }        .header-blur, .form-blur {
-            /* Backdrop blur mantido mas permitindo sobrescrita */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        .modal, .notification { animation: fadeIn .3s ease-out; }
+        
+        /* Estilos básicos para o app */
+        .modal { animation: fadeIn .3s ease-out; }
         .modal-content { animation: slideUp .3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .typing-indicator span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #9ca3af;
-            animation: typing-bounce 1.2s infinite ease-in-out;
-        }
-        .typing-indicator span:nth-child(2) { animation-delay: -1.0s; }
-        .typing-indicator span:nth-child(3) { animation-delay: -0.8s; }
-        @keyframes typing-bounce {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
-        }        /* Badge genérico - removido estilo específico para permitir customização */
-        
-        /* Estilos modernos forçados */
-        .group:hover .group-hover\:scale-105 {
-            transform: scale(1.05) !important;
-        }
-        
-        .group:hover .group-hover\:text-blue-400 {
-            color: #60a5fa !important;
-        }
-        
-        .group:hover .group-hover\:text-emerald-400 {
-            color: #34d399 !important;
-        }
-        
-        .group:hover .group-hover\:text-purple-400 {
-            color: #c084fc !important;
-        }
-        
-        .group:hover .group-hover\:text-indigo-400 {
-            color: #818cf8 !important;
-        }
-        
-        .group:hover .group-hover\:text-red-400 {
-            color: #f87171 !important;
-        }
-        
-        .group:hover .group-hover\:text-green-400 {
-            color: #4ade80 !important;
-        }
-        
-        .transition-all {
-            transition: all 0.3s ease !important;
-        }
-        
-        .hover\:scale-110:hover {
-            transform: scale(1.1) !important;
-        }
-        
-        .hover\:scale-105:hover {
-            transform: scale(1.05) !important;
-        }
-          .backdrop-blur-xl {
-            backdrop-filter: blur(24px) !important;
-            -webkit-backdrop-filter: blur(24px) !important;
-        }
-        
-        /* Estilos para mensagens */
-        .message-item {
-            margin-bottom: 0.75rem;
-        }
-        
-        .message-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        /* Quebra de linha para mensagens longas */
-        .break-words {
-            word-break: break-word;
-            overflow-wrap: break-word;
-            hyphens: auto;
-        }
-        
-        /* Animação suave para troca de ícones */
-        #dynamic-action-btn svg {
-            transition: opacity 0.2s ease-in-out;
-        }
-        .seen-icon {
-            width: 18px;
-            height: 18px;
-            margin-left: 6px;
-            align-self: flex-end;
-            margin-bottom: 2px;
-        }
-        audio::-webkit-media-controls-panel {
-            background-color: #4b5563;
-        }        audio::-webkit-media-controls-play-button,
-        audio::-webkit-media-controls-current-time-display,
-        audio::-webkit-media-controls-time-remaining-display,        audio::-webkit/media-controls-timeline,
-        audio::-webkit-media-controls-volume-slider {
-            filter: invert(1) grayscale(1) brightness(1.5);
-        }
-
-        /* Correções para PWA e teclado virtual */
-        html, body {
-            height: 100vh;
-            height: calc(var(--real-vh, 1vh) * 100);
-            overflow: auto; /* Mudança: permite scroll quando necessário */
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
-        }
-
-        /* Específico para PWA instalada */
-        @media all and (display-mode: standalone) {
-            html, body {
-                overflow: auto !important;
-                height: 100vh;
-                height: calc(var(--real-vh, 1vh) * 100);
-            }
-            
-            #login-screen {
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch;
-            }
-        }
-
-        /* Ajustes para quando teclado virtual aparece */
-        .keyboard-open {
-            overflow-y: auto !important;
-        }
-
-        .keyboard-open #login-screen {
-            height: auto !important;
-            min-height: 100vh;
-            overflow-y: auto !important;
-            padding-bottom: 50px;
-        }
-
-        /* Melhor responsividade para inputs em foco */
-        .input-focused {
-            position: relative;
-            z-index: 1000;
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
-        }
-
-        /* Ajustes específicos para iOS */
-        @supports (-webkit-touch-callout: none) {
-            .keyboard-open {
-                position: fixed;
-                width: 100%;
-                height: 100%;
-                overflow-y: scroll;
-            }
-        }
-
-        /* Container de login mais flexível */
-        #login-screen .w-full.max-w-sm {
-            margin: 20px auto;
-            position: relative;
-        }        /* Melhor viewport para dispositivos pequenos */
-        @media (max-height: 600px) {
-            #login-screen {
-                padding: 10px;
-                align-items: flex-start;
-                padding-top: 20px;
-            }
-            
-            #login-screen .w-full.max-w-sm {
-                margin: 10px auto;
-            }
-        }
-
-        /* Classe específica para PWA */
-        .pwa-mode {
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .pwa-mode #login-screen {
-            height: auto;
-            min-height: 100vh;
-            overflow-y: auto;
-        }
-
-        /* Melhor suporte para diferentes dispositivos */
-        @media screen and (max-device-width: 480px) {
-            .keyboard-open #login-screen {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                overflow-y: scroll;
-                -webkit-overflow-scrolling: touch;
-            }
-        }
-
-        /* Correção específica para formulário de login */
-        #login-form {
-            position: relative;
-            z-index: 10;
-        }
-
-        #login-form input {
-            position: relative;
-            z-index: 11;
-        }
-    </style><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    </style>
 </head>
-<body class="bg-black text-gray-200 overflow-hidden">
+<body class="bg-black text-gray-200">
 
     <!-- Menu de Navegação Inferior -->
     <div class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 shadow-lg z-50">
         <div class="flex justify-around text-gray-400">
-            <!-- Botão Amigos -->
             <a href="#" id="nav-friends" class="flex flex-col items-center justify-center p-3 text-center w-full hover:text-white transition-colors duration-300">
                 <i class="fas fa-user-friends text-xl"></i>
                 <span class="text-xs font-medium">Amigos</span>
             </a>
-            <!-- Botão Salas (ativo por padrão) -->
             <a href="#" id="nav-rooms" class="flex flex-col items-center justify-center p-3 text-center w-full text-indigo-400 border-t-2 border-indigo-500 hover:text-white transition-colors duration-300">
                 <i class="fas fa-comments text-xl"></i>
                 <span class="text-xs font-medium">Salas</span>
             </a>
-            <!-- Botão Configurar -->
             <a href="#" id="nav-settings" class="flex flex-col items-center justify-center p-3 text-center w-full hover:text-white transition-colors duration-300">
                 <i class="fas fa-cog text-xl"></i>
                 <span class="text-xs font-medium">Configurar</span>
@@ -282,106 +73,97 @@
         </div>
     </div>
 
-    <!-- ELEMENTOS GLOBAIS -->
-    <input type="file" id="image-uploader" class="hidden" accept="image/*" />
-    <input type="file" id="media-uploader" class="hidden" accept="image/*,video/*" />
-    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
-    </div>
-    <div id="notification-toast" class="hidden fixed bottom-5 right-5 bg-blue-500 text-white py-2 px-4 rounded-lg shadow-xl z-[101]"></div>
-    
-    <!-- Menu de Contexto Customizado para Salas -->
-    <div id="room-context-menu" class="hidden absolute bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-700">
-        <a href="#" id="context-pin" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"></a>
-        <a href="#" id="context-archive" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"></a>
-        <a href="#" id="context-clear-chat" class="hidden px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Limpar Conversa</a>
-        <a href="#" id="context-delete" class="block px-4 py-2 text-sm text-red-500 hover:bg-red-900/50"></a>
-    </div>
-
     <!-- TELA DE LOGIN -->
-    <div id="login-screen" class="hidden items-center justify-center h-full p-4 flex-col">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div id="invite-welcome-card" class="hidden w-full max-w-sm p-8 bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg space-y-4 mb-4 text-center z-10 border border-gray-700">
-            <h3 class="text-xl font-bold text-white">Você foi convidado!</h3>
-            <p class="text-gray-400">Para entrar na sala, entre como convidado ou faça login na sua conta.</p>            <button id="enter-as-guest-btn" class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-300">
-                Entrar como Convidado
-            </button>
-        </div>
+    <div id="login-screen" class="flex items-center justify-center h-full p-4 flex-col">
         <div class="w-full max-w-sm p-8 bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg space-y-6 z-10 border border-gray-700">
-            <h2 id="login-title" class="text-3xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">7Chat</h2>            <form id="login-form" class="space-y-4">
-                <input id="email-input" type="email" required placeholder="E-mail" autocomplete="email" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400 transition-all duration-300">
-                <input id="password-input" type="password" required placeholder="Senha" autocomplete="current-password" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400 transition-all duration-300">
-                <button type="submit" class="w-full flex items-center justify-center py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 transition-all duration-300">Login</button>
+            <h2 class="text-3xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">7Chat</h2>
+            <form id="login-form" class="space-y-4">
+                <input id="email-input" type="email" required placeholder="E-mail" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                <input id="password-input" type="password" required placeholder="Senha" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 transition duration-300">
+                    Entrar
+                </button>
             </form>
             <div class="text-center">
                 <span class="text-sm text-gray-500">ou</span>
                 <button id="main-guest-login-btn" class="mt-2 text-blue-400 hover:text-blue-300 font-semibold">Entrar como convidado</button>
             </div>
         </div>
-    </div>    <!-- CONTAINER PRINCIPAL DO APP -->
-    <div id="app-container" class="hidden h-full w-full relative overflow-hidden"></div>
-    
-    <!-- Coloque seu conteúdo principal (tela de salas/chat) aqui dentro -->
-    <div id="rooms-screen">
-        <!-- Exemplo: <h1 class="text-white text-center text-2xl mt-10">Tela de Salas</h1> -->    </div>
+    </div>
 
-    <!-- Nova Tela de Amigos (inicialmente oculta) -->
+    <!-- CONTAINER PRINCIPAL DO APP -->    <!-- CONTAINER PRINCIPAL DO APP -->
+    <div id="app-container" class="hidden h-full w-full relative overflow-hidden bg-gray-900">        <!-- Header superior -->
+        <div class="bg-gray-800 px-4 py-3 flex justify-between items-center border-b border-gray-700">
+            <!-- Espaço vazio à esquerda para centralizar o título -->
+            <div class="w-10"></div>
+            
+            <!-- Título Chats (centro) -->
+            <h1 class="text-white font-semibold text-xl">
+                Chats
+            </h1>
+            
+            <!-- Foto do usuário (direita) -->
+            <div class="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all duration-200 flex items-center justify-center" id="user-profile-btn">
+                <img id="user-profile-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                <svg id="user-profile-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </div>
+        </div>        <!-- Área de conteúdo principal -->
+        <div class="p-4">
+            <!-- Barra de busca (mais fina) -->
+            <div class="relative mb-4">
+                <div class="bg-gray-700 rounded-lg px-3 py-2 flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="search-conversations-input" 
+                        placeholder="Buscar" 
+                        class="bg-transparent flex-1 text-white placeholder-gray-400 focus:outline-none text-base"
+                    >
+                </div>
+            </div>
+            
+            <!-- Lista única de todas as conversas -->
+            <div id="all-conversations-list" class="space-y-2">
+                <!-- Todas as conversas aparecerão aqui -->
+            </div>
+            
+            <!-- Estado vazio -->
+            <div id="empty-state" class="text-center text-gray-400 py-12">
+                <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <p class="text-lg mb-2">Nenhuma conversa ainda</p>
+                <p class="text-sm">Adicione amigos ou crie salas para começar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Amigos -->
     <div id="friends-screen" class="hidden h-full w-full flex flex-col bg-gray-900 text-white pb-20">
-        <!-- Cabeçalho com Título, Busca e Botão de Editar -->
-        <div class="bg-gray-800 shadow-md p-4 space-y-4">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold">Amigos</h1>
-                <div>
-                    <!-- Botões que alternam de acordo com o modo de edição -->
-                    <button id="edit-friends-btn" class="text-blue-400 hover:text-blue-300 font-semibold">Editar</button>
-                    <button id="done-editing-btn" class="hidden text-blue-400 hover:text-blue-300 font-semibold">Concluir</button>
-                </div>
-            </div>
-            <!-- Barra de Busca -->
-            <div class="relative">
-                <input type="text" id="friend-search-input" placeholder="Buscar amigo pelo nome exato..." class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <i class="fas fa-search"></i>
-                </div>
-            </div>
+        <div class="bg-gray-800 shadow-md p-4">
+            <h1 class="text-2xl font-bold">Amigos</h1>
         </div>
-
-        <!-- Container da Lista de Amigos -->
-        <div id="friends-list-container" class="flex-1 p-4 space-y-3 overflow-y-auto">
-            <!-- A lista de amigos será gerada pelo JavaScript aqui -->
-        </div>
-
-        <!-- Barra de Ações de Exclusão (inicialmente oculta) -->
-        <div id="delete-actions-bar" class="hidden p-4 bg-gray-800 border-t border-gray-700">
-            <button id="delete-selected-btn" class="w-full py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed" disabled>
-                Excluir Selecionados
-            </button>
-        </div>
-    </div>
-    
-    <div id="guest-container" class="hidden h-full w-full relative overflow-hidden"></div>
-
-    <!-- MODAIS -->
-    <div id="image-viewer-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[50] p-4">
-        <div class="modal-content bg-transparent rounded-lg w-full max-w-2xl text-center relative">
-            <div class="w-full h-auto max-h-[85vh] overflow-hidden rounded-lg mx-auto">
-                 <img id="image-viewer-pic" class="w-full h-full object-contain">
-            </div>
-            <div id="image-viewer-actions" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-4"></div>
-            <button id="close-image-viewer-btn" class="absolute top-2 right-2 m-2 text-white/80 hover:text-white text-4xl font-light">&times;</button>
+        <div class="flex-1 p-4 flex items-center justify-center">
+            <p class="text-gray-400">Tela de amigos em desenvolvimento...</p>
         </div>
     </div>
 
-    <div id="custom-confirm-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-        <div class="modal-content bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center space-y-4 border border-gray-700">
-            <h3 id="custom-confirm-title" class="text-xl font-bold"></h3>
-            <p id="custom-confirm-message" class="text-gray-400"></p>
-            <div class="flex justify-center space-x-4">
-                <button id="custom-confirm-cancel-btn" class="px-6 py-2 bg-gray-600 rounded-md hover:bg-gray-500">Cancelar</button>
-                <button id="custom-confirm-ok-btn" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirmar</button>
-            </div>
+    <!-- Container para convidados -->
+    <div id="guest-container" class="hidden h-full w-full relative overflow-hidden">
+        <div class="h-full flex items-center justify-center text-center p-4">
+            <p class="text-white">Modo convidado ativo</p>
         </div>
-    </div>    <div id="custom-prompt-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    </div>
+
+    <!-- Elementos de notificação -->
+    <div id="notification-toast" class="hidden fixed bottom-5 right-5 bg-blue-500 text-white py-2 px-4 rounded-lg shadow-xl z-[101]"></div>
+
+    <!-- Modal básico para prompts -->
+    <div id="custom-prompt-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
         <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4 border border-gray-700">
             <h3 id="custom-prompt-title" class="text-xl font-bold text-center text-white"></h3>
             <p id="custom-prompt-message" class="text-gray-400 text-center"></p>
@@ -390,1101 +172,30 @@
         </div>
     </div>
 
-    <!-- MODAL DE NOTIFICAÇÕES OBRIGATÓRIAS -->
-    <div id="mandatory-notifications-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[70] p-4">
-        <div class="modal-content bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-md space-y-6 border border-gray-700">
-            <div class="text-center">
-                <div class="mx-auto w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-white mb-2">Notificações Obrigatórias</h3>
-                <p class="text-gray-300 text-center leading-relaxed">
-                    Para usar o 7Chat, você precisa ativar as notificações. Isso garante que você receba mensagens importantes e tenha a melhor experiência no app.
-                </p>
-            </div>
-            
-            <div class="bg-gray-700/50 rounded-lg p-4 space-y-3">
-                <div class="flex items-center space-x-3">
-                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span class="text-sm text-gray-300">Receba mensagens em tempo real</span>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span class="text-sm text-gray-300">Não perca conversas importantes</span>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span class="text-sm text-gray-300">Mantenha-se conectado</span>
-                </div>
-            </div>
-            
-            <button id="activate-mandatory-notifications-btn" class="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 flex items-center justify-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                </svg>
-                <span>Ativar Notificações</span>
-            </button>
-            
-            <p id="mandatory-notifications-status" class="text-xs text-center text-gray-500"></p>
-        </div>
-    </div>
-
-    <div id="share-link-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Convidar para a Sala</h3><button id="close-share-link-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
-            <p class="text-gray-400">Compartilhe este link para que outros possam entrar:</p>
-            <div class="flex items-center space-x-2">
-                <input type="text" id="share-link-input" readonly class="w-full border bg-gray-700 border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-300">
-                <button id="copy-link-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0">Copiar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="user-settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-md space-y-6 border border-gray-700">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Configurações</h3><button id="close-user-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
-            <div class="flex flex-col items-center space-y-4">
-                <div class="relative group w-24 h-24">
-                    <img id="user-settings-pic" class="w-full h-full rounded-full bg-gray-600 object-cover cursor-pointer">
-                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity rounded-full">Trocar</div>
-                </div>            <div class="w-full">
-                <label for="user-settings-name" class="block text-sm font-medium text-gray-400">Nome de Usuário</label>
-                <input type="text" id="user-settings-name" class="mt-1 w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700" />
-            </div>
-        </div>
-        <div class="pt-4 border-t border-gray-700 space-y-2">
-                <button id="logout-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    <span>Sair</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="room-settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-gray-800 text-white rounded-lg shadow-xl p-6 w-full max-w-lg space-y-6 border border-gray-700">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold">Configurações da Sala</h3><button id="close-room-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
-            <div class="flex items-center space-x-4">
-                <div class="relative group flex-shrink-0 w-16 h-16">
-                    <img id="room-settings-pic" class="w-full h-full rounded-full bg-gray-600 object-cover cursor-pointer">
-                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity rounded-full">Trocar</div>
-                </div>
-                <div class="w-full">
-                    <label for="room-settings-name" class="block text-sm font-medium text-gray-400">Nome da Sala</label>
-                    <input type="text" id="room-settings-name" class="mt-1 w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700" />
-                </div>
-            </div>
-            <div class="pt-4 border-t border-gray-700">
-                <h4 class="text-lg font-semibold">Membros</h4>
-                <div id="room-members-list" class="mt-2 max-h-48 overflow-y-auto space-y-2"></div>
-            </div>
-            <div id="add-member-section" class="hidden pt-4 border-t border-gray-700">
-                 <button id="add-member-btn" class="w-full text-left px-4 py-2 bg-blue-800 text-blue-200 rounded-md hover:bg-blue-700">Adicionar Membro</button>
-            </div>
-            <div class="pt-4 border-t border-gray-700">
-                <button id="clear-chat-btn" class="w-full text-left px-4 py-2 bg-red-900/50 text-red-300 rounded-md hover:bg-red-900/70">Limpar Histórico de Mensagens</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="add-member-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Adicionar Amigo ao Grupo</h3><button id="close-add-member-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
-            <div id="add-member-list" class="max-h-60 overflow-y-auto"></div>
-        </div>
-    </div>
-
-    <div id="create-room-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4 border border-gray-700">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Criar Nova Sala</h3><button id="close-create-modal-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
-            <form id="create-room-form">
-                <div><label for="room-name-input" class="block text-sm font-medium text-gray-400">Nome da Sala</label><input type="text" id="room-name-input" required class="mt-1 w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2" /></div>
-                <div><label for="room-password-input" class="block text-sm font-medium text-gray-400">Senha (Opcional)</label><input type="password" id="room-password-input" placeholder="Deixe em branco para sala pública" class="mt-1 w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2" /></div>
-                <div class="flex justify-end space-x-3 pt-2"><button type="button" id="cancel-create-room-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Criar</button></div>
-            </form>
-        </div>
-    </div>
-    
-    <div id="user-search-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border-gray-700">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Encontrar Usuários</h3><button id="close-user-search-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
-            <div class="relative">
-                <input type="search" id="user-search-input" placeholder="Digite o nome de usuário..." class="w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2 pl-10 text-white">
-                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-            <div id="user-search-results" class="max-h-60 overflow-y-auto"></div>
-        </div>
-    </div>
-    
-    <div id="friend-requests-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
-            <div class="flex justify-between items-center"><h3 class="text-2xl font-bold text-white">Pedidos de Amizade</h3><button id="close-friend-requests-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button></div>
-            <div id="friend-requests-list" class="max-h-60 overflow-y-auto"></div>
-        </div>
-    </div>    <!-- Modal de Configurações da Conversa -->
-    <div id="conversation-settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[55] p-4">
-        <div class="modal-content bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-2xl shadow-2xl p-0 w-full max-w-md border border-gray-600 overflow-hidden">
-            <!-- Header do Modal -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 relative">
-                <button id="close-conversation-settings-btn" class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-all duration-200">&times;</button>
-                <h3 class="text-2xl font-bold text-white">Configurações</h3>
-                <p class="text-blue-100 text-sm mt-1">Personalize sua conversa</p>
-            </div>
-            
-            <!-- Informações do Chat -->
-            <div class="p-6 bg-gray-800/50 border-b border-gray-700">
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5">
-                            <div class="w-full h-full rounded-full overflow-hidden bg-gray-800">
-                                <img id="conversation-settings-pic" class="w-full h-full object-cover">
-                            </div>
-                        </div>
-                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-gray-800"></div>
-                    </div>                    <div class="flex-1 min-w-0">
-                        <h4 id="conversation-settings-name" class="text-lg font-semibold text-white truncate"></h4>
-                        <p id="conversation-settings-type" class="text-sm text-gray-400"></p>
-                        <div id="user-status-indicator" class="flex items-center space-x-2 mt-1">
-                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <span class="text-xs text-green-400">Online</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Opções da Conversa -->
-            <div class="p-6 space-y-4">
-                <!-- Notificações -->
-                <div class="flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 transition-all duration-200">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <span class="font-medium text-white">Notificações</span>
-                            <p class="text-xs text-gray-400">Receber alertas desta conversa</p>
-                        </div>
-                    </div>                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="conversation-notifications-toggle" class="sr-only peer">
-                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:left-1.5 after:-translate-y-1/2 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                </div>
-
-                <!-- Sons -->
-                <div class="flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 transition-all duration-200">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.464 8.464a5 5 0 000 7.072"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <span class="font-medium text-white">Sons</span>
-                            <p class="text-xs text-gray-400">Tocar sons de notificação</p>
-                        </div>
-                    </div>                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="conversation-sounds-toggle" class="sr-only peer" checked>
-                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:left-1.5 after:-translate-y-1/2 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                    </label>
-                </div>
-
-                <!-- Arquivos de Mídia -->
-                <button class="w-full flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 hover:border-blue-500/50 transition-all duration-200 group">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-left">
-                            <span class="font-medium text-white">Arquivos de Mídia</span>
-                            <p class="text-xs text-gray-400">Fotos, vídeos e documentos</p>
-                        </div>
-                    </div>
-                    <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-
-                <!-- Buscar Mensagens -->
-                <button class="w-full flex items-center justify-between p-4 bg-gray-700/50 rounded-xl border border-gray-600/50 hover:bg-gray-700/70 hover:border-blue-500/50 transition-all duration-200 group">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-left">
-                            <span class="font-medium text-white">Buscar Mensagens</span>
-                            <p class="text-xs text-gray-400">Encontrar mensagens específicas</p>
-                        </div>
-                    </div>
-                    <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-            </div>            <!-- Ações da Conversa -->
-            <div class="p-6 pt-0 space-y-3 border-t border-gray-700/50">
-                <button id="clear-chat-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-medium hover:from-yellow-600 hover:to-orange-600 transition-all duration-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1H7a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                    <span>Limpar Conversa</span>
-                </button>
-                
-                <button id="block-user-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all duration-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364L18.364 5.636"></path>
-                    </svg>
-                    <span>Bloquear Usuário</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
 <script type="module">
     // --- IMPORTAÇÕES ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, where, updateDoc, arrayUnion, writeBatch, getDocs, arrayRemove, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
-    import { getDatabase, ref as rtdbRef, onValue, set, onDisconnect, serverTimestamp as rtdbServerTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
+    import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // --- CONFIGURAÇÃO DO FIREBASE ---
     const firebaseConfig = {
-      apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
-      authDomain: "seu-projeto-chat.firebaseapp.com",
-      projectId: "seu-projeto-chat",
-      storageBucket: "seu-projeto-chat.firebasestorage.app",
-      messagingSenderId: "259194791953",
-      appId: "1:259194791953:web:587ea979f1f26aff2629b0"
+        apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
+        authDomain: "seu-projeto-chat.firebaseapp.com",
+        projectId: "seu-projeto-chat",
+        storageBucket: "seu-projeto-chat.firebasestorage.app",
+        messagingSenderId: "259194791953",
+        appId: "1:259194791953:web:587ea979f1f26aff2629b0"
     };
 
     // --- VARIÁVEIS GLOBAIS ---
-    let app, auth, db, rtdb, storage, messaging;
-    const ui = {};    const state = { 
+    let app, auth, db;
+    const state = { 
         currentUserId: null, 
-        currentUserData: null, 
-        currentRoomData: null,
-        roomsData: [],
-        friendsData: new Map(),
-        usersStatus: {}, 
-        readReceiptObserver: null,
-        imageUploadContext: null,
-        unsubscribeRoom: null, 
-        unsubscribeMessages: null, 
-        unsubscribeUserRooms: null,
-        unsubscribeUserData: null,
-        unsubscribePresence: null,
-        unsubscribeSearchListener: null,
-        typingTimeout: null,
-        isRecording: false,
-        mediaRecorder: null,
-        audioChunks: [],        recordingStartTime: 0,
-        recordingTimerInterval: null,
-        notificationCheckInterval: null,        isEditingFriends: false, // <-- ADICIONE ESTA LINHA
-        selectedFriendsForDeletion: [], // <-- E ESTA LINHA
-        userSearchResults: [] // <-- ADICIONE ESTA LINHA
-    };// --- LÓGICA DE INICIALIZAÇÃO ---
-
-    // Função para verificar se elementos essenciais existem
-    function checkRequiredElements() {
-        const requiredElements = [
-            'login-screen',
-            'app-container', 
-            'guest-container',
-            'friends-screen'
-        ];
-        
-        const missing = requiredElements.filter(id => !document.getElementById(id));
-        
-        if (missing.length > 0) {
-            console.error('❌ Elementos HTML obrigatórios não encontrados:', missing);
-            return false;
-        }
-        
-        console.log('✅ Todos os elementos HTML necessários encontrados');
-        return true;
-    }    function main() {
-        console.log('🚀 Inicializando aplicação...');
-        
-        if (!checkRequiredElements()) {
-            console.error('❌ Aplicação não pode inicializar - elementos HTML faltando');
-            return;
-        }
-        
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            storage = getStorage(app);
-            rtdb = getDatabase(app);
-
-            try {
-                messaging = getMessaging(app);
-                console.log('✅ Firebase Messaging inicializado');
-            } catch (err) {
-                console.warn("⚠️ Firebase Messaging não é suportado neste ambiente.", err.message);
-                messaging = null;
-            }
-
-            console.log('✅ Firebase inicializado com sucesso');
-            
-            bindGlobalUI();
-            onAuthStateChanged(auth, handleAuthChange);
-            
-            console.log('✅ Event listeners configurados');
-            
-        } catch (error) {
-            console.error('❌ Erro ao inicializar Firebase:', error);
-            
-            // Forçar mostrar tela de login mesmo com erro
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('login-screen').classList.add('flex');
-            document.getElementById('app-container').classList.add('hidden');
-            
-            showNotification?.('Erro de conexão. Tente recarregar a página.', 'error');
-        }
-    }
-    
-    function getRoomDisplayName(room, currentUserId) {
-        if (!room) return 'Carregando...';
-        if (room.isDirectMessage) {
-            const otherUserId = room.members.find(id => id !== currentUserId);
-            return room.memberDetails?.[otherUserId] || 'Conversa Privada';
-        }
-        return room.name;
-    }
-
-    async function handleAuthChange(user) {
-        const params = new URLSearchParams(window.location.search);
-        const roomIdFromUrl = params.get('room');        const cleanupListeners = () => {
-            if (state.unsubscribeUserRooms) state.unsubscribeUserRooms();
-            if (state.unsubscribeUserData) state.unsubscribeUserData();
-            if (state.unsubscribeRoom) state.unsubscribeRoom();
-            if (state.unsubscribeMessages) state.unsubscribeMessages();
-            if (state.unsubscribeSearchListener) state.unsubscribeSearchListener();
-            if (state.unsubscribePresence) state.unsubscribePresence();
-            if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
-            if (state.notificationCheckInterval) clearInterval(state.notificationCheckInterval);
-        };if (user) {
-            state.currentUserId = user.uid;
-            
-            let userSnap = await getDoc(doc(db, 'users', user.uid));
-            if (!userSnap.exists()) {
-                try {
-                    await createUserProfile(user);
-                } catch (e) { 
-                    console.error("Failed to create user profile:", e);
-                    await signOut(auth);
-                    return;
-                } 
-            }
-            
-            if (roomIdFromUrl && user.isAnonymous) {
-                const roomSnap = await getDoc(doc(db, 'rooms', roomIdFromUrl));
-                if (!roomSnap.exists()) {
-                    showNotification("A sala para a qual você foi convidado não existe mais.", "error");
-                    await signOut(auth); return;
-                }
-                await setupGuestUI(roomIdFromUrl);
-            } else {
-                // Para usuários não convidados, verificar notificações obrigatórias
-                if (!user.isAnonymous) {
-                    const notificationsAllowed = enforceNotifications();
-                    if (!notificationsAllowed) {
-                        return; // Interrompe o setup até que as notificações sejam ativadas
-                    }
-                }
-                
-                await setupMainUI(roomIdFromUrl);
-            }
-
-            if(!user.isAnonymous) {
-                setupPresenceSystem(); 
-                // Só chamar setupPushNotifications se as notificações já estiverem permitidas
-                if (checkNotificationPermission() === 'granted') {
-                    setupPushNotifications();
-                }
-                // Monitorar mudanças no status das notificações
-                monitorNotificationStatus();
-            }
-
-        } else {
-            cleanupListeners();
-            Object.assign(state, { currentUserData: null, currentUserId: null, roomsData: [], usersStatus: {}, friendsData: new Map() });
-            
-            ['guest-container', 'app-container'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            const loginScreen = document.getElementById('login-screen');
-            const inviteCard = document.getElementById('invite-welcome-card');
-            
-            if (roomIdFromUrl) {
-                inviteCard.classList.remove('hidden');
-                document.getElementById('enter-as-guest-btn').onclick = () => signInAnonymously(auth);
-            } else {
-                inviteCard.classList.add('hidden');
-            }
-            document.getElementById('main-guest-login-btn').onclick = () => signInAnonymously(auth);
-            loginScreen.classList.remove('hidden');
-            loginScreen.classList.add('flex');
-            document.getElementById('login-form').onsubmit = handleLogin;
-        }
-    }
-    
-    async function createUserProfile(user) {
-        const baseProfile = { uid: user.uid, friends: [], friendRequests: [], fcmTokens: [] };
-
-        if (user.isAnonymous) {
-            const guestName = await showCustomPrompt("Bem-vindo(a)!", "Para entrar, por favor, digite seu nome de convidado.");
-            if (!guestName) { await signOut(auth); throw new Error("Guest name not provided."); }
-            Object.assign(baseProfile, {
-                username: `Convidado: ${guestName.trim()}`,
-                guest_name_lowercase: guestName.trim().toLowerCase(),
-                isGuest: true,
-                photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(guestName.trim()[0])}&background=random&color=fff`
-            });
-        } else {
-            const username = user.email.split('@')[0];
-            Object.assign(baseProfile, {
-                username, username_lowercase: username.toLowerCase(), email: user.email, isGuest: false,
-                photoURL: `https://i.pravatar.cc/150?u=${user.uid}`
-            });
-        }
-        await setDoc(doc(db, 'users', user.uid), baseProfile);
-    }
-    
-    async function setupGuestUI(roomId) {
-        try {
-            await updateDoc(doc(db, 'rooms', roomId), { members: arrayUnion(state.currentUserId) });
-        } catch(e) { console.warn("Could not add guest to room members, maybe already there.", e); }
-        document.getElementById('guest-container').classList.remove('hidden');
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app-container').classList.add('hidden');
-        await openRoom(roomId, true);
-        history.replaceState(null, '', window.location.pathname);
-    }
-
-    async function setupMainUI(roomIdFromUrl) {
-        document.getElementById('guest-container').classList.add('hidden');
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
-        initMainLayout();
-        bindMainUI();
-        setupDataListeners(); 
-        if (roomIdFromUrl) {
-            await openRoom(roomIdFromUrl);
-            history.replaceState(null, '', window.location.pathname);
-        }
-    }
-
-    async function handleLogin(e) {
-        e.preventDefault();
-        try {
-            await signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value);
-        } catch (err) { showNotification("Falha no login: " + err.message, "error"); }
-    }    function initMainLayout() {
-        document.getElementById('app-container').innerHTML = `
-        <div id="sidebar" class="w-full md:w-1/3 h-full transition-transform duration-300 ease-in-out transform md:translate-x-0 relative flex flex-col bg-gray-900">
-            <!-- CABEÇALHO REDESENHADO -->
-            <header class="relative p-4 flex justify-between items-center border-b border-gray-800">
-                <!-- Botão de Sino (Pedidos de Amizade) -->
-                <button id="friend-requests-btn" title="Pedidos de Amizade" class="group relative p-3 rounded-xl hover:bg-gray-800 transition-all duration-300">
-                     <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                     </svg>
-                     <span id="friend-requests-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center border-2 border-gray-900"></span>
-                </button>
-                
-                <!-- Foto do Perfil (agora leva para as Configurações) -->
-                <div id="user-settings-btn" title="Configurações" class="relative z-10 cursor-pointer">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5 hover:scale-105 transition-transform duration-300">
-                        <div class="w-full h-full rounded-full overflow-hidden bg-gray-600">
-                            <img id="my-profile-pic" class="w-full h-full object-cover">
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- TÍTULO E NOVA BARRA DE BUSCA -->
-            <div class="p-4 space-y-4">
-                <h1 class="text-3xl font-bold text-white">Conversas</h1>
-                <div class="relative">
-                    <input type="search" id="conversation-search-input" placeholder="Pesquisar conversas..." class="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-4 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <i class="fas fa-search"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lista de Salas/Conversas -->
-            <div id="room-list-container" class="overflow-y-auto flex-1 pb-24"></div>
-
-            <!-- BOTÃO DE CRIAR SALA REPOSICIONADO -->
-            <button id="create-room-btn" class="group absolute bottom-24 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300 z-20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-            </button>
-        </div>
-
-        <div id="chat-panel" class="w-full md:flex-grow absolute md:static inset-0 flex flex-col bg-black transition-transform duration-300 ease-in-out transform translate-x-full md:translate-x-0 pb-16">
-            <div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>
-        </div>`;
-    }function bindGlobalUI() {
-        document.getElementById('close-user-settings-btn').onclick = () => document.getElementById('user-settings-modal').classList.add('hidden');
-        document.getElementById('close-room-settings-btn').onclick = () => document.getElementById('room-settings-modal').classList.add('hidden');
-        document.getElementById('close-add-member-btn').onclick = () => document.getElementById('add-member-modal').classList.add('hidden');
-        document.getElementById('close-create-modal-btn').onclick = () => document.getElementById('create-room-modal').classList.add('hidden');
-        document.getElementById('close-image-viewer-btn').onclick = () => document.getElementById('image-viewer-modal').classList.add('hidden');
-        document.getElementById('close-share-link-btn').onclick = () => document.getElementById('share-link-modal').classList.add('hidden');
-        document.getElementById('close-friend-requests-btn').onclick = () => document.getElementById('friend-requests-modal').classList.add('hidden');
-        document.getElementById('close-user-search-btn').onclick = () => {
-             if (state.unsubscribeSearchListener) state.unsubscribeSearchListener();
-             document.getElementById('user-search-modal').classList.add('hidden');
-        };
-        document.getElementById('close-conversation-settings-btn').onclick = () => document.getElementById('conversation-settings-modal').classList.add('hidden');
-        document.getElementById('create-room-form').onsubmit = handleCreateRoomSubmit;
-        document.getElementById('image-uploader').onchange = handleMediaUpload;
-        document.getElementById('media-uploader').onchange = handleMediaUpload;
-        window.addEventListener('click', () => document.getElementById('room-context-menu').classList.add('hidden'));
-        
-        // Event listeners para o modal de configurações da conversa
-        const conversationModal = document.getElementById('conversation-settings-modal');
-        conversationModal.onclick = (e) => {
-            if (e.target === conversationModal) {
-                conversationModal.classList.add('hidden');
-            }
-        };
-    }    function bindMainUI() {
-        Object.assign(ui, {
-            myProfilePic: document.getElementById('my-profile-pic'),
-            userSettingsBtn: document.getElementById('user-settings-btn'),
-            createRoomBtn: document.getElementById('create-room-btn'),
-            roomListContainer: document.getElementById('room-list-container'),
-            friendRequestsBtn: document.getElementById('friend-requests-btn'),
-            friendRequestsBadge: document.getElementById('friend-requests-badge'),
-            conversationSearchInput: document.getElementById('conversation-search-input')
-        });
-
-        // O clique na foto do perfil agora abre as configurações
-        if (ui.userSettingsBtn) ui.userSettingsBtn.onclick = openUserSettings;
-        if (ui.createRoomBtn) ui.createRoomBtn.onclick = () => document.getElementById('create-room-modal').classList.remove('hidden');
-        if (ui.friendRequestsBtn) ui.friendRequestsBtn.onclick = openFriendRequestsModal;        // A nova busca de conversas irá filtrar a lista
-        if (ui.conversationSearchInput) {
-            ui.conversationSearchInput.oninput = () => renderSidebarLists();
-        }
-
-        // --- Lógica de Navegação Principal ---
-        const navFriends = document.getElementById('nav-friends');
-        const navRooms = document.getElementById('nav-rooms');
-        const appContainer = document.getElementById('app-container');
-        const friendsScreen = document.getElementById('friends-screen');
-
-        if (navFriends) {
-            navFriends.addEventListener('click', (e) => {
-                e.preventDefault();
-                friendsScreen.classList.remove('hidden');
-                appContainer.classList.add('hidden');
-                updateNav(navFriends);
-                renderFriendsScreen(); 
-            });
-        }
-
-        if (navRooms) {
-            navRooms.addEventListener('click', (e) => {
-                e.preventDefault();
-                appContainer.classList.remove('hidden');
-                friendsScreen.classList.add('hidden');
-                updateNav(navRooms);
-            });
-        }
-    }
-    
-    function setupDataListeners() {
-        if (!state.currentUserId) return;
-        cleanupOldListeners();
-
-        state.unsubscribeUserData = onSnapshot(doc(db, 'users', state.currentUserId), (docSnap) => {
-            if (docSnap.exists()) {
-                const oldData = state.currentUserData;
-                state.currentUserData = { uid: docSnap.id, ...docSnap.data() };
-                if (JSON.stringify(oldData?.friends) !== JSON.stringify(state.currentUserData.friends)) {
-                    fetchFriendsData(); 
-                }
-                renderApp();
-            } else {
-                console.error("User document not found, signing out.");
-                signOut(auth);
-            }
-        });
-
-        const roomsQuery = query(collection(db, 'rooms'), where("members", "array-contains", state.currentUserId));
-        state.unsubscribeUserRooms = onSnapshot(roomsQuery, (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "modified") {
-                    const changedRoomData = { id: change.doc.id, ...change.doc.data() };
-                    const lastMessage = changedRoomData.lastMessage;
-
-                    if (lastMessage && lastMessage.senderId !== state.currentUserId) {
-                        const chatPanel = document.getElementById('chat-panel');
-                        const guestContainer = document.getElementById('guest-container');
-                        const isChatOpen = (chatPanel?.dataset.currentRoomId === changedRoomData.id) || (guestContainer?.dataset.currentRoomId === changedRoomData.id);
-
-                        if (!isChatOpen) {
-                            if (navigator.vibrate) {
-                                navigator.vibrate([100, 50, 100]);
-                            }
-                            if (changedRoomData.isDirectMessage && !state.currentUserData.isGuest) {
-                                const otherUserId = changedRoomData.members.find(id => id !== state.currentUserId);
-                                const otherUserDetails = changedRoomData.memberDetails || {};
-                                const otherUserPhoto = changedRoomData.memberPhotos || {};
-                                createOrGetDirectMessageRoom(otherUserId, otherUserDetails[otherUserId], otherUserPhoto[otherUserId]);
-                            }
-                        }
-                    }
-                }
-            });
-
-            state.roomsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderApp();
-        });
-
-        const statusRef = rtdbRef(rtdb, 'status');
-        state.unsubscribePresence = onValue(statusRef, (snapshot) => {
-            state.usersStatus = snapshot.val() || {};
-            renderApp();
-        });
-    }
-    
-    async function fetchFriendsData() {
-        const { friends = [] } = state.currentUserData || {};
-        if (friends.length === 0) {
-            state.friendsData.clear();
-            renderApp();
-            return;
-        }
-        const friendsQuery = query(collection(db, 'users'), where('uid', 'in', friends));
-        const friendsSnapshots = await getDocs(friendsQuery);
-        state.friendsData.clear();
-        friendsSnapshots.forEach(doc => {
-            state.friendsData.set(doc.id, doc.data());
-        });
-        renderApp();
-    }
-
-    function cleanupOldListeners() {
-        if (state.unsubscribeUserData) state.unsubscribeUserData();
-        if (state.unsubscribeUserRooms) state.unsubscribeUserRooms();
-        if (state.unsubscribePresence) state.unsubscribePresence();
-    }    function renderApp() {
-        if (!state.currentUserData || !document.getElementById('sidebar')) return;
-        renderSidebarHeader();
-        renderSidebarLists();
-        renderFriendsScreen(); // <-- ADICIONE ESTA LINHA
-
-        const createRoomBtn = document.getElementById('create-room-btn');
-        if (createRoomBtn) {
-            createRoomBtn.style.display = state.currentUserData.isGuest ? 'none' : 'flex';
-        }    }
-
-    function renderSidebarLists() {
-        const container = document.getElementById('room-list-container');
-        const searchInput = document.getElementById('conversation-search-input');
-        
-        if (!container || !state.currentUserData) return;
-
-        const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        let roomsData = [...state.roomsData];
-
-        // Filtra as salas se houver um termo de busca
-        if (searchTerm) {
-            roomsData = roomsData.filter(room => {
-                const roomName = getRoomDisplayName(room, state.currentUserId).toLowerCase();
-                return roomName.includes(searchTerm);
-            });
-        }
-
-        let roomsHtml = '';
-        if (roomsData.length > 0) {
-            roomsData.sort((a, b) => (b.lastMessage?.timestamp || 0) - (a.lastMessage?.timestamp || 0));
-            // Agora a chamada a `renderRoomItem` vai funcionar corretamente
-            roomsHtml = roomsData.map(room => renderRoomItem(room)).join('');
-        } else {
-             roomsHtml += `<p class="px-4 text-sm text-gray-500 text-center mt-10">${searchTerm ? 'Nenhuma conversa encontrada.' : 'Você ainda não tem conversas. Inicie uma nova clicando no botão +.'}</p>`;
-        }
-
-        // A lista de amigos foi removida desta tela
-        container.innerHTML = roomsHtml;        // Reconecta os eventos de clique para cada item de conversa
-        container.querySelectorAll('.room-item').forEach(el => {
-            el.onclick = () => openRoom(el.dataset.roomId);
-            // Menu de contexto temporariamente removido
-            // el.oncontextmenu = (e) => showRoomContextMenu(e, el.dataset.roomId);
-        });
-    }
-    function updateNav(activeButton) {
-        const navFriends = document.getElementById('nav-friends');
-        const navRooms = document.getElementById('nav-rooms');
-        if (!navFriends || !navRooms) return;
-
-        [navFriends, navRooms].forEach(btn => {
-
-            btn.classList.remove('text-indigo-400', 'border-t-2', 'border-indigo-500');
-            btn.classList.add('text-gray-400');
-        });
-        activeButton.classList.add('text-indigo-400', 'border-t-2', 'border-indigo-500');
-        activeButton.classList.remove('text-gray-400');
-    }
-
-    async function handleFriendSearch() {
-        const searchInput = document.getElementById('friend-search-input');
-        const searchTerm = searchInput.value.toLowerCase().trim();
-
-        if (!searchTerm) {
-            state.userSearchResults = []; // Limpa os resultados se a busca estiver vazia
-            renderFriendsScreen();
-            return;
-        }
-
-        try {
-            // Busca por usuários cujo nome minúsculo começa com o termo de busca
-            const usersRef = collection(db, 'users');
-            const q = query(usersRef, 
-                where('username_lowercase', '>=', searchTerm),
-                where('username_lowercase', '<=', searchTerm + '\uf8ff')
-            );
-            
-            const querySnapshot = await getDocs(q);
-            state.userSearchResults = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderFriendsScreen(); // Re-renderiza a tela com os resultados da busca
-        } catch (error) {
-            console.error("Erro ao buscar usuários:", error);
-            showNotification("Não foi possível realizar a busca.", "error");
-        }
-    }    function formatTimestamp(ts) {
-        if (!ts || !ts.toDate) return '';
-        const date = ts.toDate();
-        const now = new Date();
-        const diffSeconds = (now.getTime() - date.getTime()) / 1000;
-        const diffDays = Math.floor(diffSeconds / 86400);
-
-        if (diffDays < 1 && date.getDate() === now.getDate()) {
-            return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        }
-        if (diffDays < 2 && date.getDate() === now.getDate() - 1) {
-            return 'Ontem';
-        }
-        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    }
-
-    function renderRoomItem(room) {
-        const roomName = getRoomDisplayName(room, state.currentUserId);
-        
-        let photoURL = room.photoURL;
-        if (room.isDirectMessage) {
-            const otherUserId = room.members.find(id => id !== state.currentUserId);
-            photoURL = room.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(roomName[0])}&background=random&color=fff`;
-        }
-
-        const lastMessage = room.lastMessage;
-        let lastMessageHtml = '<span class="text-gray-500">Nenhuma mensagem ainda.</span>';
-        if (lastMessage) {
-            const messageText = lastMessage.type === 'image' ? '📷 Foto' : (lastMessage.type === 'audio' ? '🎤 Áudio' : (lastMessage.text || ''));
-            const senderPrefix = lastMessage.senderId === state.currentUserId ? "Você: " : "";
-            lastMessageHtml = `<span class="text-gray-400 truncate">${senderPrefix}${messageText}</span>`;
-        }
-
-        const timestamp = lastMessage?.timestamp ? formatTimestamp(lastMessage.timestamp) : '';
-
-        return `
-            <div class="room-item group relative p-3 mx-2 rounded-xl flex items-center hover:bg-gray-800 cursor-pointer transition-all duration-200" data-room-id="${room.id}">
-                <div class="relative flex-shrink-0">
-                    <img src="${photoURL}" class="w-14 h-14 rounded-full object-cover ring-2 ring-gray-700/50 group-hover:ring-blue-500 transition-all duration-300" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(roomName[0])}&background=random&color=fff';">
-                </div>
-                <div class="flex-1 ml-4 min-w-0 border-b border-gray-800 group-hover:border-gray-700 py-3 pr-2">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-white truncate">${roomName}</h3>
-                        <span class="text-xs text-gray-500 flex-shrink-0 ml-2">${timestamp}</span>
-                    </div>
-                    <div class="flex justify-between items-start mt-1">
-                        ${lastMessageHtml}
-                        <!-- Futuramente, um contador de mensagens não lidas pode ir aqui -->
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    // Função básica para abrir uma sala/conversa
-    async function openRoom(roomId, isFromUrl = false) {
-        if (!roomId) return;
-        
-        try {
-            const roomRef = doc(db, 'rooms', roomId);
-            const roomDoc = await getDoc(roomRef);
-            
-            if (!roomDoc.exists()) {
-                showNotification("Esta conversa não existe mais.", "error");
-                return;
-            }
-            
-            const roomData = { id: roomDoc.id, ...roomDoc.data() };
-            
-            // Verifica se o usuário é membro da sala
-            if (!roomData.members.includes(state.currentUserId)) {
-                showNotification("Você não tem acesso a esta conversa.", "error");
-                return;
-            }
-            
-            // Atualiza o painel de chat com a conversa selecionada
-            const chatPanel = document.getElementById('chat-panel');
-            if (chatPanel) {
-                chatPanel.dataset.currentRoomId = roomId;
-                
-                // Aqui você pode implementar a lógica para carregar mensagens
-                chatPanel.innerHTML = `
-                    <div class="h-full flex items-center justify-center text-center p-4">
-                        <p class="text-gray-500">Conversa: ${getRoomDisplayName(roomData, state.currentUserId)}</p>
-                    </div>
-                `;
-                
-                console.log("Sala aberta:", roomData);
-                // TODO: Implementar carregamento de mensagens aqui
-            }
-            
-        } catch (error) {
-            console.error("Erro ao abrir sala:", error);
-            showNotification("Erro ao abrir conversa.", "error");
-        }
-    }
-
-    // Função básica para criar ou obter uma conversa direta
-    async function createOrGetDirectMessageRoom(otherUserId, otherUsername, otherUserPhoto) {
-        if (!otherUserId || otherUserId === state.currentUserId) return;
-        
-        try {
-            // Cria um ID único para a conversa direta baseado nos IDs dos usuários
-            const roomId = `dm_${[state.currentUserId, otherUserId].sort().join('_')}`;
-            
-            const roomRef = doc(db, 'rooms', roomId);
-            const roomDoc = await getDoc(roomRef);
-            
-            if (!roomDoc.exists()) {
-                // Cria nova conversa direta
-                const newRoomData = {
-                    id: roomId,
-                    name: '', // Conversas diretas não têm nome fixo
-                    isDirectMessage: true,
-                    members: [state.currentUserId, otherUserId],
-                    memberDetails: {
-                        [state.currentUserId]: state.currentUserData.username,
-                        [otherUserId]: otherUsername
-                    },
-                    memberPhotos: {
-                        [state.currentUserId]: state.currentUserData.photoURL || '',
-                        [otherUserId]: otherUserPhoto || ''
-                    },
-                    createdAt: new Date(),
-                    lastMessage: null
-                };
-                
-                await setDoc(roomRef, newRoomData);
-                console.log("Nova conversa direta criada:", roomId);
-            }
-            
-            // Abre a conversa
-            await openRoom(roomId);
-            
-        } catch (error) {
-            console.error("Erro ao criar/abrir conversa direta:", error);
-            showNotification("Erro ao abrir conversa com o usuário.", "error");
-        }
-    }
-</script>
-<script>
-    // --- Lógica para ajuste de altura do viewport em celulares ---
-    function setRealViewportHeight() {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--real-vh', `${vh}px`);
-    }
-    window.addEventListener('resize', setRealViewportHeight);
-    setRealViewportHeight(); // Executa no carregamento inicial    // --- PWA Service Worker & Manifest ---
-    const MANIFEST_DATA = {
-        "name": "7Chat", "short_name": "7Chat", "description": "Um aplicativo de chat em tempo real.",
-        "start_url": "/", "scope": "/", "display": "standalone", "background_color": "#000000", "theme_color": "#111827",
-        "icons": [
-            { "src": "https://placehold.co/192x192/4f46e5/ffffff?text=7C", "sizes": "192x192", "type": "image/png" },
-            { "src": "https://placehold.co/512x512/4f46e5/ffffff?text=7Chat", "sizes": "512x512", "type": "image/png" },
-            { "src": "https://placehold.co/512x512/4f46e5/ffffff?text=7Chat&maskable=true", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-        ]
+        currentUserData: null
     };
-    const manifestBlob = new Blob([JSON.stringify(MANIFEST_DATA)], { type: 'application/json' });
-    const manifestURL = URL.createObjectURL(manifestBlob);
-    const link = document.createElement('link');
-    link.rel = 'manifest'; link.href = manifestURL;
-    document.head.appendChild(link);
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/firebase-messaging-sw.js')
-            .then((registration) => {
-                console.log('Service Worker registrado com sucesso:', registration);
-            }).catch((err) => {                console.warn('Falha no registro do Service Worker: ', err);
-            });    }
 
-    // === CORREÇÃO PARA TECLADO VIRTUAL EM PWA ===
-
-    // Função para detectar se é PWA instalada
-    function isPWA() {
-        return window.matchMedia('(display-mode: standalone)').matches || 
-               window.navigator.standalone === true ||
-               document.referrer.includes('android-app://');
-    }
-
-    // Configurar altura real da viewport
-    function setRealVH() {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--real-vh', `${vh}px`);
-    }
-
-    // Detectar aparição do teclado virtual
-    function setupKeyboardDetection() {
-        let initialViewportHeight = window.innerHeight;
-        let currentViewportHeight = window.innerHeight;
-        
-        const handleResize = () => {
-            currentViewportHeight = window.innerHeight;
-            const heightDifference = initialViewportHeight - currentViewportHeight;
-            
-            // Se a diferença for maior que 150px, provavelmente o teclado apareceu
-            if (heightDifference > 150) {
-                document.body.classList.add('keyboard-open');
-                setRealVH();
-            } else {
-                document.body.classList.remove('keyboard-open');
-                setRealVH();
-            }
-        };
-        
-        // Detectar mudanças no viewport
-        window.addEventListener('resize', handleResize);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                initialViewportHeight = window.innerHeight;
-                setRealVH();
-            }, 500);
-        });
-    }
-
-    // Scroll automático para inputs em foco
-    function setupInputFocusHandling() {
-        const inputs = document.querySelectorAll('input, textarea');
-        
-        inputs.forEach(input => {
-            input.addEventListener('focus', (e) => {
-                setTimeout(() => {
-                    if (isPWA()) {
-                        e.target.classList.add('input-focused');
-                        e.target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center',
-                            inline: 'nearest'
-                        });
-                    }
-                }, 300); // Delay para aguardar o teclado aparecer
-            });
-            
-            input.addEventListener('blur', (e) => {
-                e.target.classList.remove('input-focused');
-            });
-        });
-    }
-
-    // Inicializar correções quando DOM estiver pronto
-    document.addEventListener('DOMContentLoaded', () => {
-        setRealVH();
-        
-        if (isPWA()) {
-            setupKeyboardDetection();
-            setupInputFocusHandling();
-            
-            // Aplicar classe específica para PWA
-            document.body.classList.add('pwa-mode');
-        }
-    });    // Atualizar altura quando a tela redimensionar
-    window.addEventListener('resize', setRealVH);    // Chamar a função main quando a página carregar
-    main();
-
-    // Função para configurar navegação
-    function setupNavigation() {
-        const appContainer = document.getElementById('app-container');
-        const friendsScreen = document.getElementById('friends-screen');
-        const navRooms = document.getElementById('nav-rooms');
-
-        if (navRooms) {
-            navRooms.addEventListener('click', (e) => {
-                e.preventDefault();
-                friendsScreen.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                updateNav(navRooms);
-            });
-        }
-
-        // Navegação para configurações (terceiro botão)
-        const navSettings = document.getElementById('nav-settings');
-        if (navSettings) {
-            navSettings.addEventListener('click', (e) => {
-                e.preventDefault();
-                openUserSettings();
-            });
-        }
-    }
-
-    // Função para atualizar navegação ativa
-    function updateNav(activeElement) {
-        const navItems = document.querySelectorAll('#nav-friends, #nav-rooms, #nav-settings');
-        navItems.forEach(item => {
-            item.classList.remove('text-indigo-400', 'border-t-2', 'border-indigo-500');
-            item.classList.add('text-gray-400');
-        });
-        
-        activeElement.classList.remove('text-gray-400');
-        activeElement.classList.add('text-indigo-400', 'border-t-2', 'border-indigo-500');
-    }
-
-    // Funções necessárias (versões básicas para teste)
-    function setupDataListeners() {
-        console.log('Configurando listeners de dados...');
-    }
-
-    function openUserSettings() {
-        document.getElementById('user-settings-modal').classList.remove('hidden');
-    }
-
-    function openFriendRequestsModal() {
-        document.getElementById('friend-requests-modal').classList.remove('hidden');
-    }
-
-    function renderSidebarLists() {
-        console.log('Renderizando listas da sidebar...');
-    }
-
-    function renderFriendsScreen() {
-        console.log('Renderizando tela de amigos...');
-    }
-
-    function handleCreateRoomSubmit(e) {
-        e.preventDefault();
-        console.log('Criando sala...');
-    }
-
-    function handleMediaUpload() {
-        console.log('Upload de mídia...');
-    }
-
+    // --- FUNÇÕES AUXILIARES ---
     function showNotification(message, type = 'info') {
         const toast = document.getElementById('notification-toast');
         toast.textContent = message;
@@ -1514,30 +225,329 @@
         });
     }
 
-    function enforceNotifications() {
-        // Por enquanto, sempre permitir
-        return true;
+    function updateNav(activeElement) {
+        const navItems = document.querySelectorAll('#nav-friends, #nav-rooms, #nav-settings');
+        navItems.forEach(item => {
+            item.classList.remove('text-indigo-400', 'border-t-2', 'border-indigo-500');
+            item.classList.add('text-gray-400');
+        });
+        
+        activeElement.classList.remove('text-gray-400');
+        activeElement.classList.add('text-indigo-400', 'border-t-2', 'border-indigo-500');
     }
 
-    function checkNotificationPermission() {
-        return Notification?.permission || 'default';
+    // --- FUNÇÕES PRINCIPAIS ---
+    function main() {
+        console.log('🚀 Inicializando aplicação...');
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            console.log('✅ Firebase inicializado com sucesso');
+            
+            bindUI();
+            onAuthStateChanged(auth, handleAuthChange);
+            
+            console.log('✅ Event listeners configurados');
+            
+        } catch (error) {
+            console.error('❌ Erro ao inicializar Firebase:', error);
+            showNotification('Erro de conexão. Tente recarregar a página.', 'error');
+        }
     }
 
-    function setupPresenceSystem() {
-        console.log('Configurando sistema de presença...');
+    function bindUI() {
+        // Login
+        document.getElementById('login-form').onsubmit = handleLogin;
+        document.getElementById('main-guest-login-btn').onclick = () => signInAnonymously(auth);
+
+        // Navegação
+        const navFriends = document.getElementById('nav-friends');
+        const navRooms = document.getElementById('nav-rooms');
+        const navSettings = document.getElementById('nav-settings');
+        const appContainer = document.getElementById('app-container');
+        const friendsScreen = document.getElementById('friends-screen');
+
+        navFriends?.addEventListener('click', (e) => {
+            e.preventDefault();
+            friendsScreen.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+            updateNav(navFriends);
+        });
+
+        navRooms?.addEventListener('click', (e) => {
+            e.preventDefault();
+            friendsScreen.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            updateNav(navRooms);
+        });
+
+        navSettings?.addEventListener('click', (e) => {
+            e.preventDefault();
+            showNotification('Configurações em desenvolvimento...', 'info');
+        });        // Botão de teste
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'test-btn') {
+                showNotification('Aplicativo funcionando perfeitamente!', 'info');
+            }        });        // Inicializar busca
+        initializeSearch();
+
+        // Inicializar cliques nas conversas
+        initializeConversationClicks();
+
+        // Inicializar foto do usuário
+        initializeUserPhoto();
+
+        // Renderizar conversas vazias inicialmente
+        renderAllConversations();        // Renderizar conversas quando o app carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAllConversations();
+        });
+    }// Função para renderizar todas as conversas
+    function renderAllConversations() {
+        const conversationsList = document.getElementById('all-conversations-list');
+        const emptyState = document.getElementById('empty-state');
+        
+        // Por enquanto, não há conversas reais
+        // Quando implementarmos o Firebase, aqui carregaremos as conversas reais
+        const conversations = []; // Array vazio - será preenchido com dados reais
+        
+        if (conversations.length === 0) {
+            conversationsList.innerHTML = '';
+            emptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+            
+            // Quando houver conversas, renderizar assim:
+            conversationsList.innerHTML = conversations.map(conv => `
+                <div class="flex items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors" data-conversation-id="${conv.id}">
+                    <div class="relative">
+                        <div class="w-12 h-12 ${conv.type === 'room' ? 'bg-purple-500' : 'bg-blue-500'} rounded-full flex items-center justify-center">
+                            <span class="text-white font-semibold text-sm">${conv.avatar}</span>
+                        </div>
+                        ${conv.online ? '<div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-gray-800 rounded-full"></div>' : ''}
+                    </div>
+                    <div class="flex-1 ml-3 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <p class="text-white font-medium truncate">${conv.name}</p>
+                                ${conv.type === 'room' ? `<span class="text-gray-500 text-xs">${conv.members} membros</span>` : ''}
+                            </div>
+                            <span class="text-gray-400 text-xs">${conv.timestamp}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <p class="text-gray-400 text-sm truncate">${conv.lastMessage}</p>
+                            ${conv.unread > 0 ? `<span class="bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 ml-2">${conv.unread}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
     }
 
-    function setupPushNotifications() {
-        console.log('Configurando push notifications...');
+    // Inicializar busca
+    function initializeSearch() {
+        const searchInput = document.getElementById('search-conversations-input');
+        
+        searchInput?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const allConversations = document.querySelectorAll('[data-conversation-id]');
+            
+            if (searchTerm.length > 0) {
+                allConversations.forEach(conv => {
+                    const nameElement = conv.querySelector('.text-white.font-medium');
+                    const messageElement = conv.querySelector('.text-gray-400.text-sm');
+                    
+                    if (nameElement && messageElement) {
+                        const name = nameElement.textContent.toLowerCase();
+                        const lastMessage = messageElement.textContent.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || lastMessage.includes(searchTerm)) {
+                            conv.style.display = 'flex';
+                        } else {
+                            conv.style.display = 'none';
+                        }
+                    }
+                });
+            } else {
+                // Mostrar todas as conversas
+                allConversations.forEach(conv => {
+                    conv.style.display = 'flex';
+                });
+            }
+        });
     }
 
-    function monitorNotificationStatus() {
-        console.log('Monitorando status de notificações...');
+    // Clique nas conversas
+    function initializeConversationClicks() {
+        document.addEventListener('click', (e) => {
+            const conversationItem = e.target.closest('[data-conversation-id]');
+            
+            if (conversationItem) {
+                const conversationId = conversationItem.dataset.conversationId;
+                showNotification(`Abrindo conversa: ${conversationId}`, 'info');
+                // Aqui você pode abrir a tela de chat
+            }
+        });
     }
 
-    function openRoom(roomId, isGuest = false) {
-        console.log('Abrindo sala:', roomId);
-        return Promise.resolve();
+    // Funcionalidade de foto do usuário
+    function initializeUserPhoto() {
+        const userProfileBtn = document.getElementById('user-profile-btn');
+        const userPhotoModal = document.getElementById('user-photo-modal');
+        const closePhotoBtn = document.getElementById('close-user-photo-btn');
+        const changePhotoBtn = document.getElementById('change-photo-btn');
+        const photoUploadInput = document.getElementById('photo-upload-input');
+        
+        // Abrir modal de foto
+        userProfileBtn?.addEventListener('click', () => {
+            syncModalPhoto();
+            userPhotoModal.classList.remove('hidden');
+        });
+        
+        // Fechar modal
+        closePhotoBtn?.addEventListener('click', () => {
+            userPhotoModal.classList.add('hidden');
+        });
+        
+        // Fechar clicando fora
+        userPhotoModal?.addEventListener('click', (e) => {
+            if (e.target === userPhotoModal) {
+                userPhotoModal.classList.add('hidden');
+            }
+        });
+        
+        // Botão trocar foto
+        changePhotoBtn?.addEventListener('click', () => {
+            photoUploadInput.click();
+        });
+        
+        // Upload de foto
+        photoUploadInput?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageUrl = e.target.result;
+                    updateUserPhoto(imageUrl);
+                    showNotification('Foto atualizada com sucesso!', 'info');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    function syncModalPhoto() {
+        const headerPic = document.getElementById('user-profile-pic');
+        const headerIcon = document.getElementById('user-profile-icon');
+        const modalPic = document.getElementById('modal-user-pic');
+        const modalIcon = document.getElementById('modal-user-icon');
+        
+        if (!headerPic.classList.contains('hidden')) {
+            modalPic.src = headerPic.src;
+            modalPic.classList.remove('hidden');
+            modalIcon.classList.add('hidden');
+        } else {
+            modalPic.classList.add('hidden');
+            modalIcon.classList.remove('hidden');
+        }
+    }        function updateUserPhoto(imageUrl) {
+            const headerPic = document.getElementById('user-profile-pic');
+            const headerIcon = document.getElementById('user-profile-icon');
+            const modalPic = document.getElementById('modal-user-pic');
+            const modalIcon = document.getElementById('modal-user-icon');
+            const settingsPic = document.getElementById('settings-user-pic'); // Adicionar esta linha
+            const settingsIcon = document.getElementById('settings-user-icon'); // Adicionar esta linha
+            
+            // Atualizar foto do header
+            headerPic.src = imageUrl;
+            headerPic.classList.remove('hidden');
+            headerIcon.classList.add('hidden');
+            
+            // Atualizar foto do modal
+            modalPic.src = imageUrl;
+            modalPic.classList.remove('hidden');
+            modalIcon.classList.add('hidden');
+            
+            // Atualizar foto das configurações (Adicionar estas linhas)
+            settingsPic.src = imageUrl;
+            settingsPic.classList.remove('hidden');
+            settingsIcon.classList.add('hidden');
+        }// ...existing code...
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        try {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            await signInWithEmailAndPassword(auth, email, password);
+            showNotification('Login realizado com sucesso!', 'info');
+        } catch (err) {
+            showNotification("Falha no login: " + err.message, "error");
+        }
+    }    async function handleAuthChange(user) {
+        if (user) {
+            state.currentUserId = user.uid;
+            console.log('✅ Usuário logado:', user.uid);
+            
+            // Criar perfil se não existir
+            let userSnap = await getDoc(doc(db, 'users', user.uid));            if (!userSnap.exists()) {
+                await createUserProfile(user);
+            }
+              // Mostrar interface principal
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+              showNotification(`Bem-vindo, ${user.isAnonymous ? 'Convidado' : user.email}!`, 'info');
+            
+            // Carregar conversas do usuário
+            setTimeout(() => {
+                renderAllConversations();
+            }, 500);
+            
+        } else {
+            console.log('❌ Usuário não logado');
+            state.currentUserId = null;
+            
+            // Mostrar tela de login
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('friends-screen').classList.add('hidden');
+            document.getElementById('guest-container').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+    }
+
+    async function createUserProfile(user) {
+        const baseProfile = { 
+            uid: user.uid, 
+            friends: [], 
+            friendRequests: []
+        };
+
+        if (user.isAnonymous) {
+            const guestName = await showCustomPrompt("Bem-vindo(a)!", "Para entrar, por favor, digite seu nome de convidado.");
+            if (!guestName) { 
+                await signOut(auth); 
+                throw new Error("Guest name not provided."); 
+            }
+            Object.assign(baseProfile, {
+                username: `Convidado: ${guestName.trim()}`,
+                isGuest: true,
+                photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(guestName.trim()[0])}&background=random&color=fff`
+            });
+        } else {
+            const username = user.email.split('@')[0];
+            Object.assign(baseProfile, {
+                username,
+                email: user.email,
+                isGuest: false,
+                photoURL: `https://i.pravatar.cc/150?u=${user.uid}`
+            });
+        }
+        
+        await setDoc(doc(db, 'users', user.uid), baseProfile);
+        console.log('✅ Perfil de usuário criado');
     }
 
     // INICIALIZAR APLICAÇÃO
@@ -1547,12 +557,11 @@
 
 <!-- PWA Manifest Generator -->
 <script>
-    // Gerar manifest.json dinamicamente
     const manifest = {
         name: "7Chat",
         short_name: "7Chat",
         description: "Aplicativo de chat em tempo real",
-        start_url: "/",
+        start_url: ".",
         display: "standalone",
         background_color: "#1f2937",
         theme_color: "#1f2937",
@@ -1561,28 +570,73 @@
                 src: "https://placehold.co/192x192/4f46e5/ffffff?text=7C",
                 sizes: "192x192",
                 type: "image/png"
-            },
-            {
-                src: "https://placehold.co/512x512/4f46e5/ffffff?text=7C",
-                sizes: "512x512",
-                type: "image/png"
             }
-        ]    };
+        ]
+    };
 
-    const manifestBlob2 = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-    const manifestURL2 = URL.createObjectURL(manifestBlob2);
-    const link2 = document.createElement('link');
-    link2.rel = 'manifest';
-    link2.href = manifestURL2;
-    document.head.appendChild(link2);
-
-    // Registrar Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/firebase-messaging-sw.js')
-            .then(registration => console.log('Service Worker registrado com sucesso:', registration))
-            .catch(error => console.log('Falha ao registrar Service Worker:', error));
-    }
+    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    const manifestURL = URL.createObjectURL(manifestBlob);
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestURL;    document.head.appendChild(link);
 </script>
+
+<!-- Modal de Foto do Usuário -->
+<div id="user-photo-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-6 border border-gray-700">
+        <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold text-white">Foto do Perfil</h3>
+            <button id="close-user-photo-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Foto atual em formato oval -->
+        <div class="flex justify-center">
+            <div class="w-32 h-32 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center">
+                <img id="modal-user-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                <svg id="modal-user-icon" class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- Botão para trocar foto -->
+        <button id="change-photo-btn" class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span>Trocar Foto</span>
+        </button>
+        
+        <!-- Input oculto para upload -->
+        <input type="file" id="photo-upload-input" class="hidden" accept="image/*">
+    </div>
+</div>
+
+<!-- Modal de Busca de Conversas -->
+<div id="search-conversations-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
+        <div class="flex justify-between items-center">
+            <h3 class="text-2xl font-bold text-white">Buscar Conversas</h3>
+            <button id="close-search-conversations-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Barra de busca -->
+        <div class="relative">
+            <input type="search" id="search-conversations-input" placeholder="Digite para buscar conversas..." class="w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+        
+        <!-- Resultados da busca -->
+        <div id="search-conversations-results" class="max-h-60 overflow-y-auto">
+            <div class="text-center text-gray-400 py-8">
+                <p>Digite algo para buscar conversas</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
