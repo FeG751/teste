@@ -223,14 +223,53 @@
                 <button id="custom-confirm-ok-btn" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirmar</button>
             </div>
         </div>
-    </div>
-
-    <div id="custom-prompt-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    </div>    <div id="custom-prompt-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
         <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4 border border-gray-700">
             <h3 id="custom-prompt-title" class="text-xl font-bold text-center text-white"></h3>
             <p id="custom-prompt-message" class="text-gray-400 text-center"></p>
             <input type="text" id="custom-prompt-input" placeholder="Sua resposta aqui..." class="w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700 text-white" />
             <button id="custom-prompt-ok-btn" class="w-full px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Confirmar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE NOTIFICAÇÕES OBRIGATÓRIAS -->
+    <div id="mandatory-notifications-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[70] p-4">
+        <div class="modal-content bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-md space-y-6 border border-gray-700">
+            <div class="text-center">
+                <div class="mx-auto w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Notificações Obrigatórias</h3>
+                <p class="text-gray-300 text-center leading-relaxed">
+                    Para usar o 7Chat, você precisa ativar as notificações. Isso garante que você receba mensagens importantes e tenha a melhor experiência no app.
+                </p>
+            </div>
+            
+            <div class="bg-gray-700/50 rounded-lg p-4 space-y-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span class="text-sm text-gray-300">Receba mensagens em tempo real</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span class="text-sm text-gray-300">Não perca conversas importantes</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span class="text-sm text-gray-300">Mantenha-se conectado</span>
+                </div>
+            </div>
+            
+            <button id="activate-mandatory-notifications-btn" class="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <span>Ativar Notificações</span>
+            </button>
+            
+            <p id="mandatory-notifications-status" class="text-xs text-center text-gray-500"></p>
         </div>
     </div>
 
@@ -252,20 +291,12 @@
                 <div class="relative group w-24 h-24">
                     <img id="user-settings-pic" class="w-full h-full rounded-full bg-gray-600 object-cover cursor-pointer">
                     <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity rounded-full">Trocar</div>
-                </div>
-                <div class="w-full">
-                    <label for="user-settings-name" class="block text-sm font-medium text-gray-400">Nome de Usuário</label>
-                    <input type="text" id="user-settings-name" class="mt-1 w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700" />
-                </div>
+                </div>            <div class="w-full">
+                <label for="user-settings-name" class="block text-sm font-medium text-gray-400">Nome de Usuário</label>
+                <input type="text" id="user-settings-name" class="mt-1 w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700" />
             </div>
-            <div id="notifications-section" class="pt-4 border-t border-gray-700 space-y-2">
-                 <button id="enable-notifications-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                     <span>Ativar Notificações</span>
-                 </button>
-                 <p id="notifications-status" class="text-xs text-center text-gray-500"></p>
-            </div>
-            <div class="pt-4 border-t border-gray-700 space-y-2">
+        </div>
+        <div class="pt-4 border-t border-gray-700 space-y-2">
                 <button id="logout-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span>Sair</span>
@@ -479,8 +510,7 @@
 
     // --- VARIÁVEIS GLOBAIS ---
     let app, auth, db, rtdb, storage, messaging;
-    const ui = {};
-    const state = { 
+    const ui = {};    const state = { 
         currentUserId: null, 
         currentUserData: null, 
         currentRoomData: null,
@@ -500,8 +530,9 @@
         mediaRecorder: null,
         audioChunks: [],
         recordingStartTime: 0,
-        recordingTimerInterval: null
-    };    // --- LÓGICA DE INICIALIZAÇÃO ---
+        recordingTimerInterval: null,
+        notificationCheckInterval: null
+    };// --- LÓGICA DE INICIALIZAÇÃO ---
     function main() {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
@@ -575,8 +606,7 @@
 
     async function handleAuthChange(user) {
         const params = new URLSearchParams(window.location.search);
-        const roomIdFromUrl = params.get('room');
-        const cleanupListeners = () => {
+        const roomIdFromUrl = params.get('room');        const cleanupListeners = () => {
             if (state.unsubscribeUserRooms) state.unsubscribeUserRooms();
             if (state.unsubscribeUserData) state.unsubscribeUserData();
             if (state.unsubscribeRoom) state.unsubscribeRoom();
@@ -584,9 +614,8 @@
             if (state.unsubscribeSearchListener) state.unsubscribeSearchListener();
             if (state.unsubscribePresence) state.unsubscribePresence();
             if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
-        };
-
-        if (user) {
+            if (state.notificationCheckInterval) clearInterval(state.notificationCheckInterval);
+        };if (user) {
             state.currentUserId = user.uid;
             
             let userSnap = await getDoc(doc(db, 'users', user.uid));
@@ -608,12 +637,25 @@
                 }
                 await setupGuestUI(roomIdFromUrl);
             } else {
+                // Para usuários não convidados, verificar notificações obrigatórias
+                if (!user.isAnonymous) {
+                    const notificationsAllowed = enforceNotifications();
+                    if (!notificationsAllowed) {
+                        return; // Interrompe o setup até que as notificações sejam ativadas
+                    }
+                }
+                
                 await setupMainUI(roomIdFromUrl);
             }
 
             if(!user.isAnonymous) {
                 setupPresenceSystem(); 
-                setupPushNotifications();
+                // Só chamar setupPushNotifications se as notificações já estiverem permitidas
+                if (checkNotificationPermission() === 'granted') {
+                    setupPushNotifications();
+                }
+                // Monitorar mudanças no status das notificações
+                monitorNotificationStatus();
             }
 
         } else {
@@ -1932,8 +1974,7 @@
             container.innerHTML = `<p>${names} ${verb} digitando...</p>`;
         }
     }
-    
-    function openUserSettings() {
+      function openUserSettings() {
         const modal = document.getElementById('user-settings-modal');
         modal.classList.remove('hidden');
         document.getElementById('user-settings-pic').src = state.currentUserData.photoURL;
@@ -1943,9 +1984,6 @@
             document.getElementById('user-settings-modal').classList.add('hidden');
             signOut(auth);
         };
-        const notificationsSection = document.getElementById('notifications-section');
-        notificationsSection.style.display = state.currentUserData.isGuest ? 'none' : 'block';
-        document.getElementById('enable-notifications-btn').onclick = setupPushNotifications;
         document.getElementById('user-settings-pic').parentElement.onclick = () => {
              state.imageUploadContext = { type: 'user' };
              document.getElementById('image-uploader').click();
@@ -2394,20 +2432,51 @@
            if (snapshot.val() === false) { set(userStatusRef, isOfflineForRTDB); return; }
            onDisconnect(userStatusRef).set(isOfflineForRTDB).then(() => { set(userStatusRef, isOnlineForRTDB); });
        });
-    }
-    
-    async function setupPushNotifications() {
+    }    async function setupPushNotifications() {
         if (!messaging) {
-            const statusEl = document.getElementById('notifications-status');
-            if (statusEl) statusEl.textContent = 'Notificações não suportadas neste ambiente.';
-            return;
+            console.warn('Firebase Messaging não está disponível');
+            return false;
         }
 
-        const statusEl = document.getElementById('notifications-status');
+        // Verificar se o navegador suporta notificações
+        if (!('Notification' in window)) {
+            console.warn('Este navegador não suporta notificações');
+            return false;
+        }
+
         try {
-            const permission = await Notification.requestPermission();
+            // Verificar se já tem permissão
+            let permission = Notification.permission;
+            console.log('Permissão atual das notificações:', permission);
+            
+            // Se não tem permissão, solicitar
+            if (permission === 'default') {
+                console.log('Solicitando permissão de notificações...');
+                  // Suporte para diferentes navegadores
+                if (Notification.requestPermission) {
+                    console.log('Chamando Notification.requestPermission()...');
+                    try {
+                        // Tentar a forma moderna (retorna Promise)
+                        permission = await Notification.requestPermission();
+                    } catch (e) {
+                        console.log('Tentativa com Promise falhou, tentando forma legacy...');
+                        // Fallback para navegadores antigos (callback)
+                        permission = await new Promise((resolve) => {
+                            Notification.requestPermission((result) => {
+                                resolve(result);
+                            });
+                        });
+                    }
+                } else {
+                    console.error('Notification.requestPermission não está disponível');
+                    return false;
+                }
+                
+                console.log('Resultado da permissão:', permission);
+            }
+            
             if (permission === 'granted') {
-                if (statusEl) statusEl.textContent = 'Notificações ativadas.';
+                console.log('Permissão concedida, obtendo token...');
                 const vapidKey = "BBo4U4SIypBpGZvoVaAXWee9fmBOEsl8ck9GzYiGF0s7mQaUm5l3Mc0tDGA-zb6VzhJpAIeQXgD4t4AgANHj8Z0";
                 const currentToken = await getToken(messaging, { vapidKey: vapidKey });
 
@@ -2416,21 +2485,153 @@
                         fcmTokens: arrayUnion(currentToken)
                     });
                     console.log('Token de notificação salvo:', currentToken);
+                    
+                    // Configurar listener para mensagens em primeiro plano
+                    onMessage(messaging, (payload) => {
+                        console.log('Mensagem recebida em primeiro plano. ', payload);
+                        showNotification(`${payload.notification.title}: ${payload.notification.body}`);
+                    });
+                    
+                    return true;
                 } else {
-                    if (statusEl) statusEl.textContent = 'Falha ao obter token. Tente novamente.';
+                    console.warn('Falha ao obter token de notificação');
+                    return false;
                 }
+            } else if (permission === 'denied') {
+                console.warn('Permissão para notificações negada pelo usuário');
+                return false;
             } else {
-                if (statusEl) statusEl.textContent = 'Permissão para notificações negada.';
+                console.warn('Usuário não respondeu à solicitação de permissão ou cancelou');
+                return false;
             }
         } catch (err) {
-            console.error('Ocorreu um erro ao configurar as notificações.', err);
-            if (statusEl) statusEl.textContent = 'Erro ao ativar notificações.';
+            console.error('Erro ao configurar notificações:', err);
+            return false;
         }
+    }
 
-        onMessage(messaging, (payload) => {
-            console.log('Mensagem recebida em primeiro plano. ', payload);
-            showNotification(`${payload.notification.title}: ${payload.notification.body}`);
-        });
+    function checkNotificationPermission() {
+        // Verifica se o navegador suporta notificações
+        if (!('Notification' in window)) {
+            return 'not-supported';
+        }
+        
+        // Retorna o status atual da permissão
+        return Notification.permission;
+    }    function showMandatoryNotificationsModal() {
+        const modal = document.getElementById('mandatory-notifications-modal');
+        const statusEl = document.getElementById('mandatory-notifications-status');
+        const button = document.getElementById('activate-mandatory-notifications-btn');
+        
+        modal.classList.remove('hidden');
+        statusEl.textContent = '';
+        button.disabled = false;
+        button.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            <span>Ativar Notificações</span>
+        `;
+        
+        button.onclick = async () => {
+            button.disabled = true;
+            button.innerHTML = `
+                <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                <span>Aguardando...</span>
+            `;
+            statusEl.textContent = 'Clique em "Permitir" quando o navegador perguntar sobre notificações...';
+            statusEl.className = 'text-xs text-center text-blue-400';
+            
+            const success = await setupPushNotifications();
+            
+            if (success) {
+                button.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>Notificações Ativadas!</span>
+                `;
+                button.className = 'w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-2';
+                statusEl.textContent = '✓ Notificações ativadas com sucesso! Redirecionando...';
+                statusEl.className = 'text-xs text-center text-green-400';
+                
+                setTimeout(async () => {
+                    modal.classList.add('hidden');
+                    
+                    // Continuar com o setup do app
+                    const params = new URLSearchParams(window.location.search);
+                    const roomIdFromUrl = params.get('room');
+                    
+                    await setupMainUI(roomIdFromUrl);
+                    setupPresenceSystem();
+                    monitorNotificationStatus();
+                }, 2000);
+            } else {
+                button.disabled = false;
+                button.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span>Tentar Novamente</span>
+                `;
+                button.className = 'w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 flex items-center justify-center space-x-2';
+                
+                const currentPermission = Notification.permission;
+                if (currentPermission === 'denied') {
+                    statusEl.textContent = '✗ Você negou as notificações. Para ativar, vá em Configurações do navegador > Notificações > Permitir para este site.';
+                    statusEl.className = 'text-xs text-center text-red-400';
+                } else {
+                    statusEl.textContent = '✗ Não foi possível ativar as notificações. Tente novamente.';
+                    statusEl.className = 'text-xs text-center text-red-400';
+                }
+            }
+        };
+    }
+
+    function enforceNotifications() {
+        // Não verificar para usuários convidados
+        if (state.currentUserData?.isGuest) {
+            return true;
+        }
+        
+        const permission = checkNotificationPermission();
+        
+        if (permission === 'not-supported') {
+            console.warn('Notificações não suportadas neste navegador');
+            return true; // Permitir acesso mesmo sem suporte
+        }
+        
+        if (permission !== 'granted') {
+            showMandatoryNotificationsModal();
+            return false;
+        }
+        
+        return true;
+    }    // Função para monitorar mudanças no status das notificações
+    function monitorNotificationStatus() {
+        if (!('Notification' in window) || state.currentUserData?.isGuest) {
+            return;
+        }
+        
+        // Verificar periodicamente se as notificações foram desabilitadas
+        const checkInterval = setInterval(() => {
+            const permission = checkNotificationPermission();
+            
+            if (permission !== 'granted') {
+                // Notificações foram desabilitadas, bloquear acesso
+                clearInterval(checkInterval);
+                
+                // Ocultar o app principal
+                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('guest-container').classList.add('hidden');
+                
+                // Mostrar modal obrigatório
+                showMandatoryNotificationsModal();
+            }
+        }, 5000); // Verificar a cada 5 segundos
+        
+        // Armazenar o intervalo para limpeza posterior
+        state.notificationCheckInterval = checkInterval;
     }
 
 
