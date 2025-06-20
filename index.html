@@ -91,11 +91,15 @@
         </div>
     </div>
 
-    <!-- CONTAINER PRINCIPAL DO APP -->    <!-- CONTAINER PRINCIPAL DO APP -->
-    <div id="app-container" class="hidden h-full w-full relative overflow-hidden bg-gray-900">        <!-- Header superior -->
+    <!-- CONTAINER PRINCIPAL DO APP -->    <!-- CONTAINER PRINCIPAL DO APP -->    <div id="app-container" class="hidden h-full w-full relative overflow-hidden bg-gray-900">        <!-- Header superior -->
         <div class="bg-gray-800 px-4 py-3 flex justify-between items-center border-b border-gray-700">
-            <!-- Espaço vazio à esquerda para centralizar o título -->
-            <div class="w-10"></div>
+            <!-- Botão de configurações (esquerda) -->
+            <button id="settings-btn" class="p-2 text-gray-400 hover:text-white transition-colors duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </button>
             
             <!-- Título Chats (centro) -->
             <h1 class="text-white font-semibold text-xl">
@@ -109,7 +113,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
             </div>
-        </div>        <!-- Área de conteúdo principal -->
+        </div><!-- Área de conteúdo principal -->
         <div class="p-4">
             <!-- Barra de busca (mais fina) -->
             <div class="relative mb-4">
@@ -295,13 +299,14 @@
         initializeSearch();
 
         // Inicializar cliques nas conversas
-        initializeConversationClicks();
-
-        // Inicializar foto do usuário
+        initializeConversationClicks();        // Inicializar foto do usuário
         initializeUserPhoto();
 
+        // Inicializar configurações
+        initializeSettings();
+
         // Renderizar conversas vazias inicialmente
-        renderAllConversations();        // Renderizar conversas quando o app carregar
+        renderAllConversations();// Renderizar conversas quando o app carregar
         document.addEventListener('DOMContentLoaded', () => {
             renderAllConversations();
         });
@@ -458,8 +463,8 @@
             const headerIcon = document.getElementById('user-profile-icon');
             const modalPic = document.getElementById('modal-user-pic');
             const modalIcon = document.getElementById('modal-user-icon');
-            const settingsPic = document.getElementById('settings-user-pic'); // Adicionar esta linha
-            const settingsIcon = document.getElementById('settings-user-icon'); // Adicionar esta linha
+            const settingsPic = document.getElementById('settings-user-pic');
+            const settingsIcon = document.getElementById('settings-user-icon');
             
             // Atualizar foto do header
             headerPic.src = imageUrl;
@@ -471,11 +476,111 @@
             modalPic.classList.remove('hidden');
             modalIcon.classList.add('hidden');
             
-            // Atualizar foto das configurações (Adicionar estas linhas)
-            settingsPic.src = imageUrl;
-            settingsPic.classList.remove('hidden');
-            settingsIcon.classList.add('hidden');
-        }// ...existing code...
+            // Atualizar foto das configurações
+            if (settingsPic && settingsIcon) {
+                settingsPic.src = imageUrl;
+                settingsPic.classList.remove('hidden');
+                settingsIcon.classList.add('hidden');
+            }
+        }
+
+        // Função para inicializar configurações
+        function initializeSettings() {
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettingsBtn = document.getElementById('close-settings-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const logoutConfirmationModal = document.getElementById('logout-confirmation-modal');
+            const cancelLogoutBtn = document.getElementById('cancel-logout-btn');
+            const confirmLogoutBtn = document.getElementById('confirm-logout-btn');
+            
+            // Abrir modal de configurações
+            settingsBtn?.addEventListener('click', () => {
+                updateSettingsUserInfo();
+                settingsModal.classList.remove('hidden');
+            });
+            
+            // Fechar modal de configurações
+            closeSettingsBtn?.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+            });
+            
+            // Fechar clicando fora
+            settingsModal?.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    settingsModal.classList.add('hidden');
+                }
+            });
+            
+            // Botão de logout
+            logoutBtn?.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+                logoutConfirmationModal.classList.remove('hidden');
+            });
+            
+            // Cancelar logout
+            cancelLogoutBtn?.addEventListener('click', () => {
+                logoutConfirmationModal.classList.add('hidden');
+            });
+            
+            // Fechar modal de confirmação clicando fora
+            logoutConfirmationModal?.addEventListener('click', (e) => {
+                if (e.target === logoutConfirmationModal) {
+                    logoutConfirmationModal.classList.add('hidden');
+                }
+            });
+            
+            // Confirmar logout
+            confirmLogoutBtn?.addEventListener('click', async () => {
+                try {
+                    logoutConfirmationModal.classList.add('hidden');
+                    showNotification('Saindo da conta...', 'info');
+                    
+                    await signOut(auth);
+                    
+                    showNotification('Logout realizado com sucesso!', 'success');
+                    
+                    localStorage.removeItem('userPreferences');
+                    
+                } catch (error) {
+                    console.error('Erro ao fazer logout:', error);
+                    showNotification('Erro ao sair da conta. Tente novamente.', 'error');
+                }
+            });
+        }
+
+        // Função para atualizar informações do usuário no modal de configurações
+        function updateSettingsUserInfo() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const userNameElement = document.getElementById('settings-user-name');
+            const userEmailElement = document.getElementById('settings-user-email');
+            const userPicElement = document.getElementById('settings-user-pic');
+            const userIconElement = document.getElementById('settings-user-icon');
+            
+            // Nome do usuário
+            if (user.isAnonymous) {
+                userNameElement.textContent = 'Usuário Convidado';
+                userEmailElement.textContent = 'Sessão temporária';
+            } else {
+                userNameElement.textContent = user.displayName || 'Usuário';
+                userEmailElement.textContent = user.email || 'Sem email';
+            }
+            
+            // Foto do usuário (sincronizar com a foto do header)
+            const headerPic = document.getElementById('user-profile-pic');
+            if (!headerPic.classList.contains('hidden')) {
+                userPicElement.src = headerPic.src;
+                userPicElement.classList.remove('hidden');
+                userIconElement.classList.add('hidden');
+            } else {
+                userPicElement.classList.add('hidden');
+                userIconElement.classList.remove('hidden');
+            }
+        }
+
+// ...existing code...
 
     async function handleLogin(e) {
         e.preventDefault();
@@ -607,33 +712,63 @@
             </svg>
             <span>Trocar Foto</span>
         </button>
-        
-        <!-- Input oculto para upload -->
+          <!-- Input oculto para upload -->
         <input type="file" id="photo-upload-input" class="hidden" accept="image/*">
     </div>
 </div>
 
-<!-- Modal de Busca de Conversas -->
-<div id="search-conversations-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+<!-- Modal de Configurações -->
+<div id="settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
     <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
         <div class="flex justify-between items-center">
-            <h3 class="text-2xl font-bold text-white">Buscar Conversas</h3>
-            <button id="close-search-conversations-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
+            <h3 class="text-2xl font-bold text-white">Configurações</h3>
+            <button id="close-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
         </div>
         
-        <!-- Barra de busca -->
-        <div class="relative">
-            <input type="search" id="search-conversations-input" placeholder="Digite para buscar conversas..." class="w-full border border-gray-600 bg-gray-700 rounded-md px-3 py-2 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-        </div>
-        
-        <!-- Resultados da busca -->
-        <div id="search-conversations-results" class="max-h-60 overflow-y-auto">
-            <div class="text-center text-gray-400 py-8">
-                <p>Digite algo para buscar conversas</p>
+        <!-- Informações do usuário -->
+        <div class="bg-gray-700 rounded-lg p-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden flex items-center justify-center">
+                    <img id="settings-user-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                    <svg id="settings-user-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p id="settings-user-name" class="text-white font-medium">Usuário</p>
+                    <p id="settings-user-email" class="text-gray-400 text-sm">email@exemplo.com</p>
+                </div>
             </div>
+        </div>
+        
+        <!-- Botão de Sair -->
+        <button id="logout-btn" class="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 flex items-center justify-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            <span>Sair da Conta</span>
+        </button>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Logout -->
+<div id="logout-confirmation-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4">
+    <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4 border border-gray-700">
+        <div class="text-center">
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+            <h3 class="text-xl font-bold text-white mb-2">Sair da Conta</h3>
+            <p class="text-gray-400 mb-6">Tem certeza que deseja sair? Você precisará fazer login novamente.</p>
+        </div>
+        
+        <div class="flex space-x-3">
+            <button id="cancel-logout-btn" class="flex-1 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300">
+                Cancelar
+            </button>
+            <button id="confirm-logout-btn" class="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300">
+                Sair
+            </button>
         </div>
     </div>
 </div>
