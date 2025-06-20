@@ -368,13 +368,9 @@
             viewerPic.classList.add('hidden');
             viewerIcon.classList.remove('hidden');
         }
-    }
-
-    async function updateUserPhoto(imageUrl) {
+    }    async function updateUserPhoto(imageUrl) {
             const headerPic = document.getElementById('user-profile-pic');
             const headerIcon = document.getElementById('user-profile-icon');
-            const modalPic = document.getElementById('modal-user-pic');
-            const modalIcon = document.getElementById('modal-user-icon');
             const settingsPic = document.getElementById('settings-user-pic');
             const settingsIcon = document.getElementById('settings-user-icon');
             
@@ -382,11 +378,6 @@
             headerPic.src = imageUrl;
             headerPic.classList.remove('hidden');
             headerIcon.classList.add('hidden');
-            
-            // Atualizar foto do modal
-            modalPic.src = imageUrl;
-            modalPic.classList.remove('hidden');
-            modalIcon.classList.add('hidden');
             
             // Atualizar foto das configurações
             if (settingsPic && settingsIcon) {
@@ -406,9 +397,10 @@
                 }
             } catch (error) {
                 console.error('❌ Erro ao salvar foto:', error);
-                showNotification('Erro ao salvar foto.', 'error');
-            }
-        }// Função para inicializar configurações        // Função para inicializar configurações
+                showNotification('Erro ao salvar foto.', 'error');            }
+        }
+        
+        // Função para inicializar configurações
         function initializeSettings() {
             const settingsModal = document.getElementById('settings-modal');
             const closeSettingsBtn = document.getElementById('close-settings-btn');
@@ -570,24 +562,9 @@
                     console.error('Erro ao fazer logout:', error);
                     showNotification('Erro ao sair da conta. Tente novamente.', 'error');
                 }
-            });
-        }
+            });        }
 
-        function syncPhotoViewer() {
-            const settingsPic = document.getElementById('settings-user-pic');
-            const settingsIcon = document.getElementById('settings-user-icon');
-            const viewerPic = document.getElementById('photo-viewer-pic');
-            const viewerIcon = document.getElementById('photo-viewer-icon');
-            
-            if (!settingsPic.classList.contains('hidden')) {
-                viewerPic.src = settingsPic.src;
-                viewerPic.classList.remove('hidden');
-                viewerIcon.classList.add('hidden');
-            } else {
-                viewerPic.classList.add('hidden');
-                viewerIcon.classList.remove('hidden');
-            }
-        }        // Função para atualizar informações do usuário no modal de configurações
+        // Função para atualizar informações do usuário no modal de configurações
         async function updateSettingsUserInfo() {
             const user = auth.currentUser;
             if (!user) return;
@@ -766,8 +743,6 @@
     link.rel = 'manifest';
     link.href = manifestURL;    document.head.appendChild(link);
 </script>
-
-<!-- Modal de Foto do Usuário -->
 
 <!-- Modal de Configurações -->
 <div id="settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
