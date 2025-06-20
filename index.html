@@ -692,66 +692,65 @@
         selectedFriendsForDeletion: [], // <-- E ESTA LINHA
         userSearchResults: [] // <-- ADICIONE ESTA LINHA
     };// --- LÓGICA DE INICIALIZAÇÃO ---
-    function main() {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-        storage = getStorage(app);
-        rtdb = getDatabase(app);
 
-        try {
-            messaging = getMessaging(app);
-        } catch (err) {
-            console.warn("Firebase Messaging não é suportado neste ambiente.", err.message);
-            messaging = null;
-        }
-
-        bindGlobalUI();
-        onAuthStateChanged(auth, handleAuthChange);
+    // Função para verificar se elementos essenciais existem
+    function checkRequiredElements() {
+        const requiredElements = [
+            'login-screen',
+            'app-container', 
+            'guest-container',
+            'friends-screen'
+        ];
         
-        // Monitorar mudanças no botão dinâmico
-        setTimeout(() => {
-            const dynamicBtn = document.getElementById('dynamic-action-btn');
-            if (dynamicBtn) {
-                console.log('🔍 [MONITOR] Iniciando monitoramento do botão dinâmico');
-                  // Usar MutationObserver para detectar mudanças nas classes
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                            const newClasses = dynamicBtn.className;
-                            console.log('🔍 [MONITOR] Classes do botão alteradas para:', newClasses);
-                            
-                            // Detectar se ficou vermelho quando não deveria
-                            if ((newClasses.includes('red') || newClasses.includes('pulse')) && !state.isRecording) {                                console.log('⚠️ [MONITOR] ALERTA: Botão ficou vermelho sem estar gravando!');                                console.log('⚠️ [MONITOR] state.isRecording:', state.isRecording);
-                                console.log('⚠️ [MONITOR] Aplicando correção imediata');
-                                
-                                // Correção imediata sem usar toggleButtonState
-                                setTimeout(() => {
-                                    const chatInput = document.querySelector('.chat-input');
-                                    const dynamicBtn = document.querySelector('#dynamic-action-btn');
-                                    const micIcon = document.querySelector('#mic-icon');
-                                    const sendIcon = document.querySelector('#send-icon');
-                                    
-                                    if (chatInput && chatInput.value.trim() === '' && dynamicBtn && micIcon && sendIcon) {
-                                        console.log('⚠️ [MONITOR] Corrigindo botão vermelho');
-                                        state.isRecording = false;
-                                        micIcon.classList.remove('hidden');
-                                        sendIcon.classList.add('hidden');
-                                        dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                                        dynamicBtn.removeAttribute('style');
-                                    }
-                                }, 10);
-                            }
-                        }
-                    });
-                });
-                
-                observer.observe(dynamicBtn, {
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
+        const missing = requiredElements.filter(id => !document.getElementById(id));
+        
+        if (missing.length > 0) {
+            console.error('❌ Elementos HTML obrigatórios não encontrados:', missing);
+            return false;
+        }
+        
+        console.log('✅ Todos os elementos HTML necessários encontrados');
+        return true;
+    }    function main() {
+        console.log('🚀 Inicializando aplicação...');
+        
+        if (!checkRequiredElements()) {
+            console.error('❌ Aplicação não pode inicializar - elementos HTML faltando');
+            return;
+        }
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            storage = getStorage(app);
+            rtdb = getDatabase(app);
+
+            try {
+                messaging = getMessaging(app);
+                console.log('✅ Firebase Messaging inicializado');
+            } catch (err) {
+                console.warn("⚠️ Firebase Messaging não é suportado neste ambiente.", err.message);
+                messaging = null;
             }
-        }, 2000);
+
+            console.log('✅ Firebase inicializado com sucesso');
+            
+            bindGlobalUI();
+            onAuthStateChanged(auth, handleAuthChange);
+            
+            console.log('✅ Event listeners configurados');
+            
+        } catch (error) {
+            console.error('❌ Erro ao inicializar Firebase:', error);
+            
+            // Forçar mostrar tela de login mesmo com erro
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('login-screen').classList.add('flex');
+            document.getElementById('app-container').classList.add('hidden');
+            
+            showNotification?.('Erro de conexão. Tente recarregar a página.', 'error');
+        }
     }
     
     function getRoomDisplayName(room, currentUserId) {
@@ -1415,10 +1414,11 @@
             // Aplicar classe específica para PWA
             document.body.classList.add('pwa-mode');
         }
-    });
-
-    // Atualizar altura quando a tela redimensionar
+    });    // Atualizar altura quando a tela redimensionar
     window.addEventListener('resize', setRealVH);
+
+    // Chamar a função main quando a página carregar
+    main();
 </script>
 </body>
 </html>
