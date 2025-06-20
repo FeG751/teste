@@ -160,17 +160,6 @@
 </head>
 <body class="bg-black text-gray-200 overflow-hidden">
 
-    <!-- Adicione este bloco logo depois de <body> -->
-    <div id="notification-permission-overlay" class="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm mx-4">
-            <h2 class="text-2xl font-bold mb-4 text-white">Permissão Obrigatória</h2>
-            <p id="permission-text" class="text-gray-300 mb-6"></p>
-            <button id="request-permission-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-transform duration-300 hover:scale-105 w-full">
-                Ativar Notificações
-            </button>
-        </div>
-    </div>
-
     <!-- ELEMENTOS GLOBAIS -->
     <input type="file" id="image-uploader" class="hidden" accept="image/*" />
     <input type="file" id="media-uploader" class="hidden" accept="image/*,video/*" />
@@ -267,7 +256,15 @@
                 <div class="w-full">
                     <label for="user-settings-name" class="block text-sm font-medium text-gray-400">Nome de Usuário</label>
                     <input type="text" id="user-settings-name" class="mt-1 w-full border border-gray-600 rounded-md px-3 py-2 bg-gray-700" />
-                </div>            </div>
+                </div>
+            </div>
+            <div id="notifications-section" class="pt-4 border-t border-gray-700 space-y-2">
+                 <button id="enable-notifications-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                     <span>Ativar Notificações</span>
+                 </button>
+                 <p id="notifications-status" class="text-xs text-center text-gray-500"></p>
+            </div>
             <div class="pt-4 border-t border-gray-700 space-y-2">
                 <button id="logout-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
@@ -517,46 +514,10 @@
         } catch (err) {
             console.warn("Firebase Messaging não é suportado neste ambiente.", err.message);
             messaging = null;
-        }        bindGlobalUI();
-        
-        // Dentro da sua função main()
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                state.user = user;
-                console.log('Usuário autenticado:', user.uid);
+        }
 
-                try {
-                    // ETAPA 1: Bloqueia o app até a permissão ser concedida.
-                    await requireNotificationPermission();
-
-                    // ETAPA 2: Após a permissão, pega o token e salva no Firestore.
-                    await getTokenAndSave();
-
-                    // ETAPA 3: Inicia o monitoramento contínuo da permissão.
-                    startPermissionMonitor();
-
-                    // ETAPA 4: Carrega o restante da interface do usuário.
-                    const userDocRef = db.collection('users').doc(user.uid);
-                    const userDoc = await userDocRef.get();
-                    if (!userDoc.exists) {
-                        await userDocRef.set({
-                            username: user.displayName,
-                            photoURL: user.photoURL,
-                            email: user.email
-                        });
-                    }
-                    showRoomListView(); // Ou qualquer que seja sua função de início
-
-                } catch (error) {
-                    console.error("Um erro crítico ocorreu no fluxo de inicialização:", error);
-                }
-
-            } else {
-                console.log('Nenhum usuário autenticado.');
-                state.user = null;
-                showView('login-view');
-            }
-        });
+        bindGlobalUI();
+        onAuthStateChanged(auth, handleAuthChange);
         
         // Monitorar mudanças no botão dinâmico
         setTimeout(() => {
@@ -2711,73 +2672,8 @@
             clearInterval(state.recordingTimerInterval);
             timerEl.textContent = '00:00';
         }
-          console.log('🎨 [UI] updateRecordingUI finalizada');
-    }
-
-    // Adicione estas funções no lugar das antigas que você apagou.
-
-    function requireNotificationPermission() {
-        const overlay = document.getElementById('notification-permission-overlay');
-        const permissionText = document.getElementById('permission-text');
-        const permissionBtn = document.getElementById('request-permission-btn');
-
-        return new Promise((resolve) => {
-            if (Notification.permission === 'granted') {
-                resolve();
-                return;
-            }
-            overlay.classList.remove('hidden');
-
-            if (Notification.permission === 'denied') {
-                permissionText.innerHTML = "Você bloqueou as notificações. Para usar o chat, clique no cadeado 🔒 na barra de endereço, vá em 'Permissões', permita as notificações e <b>recarregue a página</b>.";
-                permissionBtn.style.display = 'none';
-                return;
-            }
-
-            permissionText.innerHTML = "Para garantir que você receba todas as mensagens, o 7Chaat exige o acesso às notificações.";
-            permissionBtn.style.display = 'block';
-            permissionBtn.onclick = async () => {
-                const permissionResult = await Notification.requestPermission();
-                if (permissionResult === 'granted') {
-                    overlay.classList.add('hidden');
-                    resolve();
-                } else {
-                    permissionText.innerHTML = "Você bloqueou as notificações. Para usar o chat, clique no cadeado 🔒 na barra de endereço, vá em 'Permissões', permita as notificações e <b>recarregue a página</b>.";
-                    permissionBtn.style.display = 'none';
-                }
-            };
-        });
-    }
-
-    function startPermissionMonitor() {
-        setInterval(() => {
-            if (Notification.permission !== 'granted') {
-                const overlay = document.getElementById('notification-permission-overlay');
-                const permissionText = document.getElementById('permission-text');
-                const permissionBtn = document.getElementById('request-permission-btn');
-                
-                permissionText.innerHTML = "Você revogou a permissão de notificação. Para continuar usando o chat, por favor, reative a permissão nas configurações do seu navegador (no cadeado 🔒) e <b>recarregue a página</b>.";
-                permissionBtn.style.display = 'none';
-                overlay.classList.remove('hidden');
-            }
-        }, 2000);
-    }
-
-    async function getTokenAndSave() {
-        try {
-            // Sua VAPID Key já está aqui.
-            const currentToken = await messaging.getToken({ vapidKey: 'BBo4U4SlypBpGZvoVaAXWee9fmBOEsl8ck9GzYiGF0s7mQaUm5l3Mc0tDGA-zb6VzhJpAIeQXgD4t4AgANHj8Z0' });
-            if (currentToken) {
-                console.log('Token FCM obtido:', currentToken);
-                const userDocRef = db.collection('users').doc(state.user.uid);
-                await userDocRef.update({
-                    fcmTokens: firebase.firestore.FieldValue.arrayUnion(currentToken)
-                });
-                console.log('Token salvo no Firestore.');
-            }
-        } catch (err) {
-            console.error('Ocorreu um erro ao obter/salvar o token:', err);
-        }
+        
+        console.log('🎨 [UI] updateRecordingUI finalizada');
     }
 
     document.addEventListener('DOMContentLoaded', main);
