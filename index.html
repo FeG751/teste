@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <title>7Chat - Versão Final Otimizada (Atualizado)</title>
     
     <!-- PWA Meta Tags -->    <meta name="theme-color" content="#1f2937"/>
@@ -33,12 +33,25 @@
     <style>
         :root {
             --real-vh: 1vh;
-        }        html, body {
+            --keyboard-height: 0px;
+        }        
+        html, body {
             height: 100vh; /* Fallback */
             height: calc(var(--real-vh, 1vh) * 100);
             overflow: hidden;
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+        }
+
+        /* PWA-specific styles - allow scrolling when keyboard appears */
+        body.pwa-mode {
+            overflow: hidden;
+        }
+        
+        body.pwa-mode.keyboard-active {
+            overflow-y: auto;
+            height: 100vh;
+            height: calc(100vh - var(--keyboard-height, 0px));
         }
         .messages-container {
             background-image: url('https://i.imgur.com/kI46opI.png');
@@ -154,24 +167,48 @@
             filter: invert(1) grayscale(1) brightness(1.5);
         }
 
-        /* Fix para teclado mobile */
+        /* Enhanced keyboard handling for PWA */
         .keyboard-adjust {
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, padding 0.3s ease;
         }
 
+        /* PWA mode keyboard adjustments */
+        body.pwa-mode .keyboard-adjust {
+            transform: none;
+            padding-bottom: var(--keyboard-height, 0px);
+        }
+
+        /* Legacy support for non-PWA mobile browsers */
         @media (max-height: 500px) {
-            .keyboard-adjust {
+            body:not(.pwa-mode) .keyboard-adjust {
                 transform: translateY(-20vh);
             }
         }
 
-        /* Fix específico para inputs */
+        /* Enhanced input focus handling */
         .input-focus {
             position: relative;
             z-index: 1000;
         }
 
-        /* Ajuste para modal quando teclado aparecer */
+        /* PWA-specific input focus */
+        body.pwa-mode .input-focus {
+            scroll-margin-top: 20px;
+            scroll-margin-bottom: 100px;
+        }
+
+        /* Login screen input improvements */
+        #login-screen input {
+            scroll-margin-top: 30px;
+            scroll-margin-bottom: 150px;
+        }
+
+        body.pwa-mode.keyboard-active #login-screen input:focus {
+            transform: none;
+            position: relative;
+        }
+
+        /* Enhanced modal keyboard handling */
         .modal.keyboard-open {
             align-items: flex-start;
             padding-top: 20px;
@@ -180,6 +217,35 @@
         .modal.keyboard-open .modal-content {
             margin-top: 0;
             transform: none !important;
+        }
+
+        /* PWA modal improvements */
+        body.pwa-mode .modal.keyboard-open {
+            padding-top: 10px;
+            overflow-y: auto;
+        }
+
+        body.pwa-mode .modal.keyboard-open .modal-content {
+            margin-bottom: var(--keyboard-height, 0px);
+        }
+
+        /* Login screen PWA optimizations */
+        body.pwa-mode.keyboard-active #login-screen {
+            align-items: flex-start !important;
+            padding-top: 20px;
+            overflow-y: auto;
+            height: 100vh;
+            height: calc(100vh - var(--keyboard-height, 0px));
+        }
+
+        body.pwa-mode.keyboard-active #login-screen > div:last-child {
+            margin-bottom: calc(var(--keyboard-height, 0px) + 20px);
+        }
+
+        /* Ensure login form is always visible in PWA mode */
+        body.pwa-mode #login-screen .w-full.max-w-sm {
+            margin: 10px auto;
+            flex-shrink: 0;
         }
     </style><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
@@ -3235,45 +3301,153 @@ if (user) {
     // ... resto do seu código de login ...
 }
 
-// Fix para teclado mobile
+// PWA detection and enhanced keyboard handling
 let initialViewportHeight = window.innerHeight;
 let currentInput = null;
+let isPWA = false;
+let keyboardHeight = 0;
 
-// Detectar quando input recebe foco
+// Detect PWA mode
+function detectPWA() {
+    // Check if app is installed (standalone mode)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.navigator.standalone ||
+                        document.referrer.includes('android-app://');
+    
+    // Check for PWA-specific features
+    const hasPWAFeatures = 'serviceWorker' in navigator && 
+                          window.location.protocol === 'https:';
+    
+    isPWA = isStandalone || hasPWAFeatures;
+    
+    if (isPWA) {
+        document.body.classList.add('pwa-mode');
+        console.log('PWA mode detected');
+    }
+    
+    return isPWA;
+}
+
+// Enhanced viewport height handling for PWA
+function updateViewportHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--real-vh', `${vh}px`);
+}
+
+// Enhanced keyboard detection for PWA
+function detectKeyboardState() {
+    const currentHeight = window.innerHeight;
+    const heightDifference = initialViewportHeight - currentHeight;
+    
+    // More sensitive detection for PWA
+    const keyboardThreshold = isPWA ? 100 : 150;
+    
+    if (heightDifference > keyboardThreshold) {
+        keyboardHeight = heightDifference;
+        document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+        document.body.classList.add('keyboard-active');
+        return true;
+    } else {
+        keyboardHeight = 0;
+        document.documentElement.style.setProperty('--keyboard-height', '0px');
+        document.body.classList.remove('keyboard-active');
+        return false;
+    }
+}
+
+// Initialize PWA detection
+detectPWA();
+updateViewportHeight();
+
+// Enhanced input focus handling
 document.addEventListener('focusin', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         currentInput = e.target;
         e.target.classList.add('input-focus');
         
-        // Adicionar classe para ajustar layout
+        // Add keyboard adjustment class
         document.body.classList.add('keyboard-adjust');
         
-        // Se for um modal, ajustar posicionamento
+        // Handle modal positioning
         const modal = e.target.closest('.modal');
         if (modal) {
             modal.classList.add('keyboard-open');
         }
         
-        // Scroll para o input após um delay
-        setTimeout(() => {
-            if (currentInput) {
-                currentInput.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center',
-                    inline: 'nearest'
-                });
-            }
-        }, 300);
+        // PWA-specific handling
+        if (isPWA) {
+            // Shorter delay for PWA as they respond faster
+            setTimeout(() => {
+                if (currentInput) {
+                    // Check if it's a login screen input
+                    const isLoginInput = currentInput.closest('#login-screen') !== null;
+                    
+                    if (isLoginInput) {
+                        // Special handling for login inputs
+                        const rect = currentInput.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        
+                        // If input is too low, scroll it to a better position
+                        if (rect.top > viewportHeight * 0.4) {
+                            currentInput.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start',
+                                inline: 'nearest'
+                            });
+                        } else {
+                            currentInput.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center',
+                                inline: 'nearest'
+                            });
+                        }
+                        
+                        // Additional safety scroll for PWA
+                        setTimeout(() => {
+                            if (currentInput && rect.bottom > viewportHeight * 0.8) {
+                                window.scrollBy(0, rect.bottom - viewportHeight * 0.6);
+                            }
+                        }, 250);
+                    } else {
+                        // Standard input handling
+                        currentInput.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                            inline: 'nearest'
+                        });
+                        
+                        // Additional scroll margin for PWA
+                        const rect = currentInput.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        
+                        if (rect.bottom > viewportHeight * 0.6) {
+                            window.scrollBy(0, rect.bottom - viewportHeight * 0.5);
+                        }
+                    }
+                }
+            }, 200);
+        } else {
+            // Standard behavior for browsers
+            setTimeout(() => {
+                if (currentInput) {
+                    currentInput.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }
+            }, 300);
+        }
     }
 });
 
-// Detectar quando input perde foco
+// Enhanced input blur handling
 document.addEventListener('focusout', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         e.target.classList.remove('input-focus');
         document.body.classList.remove('keyboard-adjust');
         
-        // Remover classe do modal
+        // Remove modal class
         const modal = e.target.closest('.modal');
         if (modal) {
             modal.classList.remove('keyboard-open');
@@ -3283,33 +3457,112 @@ document.addEventListener('focusout', function(e) {
     }
 });
 
-// Detectar mudança na altura da viewport (teclado aparecendo/sumindo)
+// Enhanced viewport change handling
 function handleViewportChange() {
-    const currentHeight = window.innerHeight;
-    const heightDifference = initialViewportHeight - currentHeight;
+    const isKeyboardOpen = detectKeyboardState();
     
-    if (heightDifference > 150) { // Teclado apareceu
-        document.body.style.paddingBottom = '0px';
-        
-        if (currentInput) {
-            setTimeout(() => {
+    if (isKeyboardOpen && currentInput) {
+        // Keyboard appeared - adjust input position
+        setTimeout(() => {
+            if (currentInput) {
                 currentInput.scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
                 });
-            }, 100);
-        }
-    } else { // Teclado sumiu
-        document.body.style.paddingBottom = '';
+            }
+        }, isPWA ? 50 : 100);
     }
+    
+    // Update viewport height
+    updateViewportHeight();
 }
 
+// Enhanced event listeners for better PWA support
 window.addEventListener('resize', handleViewportChange);
 window.addEventListener('orientationchange', () => {
     setTimeout(() => {
         initialViewportHeight = window.innerHeight;
+        updateViewportHeight();
         handleViewportChange();
-    }, 500);
+    }, isPWA ? 300 : 500);
+});
+
+// PWA-specific visual viewport handling (if supported)
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+        const keyboardOpen = window.visualViewport.height < window.innerHeight * 0.75;
+        
+        if (keyboardOpen) {
+            const keyboardHeight = window.innerHeight - window.visualViewport.height;
+            document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+            document.body.classList.add('keyboard-active');
+        } else {
+            document.documentElement.style.setProperty('--keyboard-height', '0px');
+            document.body.classList.remove('keyboard-active');
+        }
+    });
+}
+
+// Additional safety measures for PWA keyboard handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure PWA detection runs after DOM is ready
+    detectPWA();
+    updateViewportHeight();
+    
+    // Add debugging for development
+    if (isPWA) {
+        console.log('PWA mode enabled - enhanced keyboard handling active');
+    }
+    
+    // Special handling for login screen inputs
+    const loginInputs = document.querySelectorAll('#login-screen input');
+    loginInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            if (isPWA) {
+                // Force the login screen to be scrollable when input is focused
+                const loginScreen = document.getElementById('login-screen');
+                if (loginScreen && !loginScreen.classList.contains('flex')) {
+                    loginScreen.style.overflowY = 'auto';
+                    loginScreen.style.justifyContent = 'flex-start';
+                    loginScreen.style.paddingTop = '20px';
+                }
+            }
+        });
+        
+        input.addEventListener('blur', function() {
+            if (isPWA) {
+                // Reset login screen when no input is focused
+                setTimeout(() => {
+                    if (!document.querySelector('#login-screen input:focus')) {
+                        const loginScreen = document.getElementById('login-screen');
+                        if (loginScreen) {
+                            loginScreen.style.overflowY = '';
+                            loginScreen.style.justifyContent = '';
+                            loginScreen.style.paddingTop = '';
+                        }
+                    }
+                }, 100);
+            }
+        });
+    });
+});
+
+// Handle window focus events to re-detect keyboard state
+window.addEventListener('focus', function() {
+    setTimeout(() => {
+        updateViewportHeight();
+        detectKeyboardState();
+    }, 100);
+});
+
+// Handle page visibility changes (important for PWAs)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        setTimeout(() => {
+            initialViewportHeight = window.innerHeight;
+            updateViewportHeight();
+        }, 200);
+    }
 });
 </script>
 </body>
