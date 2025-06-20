@@ -842,7 +842,6 @@
             auth = getAuth(app);
             db = getFirestore(app);
             storage = getStorage(app);
-            rtdb = getDatabase(app);
 
             try {
                 messaging = getMessaging(app);
@@ -850,6 +849,14 @@
             } catch (err) {
                 console.warn("⚠️ Firebase Messaging não é suportado neste ambiente.", err.message);
                 messaging = null;
+            }
+
+            try {
+                rtdb = getDatabase(app);
+                console.log('✅ Firebase Realtime Database inicializado');
+            } catch (err) {
+                console.warn("⚠️ Firebase Realtime Database erro:", err.message);
+                rtdb = null;
             }
 
             console.log('✅ Firebase inicializado com sucesso');
@@ -966,6 +973,12 @@
             
             // Configurar UI principal
             bindMainUI();
+            
+            // Configurar configurações de conversa
+            setupConversationSettings();
+            
+            // Configurar eventos dos modais
+            setupModalEvents();
             
             // Se há room ID da URL, abrir essa sala
             if (roomIdFromUrl) {
@@ -1113,6 +1126,14 @@
             messageInput.addEventListener('input', () => {
                 messageInput.style.height = 'auto';
                 messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+                
+                // Typing indicator (optional - would need real-time implementation)
+                if (state.currentRoomData && !state.typingTimeout) {
+                    // Send typing indicator
+                    state.typingTimeout = setTimeout(() => {
+                        state.typingTimeout = null;
+                    }, 3000);
+                }
             });
         }
         
@@ -1265,10 +1286,12 @@
         });
 
         const statusRef = rtdbRef(rtdb, 'status');
-        state.unsubscribePresence = onValue(statusRef, (snapshot) => {
-            state.usersStatus = snapshot.val() || {};
-            renderApp();
-        });
+        if (rtdb) {
+            state.unsubscribePresence = onValue(statusRef, (snapshot) => {
+                state.usersStatus = snapshot.val() || {};
+                renderApp();
+            });
+        }
     }
     
     async function fetchFriendsData() {
@@ -2498,6 +2521,7 @@
     window.acceptFriendRequest = acceptFriendRequest;
     window.rejectFriendRequest = rejectFriendRequest;
     window.openImageViewer = openImageViewer;
+    window.shareRoomLink = shareRoomLink;
 
     function showCustomPrompt(title, message) {
         return new Promise((resolve) => {
@@ -2528,27 +2552,34 @@
     }
 
     function setupPresenceSystem() {
-        if (!state.currentUserId) return;
+        if (!state.currentUserId || !rtdb) {
+            console.warn('Presence system não pode ser inicializado - faltando userId ou rtdb');
+            return;
+        }
         
-        const userStatusRef = rtdbRef(rtdb, `status/${state.currentUserId}`);
-        const connectedRef = rtdbRef(rtdb, '.info/connected');
-        
-        // Quando conectado, definir status como online
-        onValue(connectedRef, (snapshot) => {
-            if (snapshot.val() === true) {
-                // Definir como online
-                set(userStatusRef, {
-                    state: 'online',
-                    lastSeen: rtdbServerTimestamp()
-                });
-                
-                // Quando desconectar, definir como offline
-                onDisconnect(userStatusRef).set({
-                    state: 'offline',
-                    lastSeen: rtdbServerTimestamp()
-                });
-            }
-        });
+        try {
+            const userStatusRef = rtdbRef(rtdb, `status/${state.currentUserId}`);
+            const connectedRef = rtdbRef(rtdb, '.info/connected');
+            
+            // Quando conectado, definir status como online
+            onValue(connectedRef, (snapshot) => {
+                if (snapshot.val() === true) {
+                    // Definir como online
+                    set(userStatusRef, {
+                        state: 'online',
+                        lastSeen: rtdbServerTimestamp()
+                    });
+                    
+                    // Quando desconectar, definir como offline
+                    onDisconnect(userStatusRef).set({
+                        state: 'offline',
+                        lastSeen: rtdbServerTimestamp()
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Erro ao configurar sistema de presença:', error);
+        }
     }
 
     async function setupPushNotifications() {
@@ -2594,7 +2625,184 @@
     }
 
     function monitorNotificationStatus() {
-        console.log('Monitorando status de notificações...');
+        if (!('Notification' in window)) return;
+        
+        // Verificar status a cada 30 segundos
+        state.notificationCheckInterval = setInterval(() => {
+            const permission = Notification.permission;
+            
+            if (permission === 'denied') {
+                showNotification('Notificações foram bloqueadas. Algumas funcionalidades podem não funcionar.', 'warning');
+            }
+        }, 30000);
+    }
+
+    // Função para configurar eventos de configurações da conversa
+    function setupConversationSettings() {
+        const chatSettingsBtn = document.getElementById('chat-settings-btn');
+        const conversationModal = document.getElementById('conversation-settings-modal');
+        const conversationPic = document.getElementById('conversation-settings-pic');
+        const conversationName = document.getElementById('conversation-settings-name');
+        const conversationType = document.getElementById('conversation-settings-type');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        
+        if (chatSettingsBtn) {
+            chatSettingsBtn.onclick = () => {
+                if (!state.currentRoomData) return;
+                
+                // Preencher dados da conversa
+                const roomName = getRoomDisplayName(state.currentRoomData, state.currentUserId);
+                
+                if (conversationName) conversationName.textContent = roomName;
+                if (conversationType) {
+                    conversationType.textContent = state.currentRoomData.isDirectMessage ? 'Conversa Privada' : 'Sala de Chat';
+                }
+                
+                if (conversationPic) {
+                    let photoURL = state.currentRoomData.photoURL;
+                    if (state.currentRoomData.isDirectMessage) {
+                        const otherUserId = state.currentRoomData.members.find(id => id !== state.currentUserId);
+                        photoURL = state.currentRoomData.memberPhotos?.[otherUserId] || photoURL;
+                    }
+                    conversationPic.src = photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(roomName[0])}&background=random&color=fff`;
+                }
+                
+                conversationModal.classList.remove('hidden');
+            };
+        }
+        
+        if (clearChatBtn) {
+            clearChatBtn.onclick = async () => {
+                if (!state.currentRoomData) return;
+                
+                if (confirm('Tem certeza que deseja limpar todo o histórico desta conversa? Esta ação não pode ser desfeita.')) {
+                    try {
+                        // Buscar todas as mensagens da sala
+                        const messagesQuery = query(
+                            collection(db, 'messages'),
+                            where('roomId', '==', state.currentRoomData.id)
+                        );
+                        
+                        const messagesSnapshot = await getDocs(messagesQuery);
+                        const batch = writeBatch(db);
+                        
+                        // Adicionar todas as mensagens ao batch para exclusão
+                        messagesSnapshot.docs.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        
+                        // Limpar última mensagem da sala
+                        batch.update(doc(db, 'rooms', state.currentRoomData.id), {
+                            lastMessage: null
+                        });
+                        
+                        await batch.commit();
+                        
+                        showNotification('Histórico da conversa limpo com sucesso.', 'success');
+                        conversationModal.classList.add('hidden');
+                        
+                    } catch (error) {
+                        console.error('Erro ao limpar conversa:', error);
+                        showNotification('Erro ao limpar conversa.', 'error');
+                    }
+                }
+            };
+        }
+    }
+
+    function generateRoomInviteLink(roomId) {
+        const baseUrl = window.location.origin + window.location.pathname;
+        return `${baseUrl}?room=${roomId}`;
+    }
+
+    function shareRoomLink() {
+        if (!state.currentRoomData) return;
+        
+        const shareModal = document.getElementById('share-link-modal');
+        const shareLinkInput = document.getElementById('share-link-input');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        
+        if (!shareModal || !shareLinkInput) return;
+        
+        const inviteLink = generateRoomInviteLink(state.currentRoomData.id);
+        shareLinkInput.value = inviteLink;
+        
+        if (copyLinkBtn) {
+            copyLinkBtn.onclick = async () => {
+                try {
+                    await navigator.clipboard.writeText(inviteLink);
+                    showNotification('Link copiado para a área de transferência!', 'success');
+                } catch (error) {
+                    console.error('Erro ao copiar link:', error);
+                    
+                    // Fallback para navegadores que não suportam clipboard API
+                    shareLinkInput.select();
+                    document.execCommand('copy');
+                    showNotification('Link copiado!', 'success');
+                }
+            };
+        }
+        
+        shareModal.classList.remove('hidden');
+    }
+
+    // Função para atualizar nome do usuário
+    async function updateUserProfile() {
+        const nameInput = document.getElementById('user-settings-name');
+        const newName = nameInput?.value?.trim();
+        
+        if (!newName || !state.currentUserData) return;
+        
+        try {
+            await updateDoc(doc(db, 'users', state.currentUserId), {
+                username: newName,
+                username_lowercase: newName.toLowerCase()
+            });
+            
+            showNotification('Perfil atualizado com sucesso!', 'success');
+            
+        } catch (error) {
+            console.error('Erro ao atualizar perfil:', error);
+            showNotification('Erro ao atualizar perfil.', 'error');
+        }
+    }
+
+    // Adicionar eventos aos modais
+    function setupModalEvents() {
+        // Save user settings
+        const userModal = document.getElementById('user-settings-modal');
+        const userNameInput = document.getElementById('user-settings-name');
+        
+        if (userNameInput) {
+            userNameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    updateUserProfile();
+                }
+            });
+            
+            userNameInput.addEventListener('blur', updateUserProfile);
+        }
+        
+        // Close modals when clicking outside
+        [
+            'user-settings-modal',
+            'room-settings-modal', 
+            'create-room-modal',
+            'friend-requests-modal',
+            'user-search-modal',
+            'conversation-settings-modal',
+            'share-link-modal',
+            'image-viewer-modal'
+        ].forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        });
     }
 
     function openRoom(roomId, isGuest = false) {
