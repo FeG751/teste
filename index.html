@@ -151,12 +151,12 @@
         }
         audio::-webkit-media-controls-play-button,
         audio::-webkit-media-controls-current-time-display,
-        audio::-webkit-media-controls-time-remaining-display,
-        audio::-webkit-media-controls-timeline,
+        audio::-webkit-media-controls-time-remaining-display,        audio::-webkit-media-controls-timeline,
         audio::-webkit-media-controls-volume-slider {
             filter: invert(1) grayscale(1) brightness(1.5);
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body class="bg-black text-gray-200 overflow-hidden">
 
@@ -196,10 +196,26 @@
                 <button id="main-guest-login-btn" class="mt-2 text-blue-400 hover:text-blue-300 font-semibold">Entrar como convidado</button>
             </div>
         </div>
+    </div>    <!-- CONTAINER PRINCIPAL DO APP -->
+    <div id="app-container" class="hidden h-full w-full relative overflow-hidden"></div>
+    
+    <!-- Coloque seu conteúdo principal (tela de salas/chat) aqui dentro -->
+    <div id="rooms-screen">
+        <!-- Exemplo: <h1 class="text-white text-center text-2xl mt-10">Tela de Salas</h1> -->
     </div>
 
-    <!-- CONTAINER PRINCIPAL DO APP -->
-    <div id="app-container" class="hidden h-full w-full relative overflow-hidden"></div>
+    <!-- Nova Tela de Amigos (inicialmente oculta) -->
+    <div id="friends-screen" class="hidden h-full w-full bg-gray-100">
+        <!-- Cabeçalho -->
+        <div class="bg-white shadow-md p-4 flex items-center">
+            <h1 class="text-xl font-bold text-gray-800">Amigos</h1>
+        </div>
+
+        <!-- Container da Lista de Amigos -->
+        <div id="friends-list-container" class="p-4 space-y-3 overflow-y-auto">
+            <!-- A lista de amigos será gerada pelo JavaScript aqui -->
+        </div>
+    </div>
     
     <div id="guest-container" class="hidden h-full w-full relative overflow-hidden"></div>
 
@@ -2906,10 +2922,105 @@
         navigator.serviceWorker.register('/firebase-messaging-sw.js')
             .then((registration) => {
                 console.log('Service Worker registrado com sucesso:', registration);
-            }).catch((err) => {
-                console.warn('Falha no registro do Service Worker: ', err);
-            });
+            }).catch((err) => {                console.warn('Falha no registro do Service Worker: ', err);
+            });    }
+</script>
+
+<!-- Menu de Navegação Inferior Atualizado -->
+<div class="fixed bottom-0 left-0 right-0 bg-gray-100 shadow-lg">
+    <div class="flex justify-around text-gray-700">
+        <!-- Botão Amigos -->
+        <a href="#" id="nav-friends" class="flex flex-col items-center justify-center p-3 text-center w-full hover:bg-gray-200 transition-colors duration-300">
+            <i class="fas fa-user-friends text-xl"></i>
+            <span class="text-xs font-medium">Amigos</span>
+        </a>
+        <!-- Botão Salas (ativo por padrão) -->
+        <a href="#" id="nav-rooms" class="flex flex-col items-center justify-center p-3 text-center w-full text-indigo-600 border-t-2 border-indigo-600 hover:bg-gray-200 transition-colors duration-300">
+            <i class="fas fa-comments text-xl"></i>
+            <span class="text-xs font-medium">Salas</span>
+        </a>
+        <!-- Botão Configurar -->
+        <a href="#" id="nav-settings" class="flex flex-col items-center justify-center p-3 text-center w-full hover:bg-gray-200 transition-colors duration-300">
+            <i class="fas fa-cog text-xl"></i>
+            <span class="text-xs font-medium">Configurar</span>
+        </a>
+    </div>
+</div>
+
+<script>
+    // --- LÓGICA PARA TROCA DE TELAS E LISTA DE AMIGOS ---
+
+    // Dados de exemplo para a lista de amigos.
+    // No futuro, você pode carregar isso de um banco de dados ou API.
+    const friends = [
+        { name: 'Beatriz', avatar: 'https://i.pravatar.cc/150?u=beatriz', status: 'Online' },
+        { name: 'Carlos', avatar: 'https://i.pravatar.cc/150?u=carlos', status: 'Offline' },
+        { name: 'Daniela', avatar: 'https://i.pravatar.cc/150?u=daniela', status: 'Online' },
+        { name: 'Eduardo', avatar: 'https://i.pravatar.cc/150?u=eduardo', status: 'Ocupado' },
+        { name: 'Fernanda', avatar: 'https://i.pravatar.cc/150?u=fernanda', status: 'Online' }
+    ];
+
+    // Seleciona os elementos principais do HTML
+    const roomsScreen = document.getElementById('rooms-screen');
+    const friendsScreen = document.getElementById('friends-screen');
+    const friendsListContainer = document.getElementById('friends-list-container');
+    
+    // Seleciona os botões de navegação
+    const navFriends = document.getElementById('nav-friends');
+    const navRooms = document.getElementById('nav-rooms');
+
+    // Função para renderizar a lista de amigos na tela
+    function renderFriends() {
+        friendsListContainer.innerHTML = ''; // Limpa a lista para não duplicar
+        friends.forEach(friend => {
+            const friendElementHTML = `
+                <div class="flex items-center bg-white p-3 rounded-lg shadow hover:bg-gray-50 cursor-pointer">
+                    <div class="relative">
+                        <img src="${friend.avatar}" alt="${friend.name}" class="w-12 h-12 rounded-full mr-4">
+                        <span class="absolute bottom-0 right-4 w-3 h-3 rounded-full ${friend.status === 'Online' ? 'bg-green-500' : 'bg-gray-400'} border-2 border-white"></span>
+                    </div>
+                    <div class="flex-grow">
+                        <span class="font-bold text-gray-800">${friend.name}</span>
+                        <p class="text-sm text-gray-500">${friend.status}</p>
+                    </div>
+                    <i class="fas fa-ellipsis-h text-gray-400"></i>
+                </div>
+            `;
+            friendsListContainer.innerHTML += friendElementHTML;
+        });
     }
+
+    // Função para ativar/desativar botões do menu
+    function updateNav(activeButton) {
+        // Remove a classe ativa de todos
+        [navFriends, navRooms].forEach(btn => {
+            btn.classList.remove('text-indigo-600', 'border-t-2', 'border-indigo-600');
+        });
+        // Adiciona a classe ativa ao botão correto
+        activeButton.classList.add('text-indigo-600', 'border-t-2', 'border-indigo-600');
+    }
+
+    // Event listener para o botão "Amigos"
+    navFriends.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Mostra a tela de amigos e esconde a de salas
+        friendsScreen.classList.remove('hidden');
+        roomsScreen.classList.add('hidden');
+        // Atualiza o estado ativo do menu
+        updateNav(navFriends);
+        // Renderiza a lista de amigos
+        renderFriends();
+    });
+
+    // Event listener para o botão "Salas"
+    navRooms.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Mostra a tela de salas e esconde a de amigos
+        roomsScreen.classList.remove('hidden');
+        friendsScreen.classList.add('hidden');
+        // Atualiza o estado ativo do menu
+        updateNav(navRooms);
+    });
 </script>
 </body>
 </html>
