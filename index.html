@@ -231,13 +231,21 @@
 
         /* Login screen PWA optimizations */
         body.pwa-mode.keyboard-active #login-screen {
-            align-items: flex-start;
+            align-items: flex-start !important;
             padding-top: 20px;
             overflow-y: auto;
+            height: 100vh;
+            height: calc(100vh - var(--keyboard-height, 0px));
         }
 
         body.pwa-mode.keyboard-active #login-screen > div:last-child {
             margin-bottom: calc(var(--keyboard-height, 0px) + 20px);
+        }
+
+        /* Ensure login form is always visible in PWA mode */
+        body.pwa-mode #login-screen .w-full.max-w-sm {
+            margin: 10px auto;
+            flex-shrink: 0;
         }
     </style><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
