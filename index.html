@@ -265,6 +265,7 @@
                      <span>Ativar Notificações</span>
                  </button>
                  <p id="notifications-status" class="text-xs text-center text-gray-500"></p>
+                 <div id="token-display" class="mt-3"></div>
             </div>
             <div class="pt-4 border-t border-gray-700 space-y-2">
                 <button id="logout-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
@@ -460,8 +461,11 @@
                     <span>Bloquear Usuário</span>
                 </button>
             </div>
-        </div>
-    </div>
+        </div>    </div>
+
+<!-- Firebase App SDK (Sempre necessário) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
 
 <script type="module">
     // --- IMPORTAÇÕES ---
@@ -470,9 +474,7 @@
     import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, where, updateDoc, arrayUnion, writeBatch, getDocs, arrayRemove, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
     import { getDatabase, ref as rtdbRef, onValue, set, onDisconnect, serverTimestamp as rtdbServerTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
-
-    // --- CONFIGURAÇÃO DO FIREBASE ---
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";    // --- CONFIGURAÇÃO DO FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
       authDomain: "seu-projeto-chat.firebaseapp.com",
@@ -481,6 +483,9 @@
       messagingSenderId: "259194791953",
       appId: "1:259194791953:web:587ea979f1f26aff2629b0"
     };
+
+    // ✅ SUA CHAVE VAPID (copie a primeira da tabela)
+    const vapidKey = "BBo4U4SjyPp6GZVoVaAXWee9fmBOE8lBCkOGZYlGF0s7mQaUm5l3MCtbGA-b6VzhJpAIeQXgD4t4AgANHj8Z0";
 
     // --- VARIÁVEIS GLOBAIS ---
     let app, auth, db, rtdb, storage, messaging;
@@ -503,12 +508,15 @@
         typingTimeout: null,
         isRecording: false,
         mediaRecorder: null,
-        audioChunks: [],
-        recordingStartTime: 0,
+        audioChunks: [],        recordingStartTime: 0,
         recordingTimerInterval: null
     };    // --- LÓGICA DE INICIALIZAÇÃO ---
     function main() {
-        app = initializeApp(firebaseConfig);
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
+        
+        app = firebase.app();
         auth = getAuth(app);
         db = getFirestore(app);
         storage = getStorage(app);
@@ -2399,44 +2407,73 @@
            onDisconnect(userStatusRef).set(isOfflineForRTDB).then(() => { set(userStatusRef, isOnlineForRTDB); });
        });
     }
-    
-    async function setupPushNotifications() {
+      async function setupPushNotifications() {
         if (!messaging) {
             const statusEl = document.getElementById('notifications-status');
             if (statusEl) statusEl.textContent = 'Notificações não suportadas neste ambiente.';
             return;
         }
 
-        const statusEl = document.getElementById('notifications-status');
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                if (statusEl) statusEl.textContent = 'Notificações ativadas.';
-                const vapidKey = "BBo4U4SIypBpGZvoVaAXWee9fmBOEsl8ck9GzYiGF0s7mQaUm5l3Mc0tDGA-zb6VzhJpAIeQXgD4t4AgANHj8Z0";
-                const currentToken = await getToken(messaging, { vapidKey: vapidKey });
-
-                if (currentToken) {
-                    await updateDoc(doc(db, 'users', state.currentUserId), {
-                        fcmTokens: arrayUnion(currentToken)
-                    });
-                    console.log('Token de notificação salvo:', currentToken);
-                } else {
-                    if (statusEl) statusEl.textContent = 'Falha ao obter token. Tente novamente.';
-                }
-            } else {
-                if (statusEl) statusEl.textContent = 'Permissão para notificações negada.';
-            }
-        } catch (err) {
-            console.error('Ocorreu um erro ao configurar as notificações.', err);
-            if (statusEl) statusEl.textContent = 'Erro ao ativar notificações.';
-        }
-
-        onMessage(messaging, (payload) => {
-            console.log('Mensagem recebida em primeiro plano. ', payload);
-            showNotification(`${payload.notification.title}: ${payload.notification.body}`);
-        });
+        await iniciarNotificacoes();
     }
 
+    async function iniciarNotificacoes() {
+        try {
+            console.log('Solicitando permissão para notificações...');
+            
+            const permission = await Notification.requestPermission();
+            
+            if (permission === 'granted') {
+                console.log('✅ Permissão concedida!');
+                
+                // Agora com a VAPID Key funcionando!
+                const token = await getToken(messaging, { vapidKey: vapidKey });
+                
+                if (token) {
+                    console.log('🔑 Token FCM obtido:', token);
+                    
+                    document.getElementById('token-display').innerHTML = `
+                      <h3>✅ Token do dispositivo obtido:</h3>
+                      <p style="word-break: break-all; background: #e8f5e8; padding: 10px; border: 1px solid #4caf50; border-radius: 4px;">${token}</p>
+                      <p><small>🎯 Use este token para enviar notificações para este dispositivo</small></p>
+                    `;
+                    
+                    // Salvar o token para o usuário atual
+                    if (state.currentUserId) {
+                        await updateDoc(doc(db, 'users', state.currentUserId), {
+                            fcmTokens: arrayUnion(token)
+                        });
+                    }
+                    
+                    return token;
+                }
+            } else {
+                console.log('❌ Permissão negada pelo usuário');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao configurar notificações:', error);        }
+    }
+
+    // Função para salvar o token do usuário
+    async function salvarTokenUsuario(token) {
+        if (state.currentUserId) {
+            try {
+                await updateDoc(doc(db, 'users', state.currentUserId), {
+                    fcmTokens: arrayUnion(token)
+                });
+                console.log('Token FCM salvo para o usuário:', state.currentUserId);
+            } catch (error) {
+                console.error('Erro ao salvar token FCM:', error);
+            }
+        } else {
+            console.warn('Usuário não está logado, token não foi salvo');
+        }
+    }
+
+    onMessage(messaging, (payload) => {
+        console.log('Mensagem recebida em primeiro plano. ', payload);
+        showNotification(`${payload.notification.title}: ${payload.notification.body}`);
+    });
 
     function showNotification(message, type = 'success') {
         const toast = document.getElementById('notification-toast');
