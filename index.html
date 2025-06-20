@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>7Chat - Versão Final Otimizada (Atualizado)</title>
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#1f2937"/>
+    <!-- PWA Meta Tags -->    <meta name="theme-color" content="#1f2937"/>
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Um aplicativo de chat em tempo real.">
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/4f46e5/ffffff?text=7C">
-    <!-- O manifest.json é gerado e injetado via script no final do body -->
-
+    <meta name="description" content="Um aplicativo de chat em tempo real.">    <link rel="apple-touch-icon" href="https://placehold.co/192x192/4f46e5/ffffff?text=7C">
+    <!-- O manifest.json é gerado e injetado via script no final do body -->    <!-- Favicon inline para evitar erro 404 -->
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3e%3ctext y='24' font-size='24' fill='%234f46e5'%3e7%3c/text%3e%3c/svg%3e" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" />
+    
+    <!-- Tailwind CSS via CDN - Nota: Para produção, recomenda-se usar PostCSS ou Tailwind CLI -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -536,14 +537,24 @@
                             console.log('🔍 [MONITOR] Classes do botão alteradas para:', newClasses);
                             
                             // Detectar se ficou vermelho quando não deveria
-                            if ((newClasses.includes('red') || newClasses.includes('pulse')) && !state.isRecording) {
-                                console.log('⚠️ [MONITOR] ALERTA: Botão ficou vermelho sem estar gravando!');
-                                console.log('⚠️ [MONITOR] state.isRecording:', state.isRecording);
+                            if ((newClasses.includes('red') || newClasses.includes('pulse')) && !state.isRecording) {                                console.log('⚠️ [MONITOR] ALERTA: Botão ficou vermelho sem estar gravando!');                                console.log('⚠️ [MONITOR] state.isRecording:', state.isRecording);
                                 console.log('⚠️ [MONITOR] Aplicando correção imediata');
                                 
-                                // Correção imediata e agressiva
+                                // Correção imediata sem usar toggleButtonState
                                 setTimeout(() => {
-                                    forceResetMicrophoneButton();
+                                    const chatInput = document.querySelector('.chat-input');
+                                    const dynamicBtn = document.querySelector('#dynamic-action-btn');
+                                    const micIcon = document.querySelector('#mic-icon');
+                                    const sendIcon = document.querySelector('#send-icon');
+                                    
+                                    if (chatInput && chatInput.value.trim() === '' && dynamicBtn && micIcon && sendIcon) {
+                                        console.log('⚠️ [MONITOR] Corrigindo botão vermelho');
+                                        state.isRecording = false;
+                                        micIcon.classList.remove('hidden');
+                                        sendIcon.classList.add('hidden');
+                                        dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                                        dynamicBtn.removeAttribute('style');
+                                    }
                                 }, 10);
                             }
                         }
@@ -1265,17 +1276,17 @@
                     <input type="text" placeholder="Digite sua mensagem..." class="chat-input w-full bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-gray-600/50 rounded-full px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 hover:border-gray-500/70 text-sm"/>
                     <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
-                
-                <!-- Botão dinâmico (microfone/enviar) -->
+                  <!-- Botão dinâmico (microfone/enviar) -->
                 <button type="button" id="dynamic-action-btn" class="group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10">
-                    <!-- Ícone do microfone (padrão) -->
-                    <svg id="mic-icon" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Ícone do microfone (padrão) - SEM hover vermelho -->
+                    <svg id="mic-icon" class="w-5 h-5 text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                    </svg>                    <!-- Ícone de enviar (oculto inicialmente) -->
+                    </svg>
+                    <!-- Ícone de enviar (oculto inicialmente) -->
                     <svg id="send-icon" class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
-                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-red-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <!-- Removido o background gradient vermelho -->
                 </button>
                 
                 <!-- Linha decorativa sutil -->
@@ -1330,6 +1341,9 @@
                 micIcon.classList.add('hidden');
                 sendIcon.classList.remove('hidden');
                 
+                // Garantir que não está gravando quando muda para enviar
+                state.isRecording = false;
+                
                 // Atualizar classes do botão para estilo azul
                 dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-blue-600/20 transition-all duration-300 hover:scale-110 z-10';
                 console.log('📤 [TOGGLE] Classes do botão definidas para ENVIAR:', dynamicBtn.className);
@@ -1359,27 +1373,26 @@
                 micIcon.classList.remove('hidden');
                 sendIcon.classList.add('hidden');
                 
-                // Garantir que o estado de gravação esteja limpo
-                if (state.isRecording) {
-                    console.log('⚠️ [TOGGLE] Limpando estado de gravação forçadamente');
-                    state.isRecording = false;
+                // SEMPRE garantir que o estado de gravação esteja limpo
+                state.isRecording = false;
+                console.log('🎤 [TOGGLE] state.isRecording forçado para false');
+                
+                // Forçar reset da UI de gravação se a função estiver disponível
+                if (typeof updateRecordingUI === 'function') {
+                    console.log('🎤 [TOGGLE] Chamando updateRecordingUI(false)');
+                    updateRecordingUI(false);
                 }
                 
-                // Forçar reset da UI de gravação
-                console.log('🎤 [TOGGLE] Chamando updateRecordingUI(false)');
-                updateRecordingUI(false);
-                  // Atualizar classes do botão para estilo neutro (cinza)
-                const oldClassName = dynamicBtn.className;
-                
-                // MÉTODO AGRESSIVO: Limpar TODAS as classes primeiro
-                dynamicBtn.className = '';
+                // SEMPRE limpar classes vermelhas antes de aplicar as corretas
                 dynamicBtn.classList.remove('animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90');
                 
-                // Aplicar apenas as classes corretas do microfone
+                // Atualizar classes do botão para estilo neutro (cinza)
                 dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                
-                console.log('🎤 [TOGGLE] Classes do botão alteradas de:', oldClassName);
                 console.log('🎤 [TOGGLE] Classes do botão definidas para MICROFONE:', dynamicBtn.className);
+                
+                // Limpar estilo inline se houver
+                dynamicBtn.style.background = '';
+                dynamicBtn.style.backgroundColor = '';
                 
                 // Remover onclick de enviar
                 dynamicBtn.onclick = null;
@@ -1392,42 +1405,37 @@
                 dynamicBtn.removeEventListener('touchend', stopRecording);
                 console.log('🎤 [TOGGLE] Listeners antigos removidos');
                 
-                // Adicionar event listeners para gravação de áudio
-                dynamicBtn.addEventListener('mousedown', startRecording);
-                dynamicBtn.addEventListener('mouseup', stopRecording);
-                dynamicBtn.addEventListener('touchstart', startRecording, { passive: false });
-                dynamicBtn.addEventListener('touchend', stopRecording);
-                console.log('🎤 [TOGGLE] Novos listeners de gravação adicionados');
+                // Adicionar event listeners para gravação de áudio apenas se as funções existirem
+                if (typeof startRecording === 'function' && typeof stopRecording === 'function') {
+                    dynamicBtn.addEventListener('mousedown', startRecording);
+                    dynamicBtn.addEventListener('mouseup', stopRecording);
+                    dynamicBtn.addEventListener('touchstart', startRecording, { passive: false });
+                    dynamicBtn.addEventListener('touchend', stopRecording);
+                    console.log('🎤 [TOGGLE] Novos listeners de gravação adicionados');
+                } else {
+                    console.log('⚠️ [TOGGLE] Funções de gravação não encontradas');
+                }
             }
             
             console.log('🔄 [TOGGLE] toggleButtonState finalizado');
         }        // Monitorar mudanças no input
         chatInput.addEventListener('input', () => {
             console.log('🔤 [INPUT] Event input disparado, valor atual:', chatInput.value);
-            console.log('🔤 [INPUT] state.isRecording antes do toggle:', state.isRecording);
             toggleButtonState();
             handleTyping();
         });
         
-        // Monitorar quando o campo perde o foco ou é limpo
+        // Monitorar quando o campo perde o foco
         chatInput.addEventListener('blur', () => {
             console.log('🔤 [BLUR] Campo perdeu foco');
             setTimeout(() => {
                 console.log('🔤 [BLUR] Timeout executado, chamando toggleButtonState');
                 toggleButtonState();
             }, 100);
-        });
-        
-        chatInput.addEventListener('keyup', () => {
-            console.log('🔤 [KEYUP] Event keyup disparado');
-            toggleButtonState();
-        });
-          // Garantir estado inicial (microfone visível, enviar oculto)
+        });        // Garantir estado inicial (microfone visível, enviar oculto)
         chatInput.value = ''; // Limpar qualquer valor
-        micIcon.classList.remove('hidden');
-        sendIcon.classList.add('hidden');
-        console.log('🎯 [INIT] Estado inicial forçado: microfone visível');
-        console.log('🎯 [INIT] Classes iniciais do botão antes do toggle:', dynamicBtn.className);
+        toggleButtonState(); // Usar a função centralizada
+        console.log('🎯 [INIT] Estado inicial configurado via toggleButtonState');
         
         // Estado inicial
         toggleButtonState();
@@ -1441,30 +1449,146 @@
             console.log('🎯 [FINAL_CHECK] micIcon.hidden:', micIcon.classList.contains('hidden'));
             console.log('🎯 [FINAL_CHECK] sendIcon.hidden:', sendIcon.classList.contains('hidden'));
             console.log('🎯 [FINAL_CHECK] dynamicBtn.className:', dynamicBtn.className);
-            console.log('🎯 [FINAL_CHECK] state.isRecording:', state.isRecording);
-            
+            console.log('🎯 [FINAL_CHECK] state.isRecording:', state.isRecording);            
             // Testar se os listeners estão funcionando
             console.log('🎯 [FINAL_CHECK] Listeners ativos no botão:', {
                 mousedown: !!dynamicBtn.onmousedown,
                 mouseup: !!dynamicBtn.onmouseup,
                 onclick: !!dynamicBtn.onclick
-            });
-              // Adicionar função global de emergência para debug
+            });            // Adicionar função global de emergência para debug
             window.forceResetButton = function() {
                 console.log('🚨 [EMERGENCY] Função de emergência chamada pelo usuário');
-                forceResetMicrophoneButton();
+                const chatInput = document.querySelector('.chat-input');
+                const dynamicBtn = document.querySelector('#dynamic-action-btn');
+                const micIcon = document.querySelector('#mic-icon');
+                const sendIcon = document.querySelector('#send-icon');
+                
+                if (dynamicBtn && micIcon && sendIcon) {
+                    // Forçar estado limpo
+                    state.isRecording = false;
+                    
+                    // Mostrar microfone
+                    micIcon.classList.remove('hidden');
+                    sendIcon.classList.add('hidden');
+                    
+                    // Limpar completamente o botão
+                    dynamicBtn.className = '';
+                    dynamicBtn.removeAttribute('style');
+                    dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                    
+                    // Garantir que não há estilos inline
+                    dynamicBtn.style.background = '';
+                    dynamicBtn.style.backgroundColor = '';
+                    
+                    console.log('🚨 [EMERGENCY] Botão resetado com sucesso!');
+                    console.log('🚨 [EMERGENCY] Classes finais:', dynamicBtn.className);
+                } else {
+                    console.log('🚨 [EMERGENCY] Elementos não encontrados');
+                }
             };
-            console.log('🎯 [FINAL_CHECK] Função de emergência criada: window.forceResetButton()');
+              // Função para debug do estado atual
+            window.debugButtonState = function() {
+                const dynamicBtn = document.querySelector('#dynamic-action-btn');
+                const chatInput = document.querySelector('.chat-input');
+                const micIcon = document.querySelector('#mic-icon');
+                const sendIcon = document.querySelector('#send-icon');
+                const computedStyle = window.getComputedStyle(dynamicBtn);
+                
+                console.log('🔍 [DEBUG] Estado completo:', {
+                    isRecording: state.isRecording,
+                    inputValue: chatInput?.value,
+                    buttonClasses: dynamicBtn?.className,
+                    buttonStyle: dynamicBtn?.style.cssText,
+                    computedBg: computedStyle.backgroundColor,
+                    computedBgImage: computedStyle.backgroundImage,
+                    micHidden: micIcon?.classList.contains('hidden'),
+                    sendHidden: sendIcon?.classList.contains('hidden'),
+                    allClasses: Array.from(dynamicBtn?.classList || [])
+                });
+                
+                // Verificar se há CSS conflitante
+                const allStyles = [];
+                for (let i = 0; i < document.styleSheets.length; i++) {
+                    try {
+                        const rules = document.styleSheets[i].cssRules || document.styleSheets[i].rules;
+                        for (let j = 0; j < rules.length; j++) {
+                            if (rules[j].selectorText && rules[j].selectorText.includes('dynamic-action-btn')) {
+                                allStyles.push({
+                                    selector: rules[j].selectorText,
+                                    cssText: rules[j].cssText
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        // Ignorar erros de CORS
+                    }
+                }
+                console.log('🔍 [DEBUG] CSS rules aplicadas:', allStyles);            };
             
-            // Monitoramento contínuo para auto-correção
+            // Função para forçar estado correto de forma ULTRA DRÁSTICA
+            window.forceMicrophoneState = function() {
+                console.log('🚨 [ULTRA_FORCE] Forçando estado de microfone ULTRA DRÁSTICAMENTE');
+                
+                const dynamicBtn = document.querySelector('#dynamic-action-btn');
+                const micIcon = document.querySelector('#mic-icon');
+                const sendIcon = document.querySelector('#send-icon');
+                
+                if (dynamicBtn && micIcon && sendIcon) {
+                    // Limpar estado
+                    state.isRecording = false;
+                    
+                    // Mostrar ícone correto
+                    micIcon.classList.remove('hidden');
+                    sendIcon.classList.add('hidden');
+                    
+                    // LIMPEZA ULTRA DRÁSTICA
+                    dynamicBtn.removeAttribute('class');
+                    dynamicBtn.removeAttribute('style');
+                    
+                    // Aplicar CSS inline forçado
+                    dynamicBtn.style.cssText = `
+                        background: transparent !important;
+                        background-color: transparent !important;
+                        background-image: none !important;
+                        position: relative;
+                        padding: 0.625rem;
+                        border-radius: 9999px;
+                        transition: all 0.3s;
+                        z-index: 10;
+                    `;
+                    
+                    // Aplicar classes
+                    dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                    
+                    // Remover todos os event listeners e re-aplicar apenas os de microfone
+                    const newBtn = dynamicBtn.cloneNode(true);
+                    dynamicBtn.parentNode.replaceChild(newBtn, dynamicBtn);
+                    
+                    console.log('🚨 [ULTRA_FORCE] Botão completamente recriado');
+                    console.log('🚨 [ULTRA_FORCE] Novo background:', window.getComputedStyle(newBtn).backgroundColor);
+                }
+            };
+            
+            console.log('🎯 [FINAL_CHECK] Funções de emergência criadas: window.forceResetButton(), window.debugButtonState(), window.forceMicrophoneState()');
+              // Monitoramento contínuo para auto-correção
             const continuousMonitor = setInterval(() => {
                 const btn = document.querySelector('#dynamic-action-btn');
                 const input = document.querySelector('.chat-input');
+                const micIcon = document.querySelector('#mic-icon');
+                const sendIcon = document.querySelector('#send-icon');
                 
-                if (btn && input && input.value.trim() === '' && !state.isRecording) {
+                if (btn && input && input.value.trim() === '' && !state.isRecording && micIcon && sendIcon) {
                     if (btn.className.includes('red') || btn.className.includes('pulse')) {
                         console.log('🔄 [AUTO_MONITOR] Detectado botão vermelho incorreto - auto-corrigindo');
-                        forceResetMicrophoneButton();
+                        
+                        // Correção direta sem toggleButtonState
+                        state.isRecording = false;
+                        micIcon.classList.remove('hidden');
+                        sendIcon.classList.add('hidden');
+                        btn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                        btn.removeAttribute('style');
+                        
+                        console.log('🔄 [AUTO_MONITOR] Botão corrigido automaticamente');
                     }
                 }
             }, 1000); // Verificar a cada segundo
@@ -1555,81 +1679,116 @@
             console.log('📬 [SEND] Texto vazio, cancelando envio');
             return;
         }
+          console.log('📬 [SEND] Limpando input');
+        input.value = '';
         
-        console.log('📬 [SEND] Limpando input');
-        input.value = '';        // Disparar evento de input para atualizar o botão
-        console.log('📬 [SEND] Disparando evento input para atualizar botão');
-        const inputEvent = new Event('input', { bubbles: true });
-        input.dispatchEvent(inputEvent);
+        // CORREÇÃO IMEDIATA E AGRESSIVA para o botão vermelho
+        console.log('📬 [SEND] Aplicando correção imediata do botão');
+        state.isRecording = false;
         
-        // Verificação imediata após o evento input
-        setTimeout(() => {
-            const dynamicBtn = document.querySelector('#dynamic-action-btn');
-            console.log('📬 [SEND] Verificação imediata - classes do botão após input event:', dynamicBtn?.className);
-            console.log('📬 [SEND] state.isRecording:', state.isRecording);
-        }, 10);
-          // Garantir que o botão volte para microfone após o envio
-        setTimeout(() => {
-            console.log('📬 [SEND] Timeout de 150ms executado - verificando estado do botão');
+        const dynamicBtn = document.querySelector('#dynamic-action-btn');
+        const micIcon = document.querySelector('#mic-icon');
+        const sendIcon = document.querySelector('#send-icon');
+        
+        if (dynamicBtn && micIcon && sendIcon) {
+            // Forçar estado de microfone IMEDIATAMENTE
+            micIcon.classList.remove('hidden');
+            sendIcon.classList.add('hidden');
             
-            const dynamicBtn = document.querySelector('#dynamic-action-btn');
-            const micIcon = document.querySelector('#mic-icon');
-            const sendIcon = document.querySelector('#send-icon');
+            // Limpar TODAS as classes vermelhas de forma agressiva
+            dynamicBtn.classList.remove('animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90', 'bg-red-500', 'bg-red-600');
             
-            console.log('📬 [SEND] Elementos encontrados:', {
-                dynamicBtn: !!dynamicBtn,
-                micIcon: !!micIcon,
-                sendIcon: !!sendIcon,
-                inputValue: input.value
+            // Aplicar classes corretas
+            dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+              // Limpar estilos inline
+            dynamicBtn.style.background = '';
+            dynamicBtn.style.backgroundColor = '';
+            
+            // FORÇAR limpeza do estado de hover/focus
+            dynamicBtn.blur();
+            dynamicBtn.onmouseout = null;
+            dynamicBtn.onmouseleave = null;
+            
+            // Criar um evento artificial para "sair" do hover
+            const mouseLeaveEvent = new MouseEvent('mouseleave', {
+                view: window,
+                bubbles: true,
+                cancelable: true
             });
+            dynamicBtn.dispatchEvent(mouseLeaveEvent);
             
-            if (dynamicBtn && micIcon && sendIcon && input.value.trim() === '') {
-                console.log('📬 [SEND] Forçando retorno ao microfone após envio');
-                console.log('📬 [SEND] state.isRecording antes da limpeza:', state.isRecording);
-                
-                // Garantir que não está em modo de gravação
-                state.isRecording = false;
-                console.log('📬 [SEND] state.isRecording definido como false');
-                
-                // Resetar UI de gravação
-                console.log('📬 [SEND] Chamando updateRecordingUI(false)');
-                updateRecordingUI(false);
-                
-                // Mostrar ícone correto
-                micIcon.classList.remove('hidden');
-                sendIcon.classList.add('hidden');
-                console.log('📬 [SEND] Ícones ajustados - microfone visível, enviar oculto');
-                
-                // Forçar classes neutras do microfone (não vermelho)
-                const oldClassName = dynamicBtn.className;
-                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                console.log('📬 [SEND] Classes do botão alteradas de:', oldClassName);
-                console.log('📬 [SEND] Classes do botão alteradas para:', dynamicBtn.className);
-                
-                // Remover onclick de enviar
-                dynamicBtn.onclick = null;
-                console.log('📬 [SEND] onClick removido');
-                
-                // Limpar todos os listeners antigos
-                dynamicBtn.removeEventListener('mousedown', startRecording);
-                dynamicBtn.removeEventListener('mouseup', stopRecording);
-                dynamicBtn.removeEventListener('touchstart', startRecording);
-                dynamicBtn.removeEventListener('touchend', stopRecording);
-                console.log('📬 [SEND] Listeners antigos removidos');
-                
-                // Adicionar event listeners para gravação de áudio
-                dynamicBtn.addEventListener('mousedown', startRecording);
-                dynamicBtn.addEventListener('mouseup', stopRecording);
-                dynamicBtn.addEventListener('touchstart', startRecording, { passive: false });
-                dynamicBtn.addEventListener('touchend', stopRecording);
-                console.log('📬 [SEND] Novos listeners de gravação adicionados');
-            } else {
-                console.log('📬 [SEND] Condições não atendidas para reset do botão:', {
-                    hasElements: !!(dynamicBtn && micIcon && sendIcon),
-                    inputEmpty: input.value.trim() === ''
+            console.log('📬 [SEND] Botão corrigido imediatamente - classes:', dynamicBtn.className);
+            console.log('📬 [SEND] Estado de hover forçadamente limpo');
+        }
+          // Verificação adicional após um delay para garantir que ficou correto
+        setTimeout(() => {
+            console.log('📬 [SEND] Verificação final do estado do botão');
+            const finalBtn = document.querySelector('#dynamic-action-btn');
+            const finalMic = document.querySelector('#mic-icon');
+            const finalSend = document.querySelector('#send-icon');
+            
+            if (finalBtn && finalMic && finalSend) {
+                console.log('📬 [SEND] Estado visual atual:', {
+                    className: finalBtn.className,
+                    style: finalBtn.style.cssText,
+                    computedStyle: window.getComputedStyle(finalBtn).backgroundColor,
+                    micHidden: finalMic.classList.contains('hidden'),
+                    sendHidden: finalSend.classList.contains('hidden')
                 });
+                  // Se ainda estiver vermelho VISUALMENTE, corrigir drasticamente
+                const computedBg = window.getComputedStyle(finalBtn).backgroundColor;
+                const isVisuallyRed = finalBtn.className.includes('red') || finalBtn.className.includes('pulse') || 
+                                    computedBg.includes('255') || computedBg.includes('red');
+                
+                // NOVA VERIFICAÇÃO: Verificar se é o ícone que está vermelho
+                const micIcon = finalBtn.querySelector('#mic-icon');
+                const micComputedColor = micIcon ? window.getComputedStyle(micIcon).color : 'none';
+                
+                console.log('📬 [SEND] Diagnóstico detalhado:', {
+                    buttonBg: computedBg,
+                    micIconColor: micComputedColor,
+                    isVisuallyRed: isVisuallyRed,
+                    hasRedClass: finalBtn.className.includes('red')
+                });
+                
+                if (isVisuallyRed || micComputedColor.includes('255, 0, 0') || micComputedColor.includes('red')) {
+                    console.log('⚠️ [SEND] Problema detectado! Aplicando correção DRÁSTICA');
+                    console.log('⚠️ [SEND] Background computado:', computedBg);
+                    console.log('⚠️ [SEND] Cor do ícone:', micComputedColor);
+                    
+                    // RESET COMPLETO E DRÁSTICO
+                    finalBtn.removeAttribute('class');
+                    finalBtn.removeAttribute('style');
+                    
+                    // Limpar estados de hover/focus/active
+                    finalBtn.blur();
+                    finalBtn.style.cssText = 'pointer-events: none';
+                    setTimeout(() => {
+                        finalBtn.style.cssText = '';
+                    }, 10);
+                    
+                    finalBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                    
+                    // Forçar estilos inline para garantir
+                    finalBtn.style.backgroundColor = 'transparent';
+                    finalBtn.style.background = 'transparent';
+                    finalBtn.style.backgroundImage = 'none';
+                    
+                    // Garantir ícones corretos e suas cores
+                    finalMic.classList.remove('hidden');
+                    finalSend.classList.add('hidden');
+                    
+                    // FORÇAR cor do ícone para cinza
+                    if (micIcon) {
+                        micIcon.style.color = '#9ca3af'; // text-gray-400
+                    }
+                    
+                    console.log('⚠️ [SEND] Correção DRÁSTICA aplicada');
+                    console.log('⚠️ [SEND] Novo background:', window.getComputedStyle(finalBtn).backgroundColor);
+                    console.log('⚠️ [SEND] Nova cor do ícone:', micIcon ? window.getComputedStyle(micIcon).color : 'none');
+                }
             }
-        }, 150);
+        }, 200);
 
         const roomId = state.currentRoomData.id;
         const batch = writeBatch(db);
@@ -1653,121 +1812,14 @@
             }
         });        await batch.commit();
         
-        console.log('📬 [SEND] Mensagem enviada para o Firebase, campo limpo');        console.log('📬 [SEND] sendMessage finalizada');
-        
-        // CORREÇÃO AGRESSIVA: Forçar reset do botão após envio
-        setTimeout(() => {
-            console.log('🔧 [AGGRESSIVE_FIX] Aplicando correção agressiva após envio');
-            forceResetMicrophoneButton();
-        }, 100);
-        
-        setTimeout(() => {
-            console.log('🔧 [AGGRESSIVE_FIX] Segunda verificação e correção');
-            forceResetMicrophoneButton();
-        }, 300);
+        console.log('📬 [SEND] Mensagem enviada para o Firebase, campo limpo');
+        console.log('📬 [SEND] sendMessage finalizada');
         
         const userTypingRef = doc(db, 'rooms', state.currentRoomData.id);
         await updateDoc(userTypingRef, { typing: arrayRemove({uid: state.currentUserId, name: state.currentUserData.username}) });
-        clearTimeout(state.typingTimeout);
-    }
-      // Função para forçar reset do botão do microfone
-    function forceResetMicrophoneButton() {
-        console.log('🔧 [FORCE_RESET] forceResetMicrophoneButton chamada');
-        
-        const dynamicBtn = document.querySelector('#dynamic-action-btn');
-        const micIcon = document.querySelector('#mic-icon');
-        const sendIcon = document.querySelector('#send-icon');
-        const chatInput = document.querySelector('.chat-input');
-        
-        if (!dynamicBtn || !micIcon || !sendIcon || !chatInput) {
-            console.log('🔧 [FORCE_RESET] Elementos não encontrados, cancelando reset');
-            return;
-        }
-        
-        const currentValue = chatInput.value.trim();
-        console.log('🔧 [FORCE_RESET] Valor atual do input:', currentValue);
-        console.log('🔧 [FORCE_RESET] state.isRecording:', state.isRecording);
-        console.log('🔧 [FORCE_RESET] Classes atuais do botão:', dynamicBtn.className);
-        
-        // Se o input está vazio, deve ser microfone
-        if (currentValue === '') {
-            console.log('🔧 [FORCE_RESET] Input vazio - forçando modo microfone');
-            
-            // Limpar estado de gravação
-            state.isRecording = false;
-            
-            // Parar qualquer timer de gravação
-            if (state.recordingTimerInterval) {
-                clearInterval(state.recordingTimerInterval);
-                state.recordingTimerInterval = null;
-            }
-            
-            // Esconder indicador de gravação
-            const indicator = document.getElementById('recording-indicator');
-            if (indicator) {
-                indicator.classList.add('hidden');
-                indicator.classList.remove('flex');
-            }
-            
-            // Resetar timer
-            const timerEl = document.getElementById('recording-timer');
-            if (timerEl) {
-                timerEl.textContent = '00:00';
-            }
-            
-            // Mostrar ícone correto
-            micIcon.classList.remove('hidden');
-            sendIcon.classList.add('hidden');
-            console.log('🔧 [FORCE_RESET] Ícones ajustados');
-            
-            // MÉTODO SUPER AGRESSIVO: Remover TODAS as classes CSS possíveis que podem causar vermelho
-            const redClasses = [
-                'animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 
-                'hover:from-red-600/90', 'hover:to-red-700/90', 'bg-red-500', 'bg-red-600', 'bg-red-700',
-                'text-red-500', 'text-red-600', 'border-red-500', 'border-red-600'
-            ];
-            
-            // Remover todas as classes vermelhas possíveis
-            redClasses.forEach(cls => {
-                dynamicBtn.classList.remove(cls);
-            });
-            
-            // Limpar completamente e re-aplicar
-            dynamicBtn.className = '';
-            dynamicBtn.setAttribute('class', 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10');
-            console.log('🔧 [FORCE_RESET] Classes forçadas para:', dynamicBtn.className);
-            
-            // Remover todos os event listeners clonando o elemento
-            const newBtn = dynamicBtn.cloneNode(true);
-            dynamicBtn.parentNode.replaceChild(newBtn, dynamicBtn);
-            console.log('🔧 [FORCE_RESET] Botão clonado para remover todos os listeners');
-            
-            // Re-aplicar event listeners corretos
-            newBtn.onclick = null;
-            newBtn.addEventListener('mousedown', startRecording);
-            newBtn.addEventListener('mouseup', stopRecording);
-            newBtn.addEventListener('touchstart', startRecording, { passive: false });
-            newBtn.addEventListener('touchend', stopRecording);
-            console.log('🔧 [FORCE_RESET] Novos listeners aplicados');
-            
-            // Verificação final múltipla
-            const checkAndForce = () => {
-                const finalBtn = document.querySelector('#dynamic-action-btn');
-                if (finalBtn && (finalBtn.className.includes('red') || finalBtn.className.includes('pulse') || finalBtn.style.backgroundColor.includes('red'))) {
-                    console.log('⚠️ [FORCE_RESET] AINDA VERMELHO! Aplicando reset FINAL');
-                    finalBtn.className = '';
-                    finalBtn.setAttribute('class', 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10');
-                    finalBtn.style.backgroundColor = '';
-                    finalBtn.style.background = '';
-                }
-            };
-            
-            setTimeout(checkAndForce, 50);
-            setTimeout(checkAndForce, 100);
-            setTimeout(checkAndForce, 200);
-        }
-    }
-      async function sendAudioMessage(url, duration) {
+        clearTimeout(state.typingTimeout);    }
+    
+    async function sendAudioMessage(url, duration) {
         console.log('🎵 [AUDIO_MSG] sendAudioMessage iniciada');
         if(!state.currentRoomData) return;
         const roomId = state.currentRoomData.id;
@@ -2517,12 +2569,16 @@
         console.log('🛑 [STOP_REC] state.isRecording definido como false, chamando updateRecordingUI(false)');
         updateRecordingUI(false);
     }    function updateRecordingUI(isRecording) {
+        // STACK TRACE para debug
+        console.log('🎨 [UI] ===== updateRecordingUI CHAMADA =====');
+        console.log('🎨 [UI] isRecording:', isRecording);
+        console.log('🎨 [UI] state.isRecording:', state.isRecording);
+        console.log('🎨 [UI] Stack trace:', new Error().stack);
+        
         const indicator = document.getElementById('recording-indicator');
         const timerEl = document.getElementById('recording-timer');
         const dynamicBtn = document.getElementById('dynamic-action-btn');
         
-        console.log('🎨 [UI] updateRecordingUI chamada - isRecording:', isRecording);
-        console.log('🎨 [UI] state.isRecording:', state.isRecording);
         console.log('🎨 [UI] Elementos encontrados:', {
             indicator: !!indicator,
             timerEl: !!timerEl,
@@ -2531,9 +2587,9 @@
         
         if (!indicator || !timerEl) {
             console.log('🎨 [UI] Elementos não encontrados, cancelando');
-            return;
-        }
+            return;        }
         
+        // VERIFICAÇÃO CRÍTICA: Se não está gravando, NUNCA aplicar vermelho
         if (isRecording && state.isRecording) {
             console.log('🔴 [UI] Ativando modo de gravação - botão vermelho');
             indicator.classList.remove('hidden');
@@ -2552,33 +2608,69 @@
                 const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
                 const secs = (seconds % 60).toString().padStart(2, '0');
                 timerEl.textContent = `${mins}:${secs}`;
-            }, 1000);        } else {
+            }, 1000);
+        } else {
+            console.log('⚪ [UI] FORÇANDO MODO CINZA - state.isRecording:', state.isRecording, 'isRecording:', isRecording);
             console.log('⚪ [UI] Desativando modo de gravação - botão cinza');
             indicator.classList.add('hidden');
             indicator.classList.remove('flex');
             
-            // Voltar estilo do botão para neutro após gravação - SEMPRE aplicar
+            // SEMPRE limpar estado de gravação
+            state.isRecording = false;
+            
+            // Voltar estilo do botão para neutro - SEMPRE aplicar
             if (dynamicBtn) {
                 const oldClassName = dynamicBtn.className;
                 
-                // MÉTODO AGRESSIVO: Remover TODAS as classes e re-aplicar apenas as corretas
+                // MÉTODO SUPER AGRESSIVO: Remover TODAS as classes vermelhas possíveis
+                const redClasses = ['animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90', 'bg-red-500', 'bg-red-600', 'bg-red-700', 'text-red-500', 'border-red-500'];
+                redClasses.forEach(cls => dynamicBtn.classList.remove(cls));
+                  // Limpar className completamente e re-aplicar
                 dynamicBtn.className = '';
-                dynamicBtn.classList.remove('animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90');
+                dynamicBtn.removeAttribute('style');
                 
-                // Re-aplicar apenas as classes corretas
+                // Forçar estilos inline para garantir background transparente
+                dynamicBtn.style.backgroundColor = 'transparent';
+                dynamicBtn.style.background = 'transparent';
+                dynamicBtn.style.backgroundImage = 'none';
+                
+                // Aplicar classes corretas
                 dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
                 
                 console.log('⚪ [UI] Classes do botão alteradas de:', oldClassName);
                 console.log('⚪ [UI] Classes do botão alteradas para:', dynamicBtn.className);
-                console.log('⚪ [UI] Classes resetadas para cinza - MÉTODO AGRESSIVO');
+                console.log('⚪ [UI] Background forçado para transparente');
                 
-                // Verificação extra - se ainda tem vermelho, forçar novamente
+                // Verificação imediata com estilo computado
+                setTimeout(() => {
+                    const computedBg = window.getComputedStyle(dynamicBtn).backgroundColor;
+                    console.log('⚪ [UI] Background computado após reset:', computedBg);
+                    
+                    if (dynamicBtn.className.includes('red') || dynamicBtn.className.includes('pulse') || 
+                        computedBg.includes('255') || computedBg.includes('red')) {
+                        
+                        console.log('⚠️ [UI] AINDA VERMELHO após reset! classes:', dynamicBtn.className, 'computed:', computedBg);
+                        
+                        // RESET ULTRA AGRESSIVO
+                        dynamicBtn.removeAttribute('class');
+                        dynamicBtn.removeAttribute('style');
+                        dynamicBtn.style.cssText = 'background: transparent !important; background-color: transparent !important;';
+                        dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                        
+                        console.log('⚠️ [UI] Reset ULTRA AGRESSIVO aplicado');
+                        console.log('⚠️ [UI] Novo background:', window.getComputedStyle(dynamicBtn).backgroundColor);
+                    }
+                }, 10);
+                
+                // Verificação adicional após mais tempo
                 setTimeout(() => {
                     if (dynamicBtn.className.includes('red') || dynamicBtn.className.includes('pulse')) {
-                        console.log('⚠️ [UI] AINDA VERMELHO após reset! Forçando novamente...');
-                        dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                        console.log('🚨 [UI] PROBLEMA PERSISTENTE! Clonando botão...');
+                        const newBtn = dynamicBtn.cloneNode(true);
+                        newBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
+                        dynamicBtn.parentNode.replaceChild(newBtn, dynamicBtn);
                     }
-                }, 50);
+                }, 300);
             }
             
             clearInterval(state.recordingTimerInterval);
@@ -2597,12 +2689,10 @@
         document.documentElement.style.setProperty('--real-vh', `${vh}px`);
     }
     window.addEventListener('resize', setRealViewportHeight);
-    setRealViewportHeight(); // Executa no carregamento inicial
-
-    // --- PWA Service Worker & Manifest ---
+    setRealViewportHeight(); // Executa no carregamento inicial    // --- PWA Service Worker & Manifest ---
     const MANIFEST_DATA = {
         "name": "7Chat", "short_name": "7Chat", "description": "Um aplicativo de chat em tempo real.",
-        "start_url": ".", "scope": "/", "display": "standalone", "background_color": "#000000", "theme_color": "#111827",
+        "start_url": "/", "scope": "/", "display": "standalone", "background_color": "#000000", "theme_color": "#111827",
         "icons": [
             { "src": "https://placehold.co/192x192/4f46e5/ffffff?text=7C", "sizes": "192x192", "type": "image/png" },
             { "src": "https://placehold.co/512x512/4f46e5/ffffff?text=7Chat", "sizes": "512x512", "type": "image/png" },
