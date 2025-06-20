@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -180,17 +181,15 @@
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         <div id="invite-welcome-card" class="hidden w-full max-w-sm p-8 bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg space-y-4 mb-4 text-center z-10 border border-gray-700">
             <h3 class="text-xl font-bold text-white">Você foi convidado!</h3>
-            <p class="text-gray-400">Para entrar na sala, entre como convidado ou faça login na sua conta.</p>
-            <button id="enter-as-guest-btn" class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75">
+            <p class="text-gray-400">Para entrar na sala, entre como convidado ou faça login na sua conta.</p>            <button id="enter-as-guest-btn" class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-300">
                 Entrar como Convidado
             </button>
         </div>
         <div class="w-full max-w-sm p-8 bg-gray-800/80 backdrop-blur-lg rounded-xl shadow-lg space-y-6 z-10 border border-gray-700">
-            <h2 id="login-title" class="text-3xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">7Chat</h2>
-            <form id="login-form" class="space-y-4">
-                <input id="email-input" type="email" required placeholder="E-mail" autocomplete="email" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"/>
-                <input id="password-input" type="password" required placeholder="Senha" autocomplete="current-password" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"/>
-                <button type="submit" class="w-full flex items-center justify-center py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700">Entrar</button>
+            <h2 id="login-title" class="text-3xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">7Chat</h2>            <form id="login-form" class="space-y-4">
+                <input id="email-input" type="email" required placeholder="E-mail" autocomplete="email" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400 transition-all duration-300">
+                <input id="password-input" type="password" required placeholder="Senha" autocomplete="current-password" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400 transition-all duration-300">
+                <button type="submit" class="w-full flex items-center justify-center py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 transition-all duration-300">Login</button>
             </form>
             <div class="text-center">
                 <span class="text-sm text-gray-500">ou</span>
@@ -265,7 +264,6 @@
                      <span>Ativar Notificações</span>
                  </button>
                  <p id="notifications-status" class="text-xs text-center text-gray-500"></p>
-                 <div id="token-display" class="mt-3"></div>
             </div>
             <div class="pt-4 border-t border-gray-700 space-y-2">
                 <button id="logout-btn" class="w-full flex items-center justify-center space-x-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
@@ -381,10 +379,9 @@
                             <span class="font-medium text-white">Notificações</span>
                             <p class="text-xs text-gray-400">Receber alertas desta conversa</p>
                         </div>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
+                    </div>                    <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="conversation-notifications-toggle" class="sr-only peer">
-                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600 shadow-lg"></div>
+                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:left-1.5 after:-translate-y-1/2 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                 </div>
 
@@ -401,10 +398,9 @@
                             <span class="font-medium text-white">Sons</span>
                             <p class="text-xs text-gray-400">Tocar sons de notificação</p>
                         </div>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
+                    </div>                    <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="conversation-sounds-toggle" class="sr-only peer" checked>
-                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600 shadow-lg"></div>
+                        <div class="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:left-1.5 after:-translate-y-1/2 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                     </label>
                 </div>
 
@@ -443,29 +439,24 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </button>
-            </div>
-
-            <!-- Ações da Conversa -->
+            </div>            <!-- Ações da Conversa -->
             <div class="p-6 pt-0 space-y-3 border-t border-gray-700/50">
-                <button id="clear-chat-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-medium hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+                <button id="clear-chat-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-medium hover:from-yellow-600 hover:to-orange-600 transition-all duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1H7a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
                     <span>Limpar Conversa</span>
                 </button>
                 
-                <button id="block-user-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+                <button id="block-user-btn" class="w-full flex items-center justify-center space-x-3 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364L18.364 5.636"></path>
                     </svg>
                     <span>Bloquear Usuário</span>
                 </button>
             </div>
-        </div>    </div>
-
-<!-- Firebase App SDK (Sempre necessário) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+        </div>
+    </div>
 
 <script type="module">
     // --- IMPORTAÇÕES ---
@@ -474,7 +465,9 @@
     import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, orderBy, addDoc, serverTimestamp, where, updateDoc, arrayUnion, writeBatch, getDocs, arrayRemove, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
     import { getDatabase, ref as rtdbRef, onValue, set, onDisconnect, serverTimestamp as rtdbServerTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";    // --- CONFIGURAÇÃO DO FIREBASE ---
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
+
+    // --- CONFIGURAÇÃO DO FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
       authDomain: "seu-projeto-chat.firebaseapp.com",
@@ -483,9 +476,6 @@
       messagingSenderId: "259194791953",
       appId: "1:259194791953:web:587ea979f1f26aff2629b0"
     };
-
-    // ✅ SUA CHAVE VAPID (copie a primeira da tabela)
-    const vapidKey = "BBo4U4SjyPp6GZVoVaAXWee9fmBOE8lBCkOGZYlGF0s7mQaUm5l3MCtbGA-b6VzhJpAIeQXgD4t4AgANHj8Z0";
 
     // --- VARIÁVEIS GLOBAIS ---
     let app, auth, db, rtdb, storage, messaging;
@@ -508,15 +498,12 @@
         typingTimeout: null,
         isRecording: false,
         mediaRecorder: null,
-        audioChunks: [],        recordingStartTime: 0,
+        audioChunks: [],
+        recordingStartTime: 0,
         recordingTimerInterval: null
     };    // --- LÓGICA DE INICIALIZAÇÃO ---
     function main() {
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const messaging = firebase.messaging();
-        
-        app = firebase.app();
+        app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
         storage = getStorage(app);
@@ -778,6 +765,7 @@
              if (state.unsubscribeSearchListener) state.unsubscribeSearchListener();
              document.getElementById('user-search-modal').classList.add('hidden');
         };
+        document.getElementById('close-conversation-settings-btn').onclick = () => document.getElementById('conversation-settings-modal').classList.add('hidden');
         document.getElementById('create-room-form').onsubmit = handleCreateRoomSubmit;
         document.getElementById('image-uploader').onchange = handleMediaUpload;
         document.getElementById('media-uploader').onchange = handleMediaUpload;
@@ -2407,73 +2395,44 @@
            onDisconnect(userStatusRef).set(isOfflineForRTDB).then(() => { set(userStatusRef, isOnlineForRTDB); });
        });
     }
-      async function setupPushNotifications() {
+    
+    async function setupPushNotifications() {
         if (!messaging) {
             const statusEl = document.getElementById('notifications-status');
             if (statusEl) statusEl.textContent = 'Notificações não suportadas neste ambiente.';
             return;
         }
 
-        await iniciarNotificacoes();
-    }
-
-    async function iniciarNotificacoes() {
+        const statusEl = document.getElementById('notifications-status');
         try {
-            console.log('Solicitando permissão para notificações...');
-            
             const permission = await Notification.requestPermission();
-            
             if (permission === 'granted') {
-                console.log('✅ Permissão concedida!');
-                
-                // Agora com a VAPID Key funcionando!
-                const token = await getToken(messaging, { vapidKey: vapidKey });
-                
-                if (token) {
-                    console.log('🔑 Token FCM obtido:', token);
-                    
-                    document.getElementById('token-display').innerHTML = `
-                      <h3>✅ Token do dispositivo obtido:</h3>
-                      <p style="word-break: break-all; background: #e8f5e8; padding: 10px; border: 1px solid #4caf50; border-radius: 4px;">${token}</p>
-                      <p><small>🎯 Use este token para enviar notificações para este dispositivo</small></p>
-                    `;
-                    
-                    // Salvar o token para o usuário atual
-                    if (state.currentUserId) {
-                        await updateDoc(doc(db, 'users', state.currentUserId), {
-                            fcmTokens: arrayUnion(token)
-                        });
-                    }
-                    
-                    return token;
+                if (statusEl) statusEl.textContent = 'Notificações ativadas.';
+                const vapidKey = "BBo4U4SIypBpGZvoVaAXWee9fmBOEsl8ck9GzYiGF0s7mQaUm5l3Mc0tDGA-zb6VzhJpAIeQXgD4t4AgANHj8Z0";
+                const currentToken = await getToken(messaging, { vapidKey: vapidKey });
+
+                if (currentToken) {
+                    await updateDoc(doc(db, 'users', state.currentUserId), {
+                        fcmTokens: arrayUnion(currentToken)
+                    });
+                    console.log('Token de notificação salvo:', currentToken);
+                } else {
+                    if (statusEl) statusEl.textContent = 'Falha ao obter token. Tente novamente.';
                 }
             } else {
-                console.log('❌ Permissão negada pelo usuário');
+                if (statusEl) statusEl.textContent = 'Permissão para notificações negada.';
             }
-        } catch (error) {
-            console.error('❌ Erro ao configurar notificações:', error);        }
-    }
-
-    // Função para salvar o token do usuário
-    async function salvarTokenUsuario(token) {
-        if (state.currentUserId) {
-            try {
-                await updateDoc(doc(db, 'users', state.currentUserId), {
-                    fcmTokens: arrayUnion(token)
-                });
-                console.log('Token FCM salvo para o usuário:', state.currentUserId);
-            } catch (error) {
-                console.error('Erro ao salvar token FCM:', error);
-            }
-        } else {
-            console.warn('Usuário não está logado, token não foi salvo');
+        } catch (err) {
+            console.error('Ocorreu um erro ao configurar as notificações.', err);
+            if (statusEl) statusEl.textContent = 'Erro ao ativar notificações.';
         }
+
+        onMessage(messaging, (payload) => {
+            console.log('Mensagem recebida em primeiro plano. ', payload);
+            showNotification(`${payload.notification.title}: ${payload.notification.body}`);
+        });
     }
 
-    onMessage(messaging, (payload) => {
-        console.log('Mensagem recebida em primeiro plano. ', payload);
-        showNotification(`${payload.notification.title}: ${payload.notification.body}`);
-    });
 
     function showNotification(message, type = 'success') {
         const toast = document.getElementById('notification-toast');
