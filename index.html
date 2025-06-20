@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
     <title>7Chat - Versão Final Otimizada (Atualizado)</title>
     
     <!-- PWA Meta Tags -->    <meta name="theme-color" content="#1f2937"/>
@@ -146,20 +146,45 @@
             margin-bottom: 2px;
         }
         audio::-webkit-media-controls-panel {
-            background-color: #4b5563;
-        }
+            background-color: #4b5563;        }
         audio::-webkit-media-controls-play-button,
         audio::-webkit-media-controls-current-time-display,
         audio::-webkit-media-controls-time-remaining-display,        audio::-webkit-media-controls-timeline,
         audio::-webkit-media-controls-volume-slider {
             filter: invert(1) grayscale(1) brightness(1.5);
         }
-    </style>    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
-<body class="bg-black text-gray-200 overflow-hidden">
 
-    <!-- Menu de Navegação Inferior -->
-    <div class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 shadow-lg z-50">
+        /* Fix para teclado mobile */
+        .keyboard-adjust {
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-height: 500px) {
+            .keyboard-adjust {
+                transform: translateY(-20vh);
+            }
+        }
+
+        /* Fix específico para inputs */
+        .input-focus {
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* Ajuste para modal quando teclado aparecer */
+        .modal.keyboard-open {
+            align-items: flex-start;
+            padding-top: 20px;
+        }
+
+        .modal.keyboard-open .modal-content {
+            margin-top: 0;
+            transform: none !important;
+        }
+    </style><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="bg-black text-gray-200 overflow-hidden">    <!-- Menu de Navegação Inferior -->
+    <div id="bottom-nav-menu" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 shadow-lg z-50">
         <div class="flex justify-around text-gray-400">
             <!-- Botão Amigos -->
             <a href="#" id="nav-friends" class="flex flex-col items-center justify-center p-3 text-center w-full hover:text-white transition-colors duration-300">
@@ -897,15 +922,14 @@
         const navFriends = document.getElementById('nav-friends');
         const navRooms = document.getElementById('nav-rooms');
         const appContainer = document.getElementById('app-container');
-        const friendsScreen = document.getElementById('friends-screen');
-
-        if (navFriends) {
+        const friendsScreen = document.getElementById('friends-screen');        if (navFriends) {
             navFriends.addEventListener('click', (e) => {
                 e.preventDefault();
                 friendsScreen.classList.remove('hidden');
                 appContainer.classList.add('hidden');
                 updateNav(navFriends);
-                renderFriendsScreen(); 
+                renderFriendsScreen();
+                toggleBottomNav(true); // Mostrar menu na tela de amigos
             });
         }        if (navRooms) {
             navRooms.addEventListener('click', (e) => {
@@ -913,6 +937,7 @@
                 appContainer.classList.remove('hidden');
                 friendsScreen.classList.add('hidden');
                 updateNav(navRooms);
+                toggleBottomNav(true); // Mostrar menu na tela de salas
             });        }
 
         // --- LÓGICA DA TELA DE AMIGOS ---
@@ -1428,9 +1453,9 @@
         document.getElementById('create-room-modal').classList.add('hidden');
         document.getElementById('create-room-form').reset();
         openRoom(newRoomRef.id);
-    }
-    
+    }    
     async function openRoom(roomId, isGuestView = false) {
+        toggleBottomNav(false); // Esconder menu dentro da sala
         if (state.unsubscribeMessages) state.unsubscribeMessages();
         if (state.unsubscribeRoom) state.unsubscribeRoom();
         if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
@@ -3169,13 +3194,123 @@
     const link = document.createElement('link');
     link.rel = 'manifest'; link.href = manifestURL;
     document.head.appendChild(link);
-    
-    if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/firebase-messaging-sw.js')
             .then((registration) => {
                 console.log('Service Worker registrado com sucesso:', registration);
             }).catch((err) => {                console.warn('Falha no registro do Service Worker: ', err);
             });    }
+
+// Função para controlar a visibilidade do menu
+function toggleBottomNav(show) {
+    const bottomNav = document.getElementById('bottom-nav-menu');
+    if (bottomNav) {
+        if (show) {
+            bottomNav.classList.remove('hidden');
+        } else {
+            bottomNav.classList.add('hidden');
+        }
+    }
+}
+
+// Na função handleAuthChange, adicione o controle do menu
+// Substitua a parte onde você configura as telas por:
+if (user) {
+    // ... seu código existente ...
+    
+    if (roomIdFromUrl && user.isAnonymous) {
+        // Para convidados em salas específicas - esconder menu
+        toggleBottomNav(false);
+        await setupGuestUI(roomIdFromUrl);
+    } else {
+        // Para usuários normais - mostrar menu apenas na tela principal
+        await setupMainUI(roomIdFromUrl);
+        // Se não estiver em uma sala específica, mostrar menu
+        if (!roomIdFromUrl) {            toggleBottomNav(true);
+        }
+    }
+} else {
+    // Na tela de login - esconder menu
+    toggleBottomNav(false);
+    // ... resto do seu código de login ...
+}
+
+// Fix para teclado mobile
+let initialViewportHeight = window.innerHeight;
+let currentInput = null;
+
+// Detectar quando input recebe foco
+document.addEventListener('focusin', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        currentInput = e.target;
+        e.target.classList.add('input-focus');
+        
+        // Adicionar classe para ajustar layout
+        document.body.classList.add('keyboard-adjust');
+        
+        // Se for um modal, ajustar posicionamento
+        const modal = e.target.closest('.modal');
+        if (modal) {
+            modal.classList.add('keyboard-open');
+        }
+        
+        // Scroll para o input após um delay
+        setTimeout(() => {
+            if (currentInput) {
+                currentInput.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'nearest'
+                });
+            }
+        }, 300);
+    }
+});
+
+// Detectar quando input perde foco
+document.addEventListener('focusout', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        e.target.classList.remove('input-focus');
+        document.body.classList.remove('keyboard-adjust');
+        
+        // Remover classe do modal
+        const modal = e.target.closest('.modal');
+        if (modal) {
+            modal.classList.remove('keyboard-open');
+        }
+        
+        currentInput = null;
+    }
+});
+
+// Detectar mudança na altura da viewport (teclado aparecendo/sumindo)
+function handleViewportChange() {
+    const currentHeight = window.innerHeight;
+    const heightDifference = initialViewportHeight - currentHeight;
+    
+    if (heightDifference > 150) { // Teclado apareceu
+        document.body.style.paddingBottom = '0px';
+        
+        if (currentInput) {
+            setTimeout(() => {
+                currentInput.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 100);
+        }
+    } else { // Teclado sumiu
+        document.body.style.paddingBottom = '';
+    }
+}
+
+window.addEventListener('resize', handleViewportChange);
+window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+        initialViewportHeight = window.innerHeight;
+        handleViewportChange();
+    }, 500);
+});
 </script>
 </body>
 </html>
