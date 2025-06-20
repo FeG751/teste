@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <title>7Chat - Versão Final Otimizada (Atualizado)</title>
     
     <!-- PWA Meta Tags -->    <meta name="theme-color" content="#1f2937"/>
@@ -146,45 +145,124 @@
             margin-bottom: 2px;
         }
         audio::-webkit-media-controls-panel {
-            background-color: #4b5563;        }
-        audio::-webkit-media-controls-play-button,
+            background-color: #4b5563;
+        }        audio::-webkit-media-controls-play-button,
         audio::-webkit-media-controls-current-time-display,
-        audio::-webkit-media-controls-time-remaining-display,        audio::-webkit-media-controls-timeline,
+        audio::-webkit-media-controls-time-remaining-display,        audio::-webkit/media-controls-timeline,
         audio::-webkit-media-controls-volume-slider {
             filter: invert(1) grayscale(1) brightness(1.5);
         }
 
-        /* Fix para teclado mobile */
-        .keyboard-adjust {
-            transition: transform 0.3s ease;
+        /* Correções para PWA e teclado virtual */
+        html, body {
+            height: 100vh;
+            height: calc(var(--real-vh, 1vh) * 100);
+            overflow: auto; /* Mudança: permite scroll quando necessário */
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
         }
 
-        @media (max-height: 500px) {
-            .keyboard-adjust {
-                transform: translateY(-20vh);
+        /* Específico para PWA instalada */
+        @media all and (display-mode: standalone) {
+            html, body {
+                overflow: auto !important;
+                height: 100vh;
+                height: calc(var(--real-vh, 1vh) * 100);
+            }
+            
+            #login-screen {
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
             }
         }
 
-        /* Fix específico para inputs */
-        .input-focus {
+        /* Ajustes para quando teclado virtual aparece */
+        .keyboard-open {
+            overflow-y: auto !important;
+        }
+
+        .keyboard-open #login-screen {
+            height: auto !important;
+            min-height: 100vh;
+            overflow-y: auto !important;
+            padding-bottom: 50px;
+        }
+
+        /* Melhor responsividade para inputs em foco */
+        .input-focused {
             position: relative;
             z-index: 1000;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
         }
 
-        /* Ajuste para modal quando teclado aparecer */
-        .modal.keyboard-open {
-            align-items: flex-start;
-            padding-top: 20px;
+        /* Ajustes específicos para iOS */
+        @supports (-webkit-touch-callout: none) {
+            .keyboard-open {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                overflow-y: scroll;
+            }
         }
 
-        .modal.keyboard-open .modal-content {
-            margin-top: 0;
-            transform: none !important;
+        /* Container de login mais flexível */
+        #login-screen .w-full.max-w-sm {
+            margin: 20px auto;
+            position: relative;
+        }        /* Melhor viewport para dispositivos pequenos */
+        @media (max-height: 600px) {
+            #login-screen {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+            
+            #login-screen .w-full.max-w-sm {
+                margin: 10px auto;
+            }
+        }
+
+        /* Classe específica para PWA */
+        .pwa-mode {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .pwa-mode #login-screen {
+            height: auto;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Melhor suporte para diferentes dispositivos */
+        @media screen and (max-device-width: 480px) {
+            .keyboard-open #login-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                overflow-y: scroll;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* Correção específica para formulário de login */
+        #login-form {
+            position: relative;
+            z-index: 10;
+        }
+
+        #login-form input {
+            position: relative;
+            z-index: 11;
         }
     </style><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
-<body class="bg-black text-gray-200 overflow-hidden">    <!-- Menu de Navegação Inferior -->
-    <div id="bottom-nav-menu" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 shadow-lg z-50">
+<body class="bg-black text-gray-200 overflow-hidden">
+
+    <!-- Menu de Navegação Inferior -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 shadow-lg z-50">
         <div class="flex justify-around text-gray-400">
             <!-- Botão Amigos -->
             <a href="#" id="nav-friends" class="flex flex-col items-center justify-center p-3 text-center w-full hover:text-white transition-colors duration-300">
@@ -811,72 +889,55 @@
         try {
             await signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value);
         } catch (err) { showNotification("Falha no login: " + err.message, "error"); }
-    }
-
-    function initMainLayout() {
+    }    function initMainLayout() {
         document.getElementById('app-container').innerHTML = `
-        <div id="sidebar" class="w-full md:w-1/3 h-full transition-transform duration-300 ease-in-out transform md:translate-x-0 relative flex flex-col">            <header class="relative p-4 flex justify-between items-center header-blur border-b border-gray-800/50 flex-shrink-0 backdrop-blur-xl bg-gradient-to-r from-gray-900/90 via-gray-800/90 to-gray-900/90">
-                <!-- Efeito de gradiente sutil no fundo -->
-                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/3 via-purple-600/3 to-indigo-600/3"></div>
+        <div id="sidebar" class="w-full md:w-1/3 h-full transition-transform duration-300 ease-in-out transform md:translate-x-0 relative flex flex-col bg-gray-900">
+            <!-- CABEÇALHO REDESENHADO -->
+            <header class="relative p-4 flex justify-between items-center border-b border-gray-800">
+                <!-- Botão de Sino (Pedidos de Amizade) -->
+                <button id="friend-requests-btn" title="Pedidos de Amizade" class="group relative p-3 rounded-xl hover:bg-gray-800 transition-all duration-300">
+                     <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                     </svg>
+                     <span id="friend-requests-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center border-2 border-gray-900"></span>
+                </button>
                 
-                <!-- Botões de ação à esquerda -->
-                <div class="flex items-center space-x-1 relative z-10">
-                     <button id="friend-requests-btn" title="Pedidos de Amizade" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-indigo-600/20 transition-all duration-300 hover:scale-110">
-                         <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                         </svg>
-                         <span id="friend-requests-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg hidden"></span>
-                         <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                     </button>
-                     <button id="user-search-btn" title="Buscar Usuário" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-emerald-600/20 hover:to-green-600/20 transition-all duration-300 hover:scale-110">
-                         <svg class="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                         </svg>
-                         <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                     </button>
-                    <button id="user-settings-btn" title="Configurações" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-pink-600/20 transition-all duration-300 hover:scale-110">
-                        <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </button>
-                </div>
-                
-                <!-- Nome do usuário no centro -->
-                <div class="flex-1 flex justify-center min-w-0 mx-4 relative z-10">
-                    <span id="my-username" class="font-bold text-lg truncate text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 text-center hover:from-blue-400 hover:to-cyan-400 transition-all duration-300 cursor-pointer"></span>
-                </div>
-                
-                <!-- Foto do perfil -->
-                <div class="relative z-10">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-0.5 hover:scale-105 transition-transform duration-300 cursor-pointer">
-                        <div class="w-full h-full rounded-full overflow-hidden bg-gray-600 ring-2 ring-gray-700/50 hover:ring-blue-500/30 transition-all duration-300">
-                            <img id="my-profile-pic" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300">
+                <!-- Foto do Perfil (agora leva para as Configurações) -->
+                <div id="user-settings-btn" title="Configurações" class="relative z-10 cursor-pointer">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5 hover:scale-105 transition-transform duration-300">
+                        <div class="w-full h-full rounded-full overflow-hidden bg-gray-600">
+                            <img id="my-profile-pic" class="w-full h-full object-cover">
                         </div>
                     </div>
                 </div>
-                
-                <!-- Linha decorativa -->
-                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
             </header>
-            <div id="room-list-container" class="overflow-y-auto flex-1 pb-20"></div>            <button id="create-room-btn" class="group absolute bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-110 hover:rotate-90 border-2 border-blue-400/20">
-                <!-- Efeito de brilho -->
-                <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-cyan-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-                
-                <!-- Ícone -->
-                <svg class="w-8 h-8 relative z-10 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <!-- TÍTULO E NOVA BARRA DE BUSCA -->
+            <div class="p-4 space-y-4">
+                <h1 class="text-3xl font-bold text-white">Conversas</h1>
+                <div class="relative">
+                    <input type="search" id="conversation-search-input" placeholder="Pesquisar conversas..." class="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-4 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Salas/Conversas -->
+            <div id="room-list-container" class="overflow-y-auto flex-1 pb-24"></div>
+
+            <!-- BOTÃO DE CRIAR SALA REPOSICIONADO -->
+            <button id="create-room-btn" class="group absolute bottom-24 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300 z-20">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-                
-                <!-- Borda animada -->
-                <div class="absolute inset-0 rounded-full border-2 border-transparent bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 opacity-0 group-hover:opacity-50 group-hover:animate-spin transition-opacity duration-300" style="animation-duration: 3s;"></div>
             </button>
         </div>
+
         <div id="chat-panel" class="w-full md:flex-grow absolute md:static inset-0 flex flex-col bg-black transition-transform duration-300 ease-in-out transform translate-x-full md:translate-x-0 pb-16">
             <div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>
         </div>`;
-    }    function bindGlobalUI() {
+    }function bindGlobalUI() {
         document.getElementById('close-user-settings-btn').onclick = () => document.getElementById('user-settings-modal').classList.add('hidden');
         document.getElementById('close-room-settings-btn').onclick = () => document.getElementById('room-settings-modal').classList.add('hidden');
         document.getElementById('close-add-member-btn').onclick = () => document.getElementById('add-member-modal').classList.add('hidden');
@@ -904,118 +965,45 @@
     }    function bindMainUI() {
         Object.assign(ui, {
             myProfilePic: document.getElementById('my-profile-pic'),
-            myUsername: document.getElementById('my-username'),
             userSettingsBtn: document.getElementById('user-settings-btn'),
-            userSearchBtn: document.getElementById('user-search-btn'),
             createRoomBtn: document.getElementById('create-room-btn'),
             roomListContainer: document.getElementById('room-list-container'),
             friendRequestsBtn: document.getElementById('friend-requests-btn'),
-            friendRequestsBadge: document.getElementById('friend-requests-badge')
+            friendRequestsBadge: document.getElementById('friend-requests-badge'),
+            conversationSearchInput: document.getElementById('conversation-search-input')
         });
-        ui.myProfilePic.parentElement.onclick = () => { if(state.currentUserData?.photoURL) openImageViewer(state.currentUserData.photoURL, { isUser: true }); };
-        ui.userSettingsBtn.onclick = openUserSettings;
-        ui.userSearchBtn.onclick = openUserSearch;
-        ui.createRoomBtn.onclick = () => document.getElementById('create-room-modal').classList.remove('hidden');
-        ui.friendRequestsBtn.onclick = openFriendRequestsModal;
+
+        // O clique na foto do perfil agora abre as configurações
+        if (ui.userSettingsBtn) ui.userSettingsBtn.onclick = openUserSettings;
+        if (ui.createRoomBtn) ui.createRoomBtn.onclick = () => document.getElementById('create-room-modal').classList.remove('hidden');
+        if (ui.friendRequestsBtn) ui.friendRequestsBtn.onclick = openFriendRequestsModal;        // A nova busca de conversas irá filtrar a lista
+        if (ui.conversationSearchInput) {
+            ui.conversationSearchInput.oninput = () => renderSidebarLists();
+        }
 
         // --- Lógica de Navegação Principal ---
         const navFriends = document.getElementById('nav-friends');
         const navRooms = document.getElementById('nav-rooms');
         const appContainer = document.getElementById('app-container');
-        const friendsScreen = document.getElementById('friends-screen');        if (navFriends) {
+        const friendsScreen = document.getElementById('friends-screen');
+
+        if (navFriends) {
             navFriends.addEventListener('click', (e) => {
                 e.preventDefault();
                 friendsScreen.classList.remove('hidden');
                 appContainer.classList.add('hidden');
                 updateNav(navFriends);
-                renderFriendsScreen();
-                toggleBottomNav(true); // Mostrar menu na tela de amigos
+                renderFriendsScreen(); 
             });
-        }        if (navRooms) {
+        }
+
+        if (navRooms) {
             navRooms.addEventListener('click', (e) => {
                 e.preventDefault();
                 appContainer.classList.remove('hidden');
                 friendsScreen.classList.add('hidden');
                 updateNav(navRooms);
-                toggleBottomNav(true); // Mostrar menu na tela de salas
-            });        }
-
-        // --- LÓGICA DA TELA DE AMIGOS ---
-        const editFriendsBtn = document.getElementById('edit-friends-btn');
-        const doneEditingBtn = document.getElementById('done-editing-btn');
-        const friendSearchInput = document.getElementById('friend-search-input');
-        const friendsListContainer = document.getElementById('friends-list-container');
-        const deleteSelectedBtn = document.getElementById('delete-selected-btn');
-
-        if (editFriendsBtn) { editFriendsBtn.onclick = () => { state.isEditingFriends = true; state.selectedFriendsForDeletion = []; renderFriendsScreen(); }; }
-        if (doneEditingBtn) { doneEditingBtn.onclick = () => { state.isEditingFriends = false; state.selectedFriendsForDeletion = []; renderFriendsScreen(); }; }
-        
-        // CORREÇÃO: A busca agora chama a função de busca no DB
-        if (friendSearchInput) { friendSearchInput.oninput = handleFriendSearch; }
-
-        if (friendsListContainer) {
-            friendsListContainer.onclick = async (e) => {
-                // Lógica para o botão "Adicionar"
-                if (e.target.classList.contains('add-friend-btn')) {
-                    const targetUid = e.target.dataset.uid;
-                    e.target.disabled = true;
-                    e.target.textContent = 'Enviado';
-                    await sendFriendRequest(targetUid);
-                    return;
-                }
-
-                const friendItem = e.target.closest('.friend-item');
-                if (!friendItem) return;
-                const friendId = friendItem.dataset.friendId;
-
-                if (state.isEditingFriends) {
-                    if (state.selectedFriendsForDeletion.includes(friendId)) {
-                        state.selectedFriendsForDeletion = state.selectedFriendsForDeletion.filter(id => id !== friendId);
-                    } else {
-                        state.selectedFriendsForDeletion.push(friendId);
-                    }
-                    renderFriendsScreen();                } else {
-                    const friendData = state.friendsData.get(friendId);
-                    if (friendData) {
-                        await createOrGetDirectMessageRoom(friendId, friendData.username, friendData.photoURL);
-                        document.getElementById('nav-rooms').click();
-                    }
-                }
-            };
-        }
-        
-        if (deleteSelectedBtn) {
-            deleteSelectedBtn.onclick = async () => {
-                if (state.selectedFriendsForDeletion.length === 0) return;
-
-                const confirmed = await showCustomConfirm(
-                    "Confirmar Exclusão",
-                    `Você tem certeza que deseja remover ${state.selectedFriendsForDeletion.length} amigo(s)? Esta ação não pode ser desfeita.`
-                );
-
-                if (confirmed) {
-                    const batch = writeBatch(db);
-                    const currentUserRef = doc(db, 'users', state.currentUserId);
-
-                    batch.update(currentUserRef, {
-                        friends: arrayRemove(...state.selectedFriendsForDeletion)
-                    });
-
-                    state.selectedFriendsForDeletion.forEach(friendId => {
-                        const friendRef = doc(db, 'users', friendId);
-                        batch.update(friendRef, {
-                            friends: arrayRemove(state.currentUserId)
-                        });
-                    });                    try {
-                        await batch.commit();
-                        state.isEditingFriends = false;
-                        state.selectedFriendsForDeletion = [];
-                    } catch (error) {
-                        console.error("Erro ao remover amigos:", error);
-                        showNotification("Ocorreu um erro ao remover os amigos.", "error");
-                    }
-                }
-            };
+            });
         }
     }
     
@@ -1104,89 +1092,49 @@
         const createRoomBtn = document.getElementById('create-room-btn');
         if (createRoomBtn) {
             createRoomBtn.style.display = state.currentUserData.isGuest ? 'none' : 'flex';
-        }    }    function renderFriendsScreen() {
-        const friendsListContainer = document.getElementById('friends-list-container');
-        const searchInput = document.getElementById('friend-search-input');
-        const searchTerm = searchInput.value.trim();
+        }    }
 
-        // Lógica de Edição (igual a antes, mas garantindo a visibilidade)
-        const editBtn = document.getElementById('edit-friends-btn');
-        const doneBtn = document.getElementById('done-editing-btn');
-        const deleteBar = document.getElementById('delete-actions-bar');
-        const deleteBtn = document.getElementById('delete-selected-btn');
+    function renderSidebarLists() {
+        const container = document.getElementById('room-list-container');
+        const searchInput = document.getElementById('conversation-search-input');
         
-        editBtn.classList.toggle('hidden', state.isEditingFriends);
-        doneBtn.classList.toggle('hidden', !state.isEditingFriends);
-        deleteBar.classList.toggle('hidden', !state.isEditingFriends);
-        if (state.isEditingFriends) {
-            const selectionCount = state.selectedFriendsForDeletion.length;
-            deleteBtn.disabled = selectionCount === 0;
-            deleteBtn.textContent = selectionCount > 0 ? `Excluir (${selectionCount})` : 'Excluir Selecionados';
+        if (!container || !state.currentUserData) return;
+
+        const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        let roomsData = [...state.roomsData];
+
+        // Filtra as salas se houver um termo de busca
+        if (searchTerm) {
+            roomsData = roomsData.filter(room => {
+                const roomName = getRoomDisplayName(room, state.currentUserId).toLowerCase();
+                return roomName.includes(searchTerm);
+            });
         }
 
-        friendsListContainer.innerHTML = ''; // Limpa a tela
-
-        // DECISÃO: Mostrar resultados da busca OU lista de amigos?
-        if (searchTerm && state.userSearchResults.length > 0) {
-            // --- RENDERIZA OS RESULTADOS DA BUSCA GLOBAL ---
-            state.userSearchResults.forEach(user => {
-                if (user.id === state.currentUserId) return; // Não mostra você mesmo
-
-                const isFriend = state.currentUserData.friends.includes(user.id);
-                // Futuramente, você pode checar se um pedido já foi enviado
-                // const isPending = state.currentUserData.friendRequests.some(req => req.to === user.id);
-
-                const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username[0] || '?')}&background=random&color=fff`;
-
-                let actionButton;
-                if (isFriend) {
-                    actionButton = '<span class="text-sm text-gray-500">Amigo</span>';
-                } else {
-                    // if (isPending) { actionButton = '<span class="text-sm text-yellow-500">Pendente</span>'; } 
-                    actionButton = `<button class="add-friend-btn bg-blue-600 text-white px-3 py-1 text-sm rounded-lg hover:bg-blue-700" data-uid="${user.id}">Adicionar</button>`;
-                }
-
-                const userElementHTML = `
-                    <div class="flex items-center bg-gray-800 p-3 rounded-lg">
-                        <img src="${photo}" alt="${user.username}" class="w-12 h-12 rounded-full mr-4 object-cover">
-                        <div class="flex-grow">
-                            <span class="font-bold text-white">${user.username}</span>
-                        </div>
-                        ${actionButton}
-                    </div>
-                `;
-                friendsListContainer.innerHTML += userElementHTML;
-            });
+        let roomsHtml = '';
+        if (roomsData.length > 0) {
+            roomsData.sort((a, b) => (b.lastMessage?.timestamp || 0) - (a.lastMessage?.timestamp || 0));
+            // Agora a chamada a `renderRoomItem` vai funcionar corretamente
+            roomsHtml = roomsData.map(room => renderRoomItem(room)).join('');
         } else {
-            // --- RENDERIZA A LISTA DE AMIGOS NORMAL ---
-            const friendsToRender = [...state.friendsData.values()];
-            if (friendsToRender.length === 0) {
-                friendsListContainer.innerHTML = `<p class="text-center text-gray-400 mt-10">Você ainda não adicionou nenhum amigo.</p>`;
-                return;
-            }
-            // (O resto da lógica para renderizar amigos normais, com modo de edição)
-            friendsToRender.forEach(friend => {
-                const isOnline = state.usersStatus[friend.uid]?.state === 'online';
-                const isSelected = state.selectedFriendsForDeletion.includes(friend.uid);
-                const photo = friend.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.username[0] || '?')}&background=random&color=fff`;
-
-                const friendElementHTML = `
-                <div class="friend-item flex items-center bg-gray-800 p-3 rounded-lg shadow hover:bg-gray-700/80 cursor-pointer transition-all duration-200 ${isSelected ? 'ring-2 ring-red-500 bg-gray-700' : ''}" data-friend-id="${friend.uid}">
-                    ${state.isEditingFriends ? `<div class="mr-4"><input type="checkbox" class="friend-checkbox pointer-events-none h-5 w-5 bg-gray-700 border-gray-600 rounded text-red-500 focus:ring-red-500" ${isSelected ? 'checked' : ''}></div>` : ''}
-                    <div class="relative"><img src="${photo}" alt="${friend.username}" class="w-12 h-12 rounded-full mr-4 object-cover"><span class="absolute bottom-0 right-4 w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-500'} border-2 border-gray-800"></span></div>
-                    <div class="flex-grow"><span class="font-bold text-white">${friend.username}</span><p class="text-sm text-gray-400">${isOnline ? 'Online' : 'Offline'}</p></div>
-                    ${!state.isEditingFriends ? '<i class="fas fa-comment-alt text-gray-500 group-hover:text-white"></i>' : ''}                </div>`;
-                friendsListContainer.innerHTML += friendElementHTML;
-            });
+             roomsHtml += `<p class="px-4 text-sm text-gray-500 text-center mt-10">${searchTerm ? 'Nenhuma conversa encontrada.' : 'Você ainda não tem conversas. Inicie uma nova clicando no botão +.'}</p>`;
         }
-    }
 
+        // A lista de amigos foi removida desta tela
+        container.innerHTML = roomsHtml;        // Reconecta os eventos de clique para cada item de conversa
+        container.querySelectorAll('.room-item').forEach(el => {
+            el.onclick = () => openRoom(el.dataset.roomId);
+            // Menu de contexto temporariamente removido
+            // el.oncontextmenu = (e) => showRoomContextMenu(e, el.dataset.roomId);
+        });
+    }
     function updateNav(activeButton) {
         const navFriends = document.getElementById('nav-friends');
         const navRooms = document.getElementById('nav-rooms');
         if (!navFriends || !navRooms) return;
 
         [navFriends, navRooms].forEach(btn => {
+
             btn.classList.remove('text-indigo-400', 'border-t-2', 'border-indigo-500');
             btn.classList.add('text-gray-400');
         });
@@ -1219,1958 +1167,145 @@
             console.error("Erro ao buscar usuários:", error);
             showNotification("Não foi possível realizar a busca.", "error");
         }
-    }
+    }    function formatTimestamp(ts) {
+        if (!ts || !ts.toDate) return '';
+        const date = ts.toDate();
+        const now = new Date();
+        const diffSeconds = (now.getTime() - date.getTime()) / 1000;
+        const diffDays = Math.floor(diffSeconds / 86400);
 
-    function renderSidebarHeader() {
-        if (!ui.myUsername || !ui.myProfilePic || !state.currentUserData) return;
-        ui.myUsername.textContent = state.currentUserData.username;
-        ui.myProfilePic.src = state.currentUserData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(state.currentUserData.username[0] || '?')}&background=random&color=fff`;
-        if(ui.friendRequestsBadge) {
-            const requestsCount = state.currentUserData.friendRequests?.length || 0;
-            ui.friendRequestsBadge.textContent = requestsCount;
-            ui.friendRequestsBadge.classList.toggle('hidden', requestsCount === 0);
+        if (diffDays < 1 && date.getDate() === now.getDate()) {
+            return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         }
-    }
-
-    function renderSidebarLists() {
-        const container = document.getElementById('room-list-container');
-        if (!container || !state.currentUserData) return;
-        const { friends = [], pinnedRooms = [], archivedRooms = [] } = state.currentUserData;
-        const { roomsData = [] } = state;
-        let friendsHtml = `<div class="px-4 pt-6 pb-2">
-            <h4 class="text-sm font-bold text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text uppercase tracking-wider">
-                👥 Amigos
-            </h4>
-        </div>`;
-        if (friends.length > 0 && state.friendsData.size > 0) {            friendsHtml += [...state.friendsData.values()].map(friend => {
-                const photo = friend.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.username[0] || '?')}&background=A78BFA&color=fff&size=40`;
-                const isOnline = state.usersStatus[friend.uid]?.state === 'online';
-                const statusIndicator = `<div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'} rounded-full border-2 border-gray-900 shadow-lg"></div>`;
-                const nameHtml = `<span class="font-semibold truncate flex-1 text-gray-200 group-hover:text-white transition-colors duration-300">${friend.username}</span>`;
-                return `<div class="group relative p-3 mx-2 mt-2 rounded-xl flex items-center hover:bg-gradient-to-r hover:from-gray-800/80 hover:to-gray-700/80 cursor-pointer friend-item transition-all duration-300 hover:scale-[1.02] hover:shadow-lg backdrop-blur-sm border border-gray-700/30 hover:border-gray-600/50" data-user-id="${friend.uid}" data-username="${friend.username}" data-user-photo="${photo}">
-                    <!-- Efeito de fundo sutil -->
-                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    
-                    <!-- Foto do amigo -->
-                    <div class="relative z-10">
-                        <div class="relative w-11 h-11 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-0.5 group-hover:scale-105 transition-transform duration-300">
-                            <div class="w-full h-full rounded-full overflow-hidden bg-gray-600 ring-1 ring-gray-600 group-hover:ring-blue-500/30 transition-all duration-300">
-                                <img src="${photo}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" onerror="this.src='https://placehold.co/44x44/cccccc/ffffff?text=?';">
-                            </div>
-                            ${statusIndicator}
-                        </div>
-                    </div>
-                    
-                    <!-- Nome do amigo -->
-                    <div class="flex-1 ml-3 min-w-0 relative z-10">
-                        ${nameHtml}
-                        <div class="text-xs text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-                            ${isOnline ? '● Online' : '○ Offline'}
-                        </div>
-                    </div>
-                    
-                    <!-- Botão de ações -->
-                    <button class="relative z-10 p-2 rounded-lg friend-actions-btn text-gray-500 hover:text-white hover:bg-gray-700/50 transition-all duration-300 opacity-0 group-hover:opacity-100" data-user-id="${friend.uid}">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
-                        </svg>
-                    </button>
-                </div>`;
-            }).join('');
-        } else {
-            friendsHtml += `<div class="text-center p-6 mx-2 my-4 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-700/50 border border-gray-600/30 backdrop-blur-sm">
-                <div class="text-4xl mb-3">👤</div>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Encontre usuários na lupa 🔍<br>
-                    <span class="text-xs text-gray-500">para adicionar como amigos</span>
-                </p>
-            </div>`;
+        if (diffDays < 2 && date.getDate() === now.getDate() - 1) {
+            return 'Ontem';
         }
-        const groups = roomsData.filter(r => !r.isDirectMessage);
-        let groupsHtml = `<div class="px-4 pt-6 pb-2">
-            <h4 class="text-sm font-bold text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text uppercase tracking-wider">
-                🏢 Grupos
-            </h4>
-        </div>`;
-        if (groups.length === 0) {
-            groupsHtml += `<div class="text-center p-6 mx-2 my-4 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-700/50 border border-gray-600/30 backdrop-blur-sm">
-                <div class="text-4xl mb-3">➕</div>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Crie um grupo no botão<br>
-                    <span class="text-xs text-gray-500">de adicionar acima</span>
-                </p>
-            </div>`;
-        } else {
-            const renderItemFunc = (room) => {
-                const displayName = getRoomDisplayName(room, state.currentUserId);
-                const photo = room.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`;
-                const nameHtml = `<span class="font-semibold truncate flex-1 text-gray-200">${displayName}</span>`;
-                return `<div class="p-3 mx-2 mt-2 rounded-lg flex items-center hover:bg-gray-800 cursor-pointer room-item" data-room-id="${room.id}">
-                    <div class="w-10 h-10 rounded-full bg-gray-600 overflow-hidden mr-3 flex-shrink-0"><img src="${photo}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40x40/cccccc/ffffff?text=?';"></div>
-                    ${nameHtml}
-                    <button class="p-2 room-actions-btn z-10 text-gray-500 hover:text-white" data-room-id="${room.id}">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
-                    </button>
-                </div>`;
-            };
-            const archivedItems = groups.filter(r => archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
-            const pinnedItems = groups.filter(r => pinnedRooms.includes(r.id) && !archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
-            const normalItems = groups.filter(r => !pinnedRooms.includes(r.id) && !archivedRooms.includes(r.id)).sort((a, b) => getRoomDisplayName(a, state.currentUserId).localeCompare(getRoomDisplayName(b, state.currentUserId)));
-            if (pinnedItems.length > 0) groupsHtml += pinnedItems.map(renderItemFunc).join('');
-            groupsHtml += normalItems.map(renderItemFunc).join('');
-            if (archivedItems.length > 0) {
-                groupsHtml += `<details class="px-2"><summary class="px-2 pt-4 text-xs font-bold text-gray-500 uppercase cursor-pointer">Arquivadas</summary>${archivedItems.map(renderItemFunc).join('')}</details>`;
-            }
-        }
-        container.innerHTML = friendsHtml + groupsHtml;
-        bindSidebarEvents(container);
-    }
-    
-    function bindSidebarEvents(container) {
-        container.querySelectorAll('.friend-item').forEach(el => {
-            el.onclick = (e) => { 
-                if (e.target.closest('button')) return;
-                createOrGetDirectMessageRoom(el.dataset.userId, el.dataset.username, el.dataset.userPhoto);
-            }
-        });
-        container.querySelectorAll('.room-item').forEach(el => {
-            el.onclick = (e) => { 
-                if (e.target.closest('button')) return;
-                openRoom(el.dataset.roomId);
-            }
-        });
-        container.querySelectorAll('.friend-actions-btn, .room-actions-btn').forEach(btn => {
-            btn.onclick = (e) => { 
-                e.stopPropagation(); 
-                handleRoomContextMenu(e, btn.dataset.roomId || `dm_${[state.currentUserId, btn.dataset.userId].sort().join('_')}`); 
-            }
-        });
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
-    async function handleRoomContextMenu(event, roomId) {
-        const roomRef = doc(db, 'rooms', roomId);
-        const roomSnap = await getDoc(roomRef);
-        if(!roomSnap.exists()) return;
-        const roomData = roomSnap.data();
-        const menu = document.getElementById('room-context-menu');
-        const menuWidth = 160; const menuHeight = 150;
-        const screenWidth = window.innerWidth; const screenHeight = window.innerHeight;
-        let left = event.clientX; let top = event.clientY;
-        if (left + menuWidth > screenWidth) left = screenWidth - menuWidth - 10;
-        if (top + menuHeight > screenHeight) top = screenHeight - menuHeight - 10;
-        menu.style.top = `${top}px`;
-        menu.style.left = `${left}px`;
-        menu.classList.remove('hidden');
-        const isPinned = state.currentUserData.pinnedRooms?.includes(roomId);
-        const isArchived = state.currentUserData.archivedRooms?.includes(roomId);
-        const clearChatBtn = document.getElementById('context-clear-chat');
-        document.getElementById('context-pin').textContent = isPinned ? 'Desafixar' : 'Fixar';
-        document.getElementById('context-archive').textContent = isArchived ? 'Desarquivar' : 'Arquivar';
-        clearChatBtn.classList.toggle('hidden', !roomData.isDirectMessage);
-        const deleteBtn = document.getElementById('context-delete');
-        if (roomData.isDirectMessage) {
-            deleteBtn.textContent = 'Remover Amigo';
-        } else {
-            deleteBtn.textContent = roomData.creatorUid === state.currentUserId ? 'Apagar Sala' : 'Sair da Sala';
-        }
-        document.getElementById('context-pin').onclick = (e) => { e.stopPropagation(); menu.classList.add('hidden'); togglePinRoom(roomId); };
-        document.getElementById('context-archive').onclick = (e) => { e.stopPropagation(); menu.classList.add('hidden'); toggleArchiveRoom(roomId); };
-        clearChatBtn.onclick = async (e) => {
-            e.stopPropagation(); menu.classList.add('hidden');
-            if (await showCustomConfirm('Limpar Conversa', 'Isso apagará todas as mensagens desta conversa para todos. Deseja continuar?')) {
-                await clearChatForEveryone(roomId);
-            }
-        };
-        deleteBtn.onclick = async (e) => { 
-            e.stopPropagation(); menu.classList.add('hidden');
-            if (roomData.isDirectMessage) {
-                 if (await showCustomConfirm('Remover Amigo', `Isso irá desfazer a amizade e apagar a conversa permanentemente. Continuar?`)) {
-                     await removeFriendAndDeleteDM(roomId, roomData);
-                 }
-            } else {
-                if (roomData.creatorUid === state.currentUserId) {
-                    if (await showCustomConfirm('Apagar Sala', 'Esta ação é permanente e removerá todos os membros e mensagens. Continuar?')) {
-                        await deleteRoom(roomId);
-                    }
-                } else {
-                     if (await showCustomConfirm('Sair da Sala', `Tem certeza que deseja sair de "${getRoomDisplayName(roomData, state.currentUserId)}"?`)) {
-                         await updateDoc(doc(db, 'rooms', roomId), { members: arrayRemove(state.currentUserId), admins: arrayRemove(state.currentUserId) });
-                         await updateDoc(doc(db, 'users', state.currentUserId), { pinnedRooms: arrayRemove(roomId), archivedRooms: arrayRemove(roomId) });
-                     }
-                }
-            }
-        };
-    }
-
-    async function removeFriendAndDeleteDM(roomId, roomData) {
-        const otherUserId = roomData.members.find(id => id !== state.currentUserId);
-        if (!otherUserId) return;
-        const batch = writeBatch(db);
-        const currentUserRef = doc(db, 'users', state.currentUserId);
-        batch.update(currentUserRef, { friends: arrayRemove(otherUserId), pinnedRooms: arrayRemove(roomId), archivedRooms: arrayRemove(roomId) });
-        const otherUserRef = doc(db, 'users', otherUserId);
-        batch.update(otherUserRef, { friends: arrayRemove(state.currentUserId), pinnedRooms: arrayRemove(roomId), archivedRooms: arrayRemove(roomId) });
-        await clearChatForEveryone(roomId);
-        const roomRef = doc(db, 'rooms', roomId);
-        batch.delete(roomRef);
-        await batch.commit();
-        showNotification("Amigo removido e conversa apagada.");
-        if(document.getElementById('chat-panel')?.dataset.currentRoomId === roomId) {
-            document.getElementById('chat-panel').innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>`;
-            delete document.getElementById('chat-panel').dataset.currentRoomId;
-        }
-    }
-
-    async function togglePinRoom(roomId) {
-        const userRef = doc(db, 'users', state.currentUserId);
-        const isPinned = state.currentUserData.pinnedRooms?.includes(roomId);
-        await updateDoc(userRef, { pinnedRooms: isPinned ? arrayRemove(roomId) : arrayUnion(roomId) });
-    }
-
-    async function toggleArchiveRoom(roomId) {
-        const userRef = doc(db, 'users', state.currentUserId);
-        const isArchived = state.currentUserData.archivedRooms?.includes(roomId);
-        await updateDoc(userRef, { archivedRooms: isArchived ? arrayRemove(roomId) : arrayUnion(roomId) });
-    }
-    
-    async function deleteRoom(roomId) {
-        showNotification("Apagando sala...");
-        await clearChatForEveryone(roomId);
-        await deleteDoc(doc(db, 'rooms', roomId));
-        showNotification("Sala apagada com sucesso.");
-        if(document.getElementById('chat-panel')) document.getElementById('chat-panel').innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Selecione uma sala ou inicie uma nova conversa.</p></div>`;
-    }
-
-    async function handleCreateRoomSubmit(e) {
-        e.preventDefault();
-        const name = document.getElementById('room-name-input').value.trim();
-        const password = document.getElementById('room-password-input').value.trim();
-        if (!name) return;
-        const roomData = { 
-            name, password: password || null, isPrivate: !!password, isDirectMessage: false, photoURL: '', creatorUid: state.currentUserId, admins: [state.currentUserId], members: [state.currentUserId], typing: [], createdAt: serverTimestamp() 
-        };
-        const newRoomRef = await addDoc(collection(db, "rooms"), roomData);
-        document.getElementById('create-room-modal').classList.add('hidden');
-        document.getElementById('create-room-form').reset();
-        openRoom(newRoomRef.id);
-    }    
-    async function openRoom(roomId, isGuestView = false) {
-        toggleBottomNav(false); // Esconder menu dentro da sala
-        if (state.unsubscribeMessages) state.unsubscribeMessages();
-        if (state.unsubscribeRoom) state.unsubscribeRoom();
-        if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
-        const container = isGuestView ? document.getElementById('guest-container') : document.getElementById('chat-panel');
-        if (!isGuestView && document.getElementById('sidebar')) {
-            document.getElementById('sidebar').classList.remove('-translate-x-full');
-            container.classList.remove('translate-x-full');
-        }
-        container.innerHTML = `<div class="h-full flex items-center justify-center"><div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div></div>`;
-        const roomRef = doc(db, "rooms", roomId);
+    function renderRoomItem(room) {
+        const roomName = getRoomDisplayName(room, state.currentUserId);
         
-        try {
-            const initialDocSnap = await getDoc(roomRef);
-            if (!initialDocSnap.exists() || !initialDocSnap.data().members.includes(state.currentUserId)) {
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-4"><p class="text-gray-500">Esta sala não existe ou você não tem acesso.</p></div>`;
-                if (!isGuestView) { container.innerHTML += `<button onclick="document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('chat-panel').classList.add('translate-x-full');" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md">Voltar</button>`; }
-                return;
-            }
-            state.currentRoomData = { id: initialDocSnap.id, ...initialDocSnap.data() };
-            renderChatView(container, state.currentRoomData, isGuestView);
-            container.dataset.currentRoomId = roomId;
-            subscribeToMessages(roomId, container.querySelector('.messages-container'));
-            state.unsubscribeRoom = onSnapshot(roomRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const oldData = state.currentRoomData;
-                    state.currentRoomData = { id: docSnap.id, ...docSnap.data() };
-                    if(oldData?.photoURL !== state.currentRoomData.photoURL || oldData?.name !== state.currentRoomData.name) {
-                        updateChatView(container, state.currentRoomData);
-                    }
-                } else {
-                    if (state.unsubscribeRoom) state.unsubscribeRoom();
-                    if(isGuestView) { signOut(auth); } 
-                    else { container.innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Esta sala foi removida.</p></div>`; delete container.dataset.currentRoomId; }
-                }
-            });
-        } catch (error) { container.innerHTML = `<div class="h-full flex items-center justify-center text-center p-4"><p class="text-gray-500">Ocorreu um erro ao abrir a sala.</p></div>`; }
-    }
-    
-    function updateChatView(container, roomData) {
-        if (!roomData || !state.currentUserId) return;
-        const displayName = getRoomDisplayName(roomData, state.currentUserId);
-        const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
-        const photo = roomData.isDirectMessage ? 
-            (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`) : 
-            (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`);
-        const headerPic = container.querySelector('#room-header-pic');
-        if (headerPic) headerPic.src = photo;
-        const headerName = container.querySelector('#room-header-name');
-        if (headerName) headerName.textContent = displayName;
-        const shareBtn = container.querySelector('#share-room-btn');
-        if(shareBtn) shareBtn.style.display = roomData.isDirectMessage ? 'none' : 'block';
-        updateTypingIndicator(roomData.typing);
-    }
-
-    function renderChatView(container, roomData, isGuestView = false) {
-        if (!state.currentUserData) return;
-        const displayName = getRoomDisplayName(roomData, state.currentUserId);
-        const isAdmin = (roomData.admins || []).includes(state.currentUserId);
-        const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
-        const photo = roomData.isDirectMessage ? (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`) : (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=40`);        let headerButtons = !state.currentUserData.isGuest ? `<button id="share-room-btn" title="Convidar" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 transition-all duration-300 hover:scale-110" style="display: ${roomData.isDirectMessage ? 'none' : 'block'}">
-            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
-            </svg>
-            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </button>` : '';
-        if (isAdmin && !roomData.isDirectMessage) {
-            headerButtons += `<button id="room-settings-btn" title="Configurações da Sala" class="group relative p-3 rounded-xl hover:bg-gradient-to-r hover:from-green-600/20 hover:to-emerald-600/20 transition-all duration-300 hover:scale-110">
-                <svg class="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>`;
+        let photoURL = room.photoURL;
+        if (room.isDirectMessage) {
+            const otherUserId = room.members.find(id => id !== state.currentUserId);
+            photoURL = room.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(roomName[0])}&background=random&color=fff`;
         }
-        let backButton = isGuestView ? `<button id="guest-settings-btn" title="Configurações" class="group relative p-3 -ml-2 rounded-xl hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-pink-600/20 transition-all duration-300 hover:scale-110">
-            <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </button>` 
-        : `<button id="back-to-list-btn" class="group relative md:hidden p-3 -ml-2 rounded-xl hover:bg-gradient-to-r hover:from-indigo-600/20 hover:to-blue-600/20 transition-all duration-300 hover:scale-110">
-            <svg class="w-6 h-6 text-gray-400 group-hover:text-indigo-400 transition-all duration-300 transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </button>`;        container.innerHTML = `<div class="flex flex-col h-full bg-black">
-            <header class="relative p-4 border-b border-gray-800/50 header-blur flex items-center flex-shrink-0 backdrop-blur-xl bg-gradient-to-r from-gray-900/80 via-gray-800/80 to-gray-900/80">
-                <!-- Efeito de gradiente sutil no fundo -->
-                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-indigo-600/5"></div>
-                
-                <!-- Botão de voltar -->
-                <div class="relative z-10">
-                    ${backButton}
+
+        const lastMessage = room.lastMessage;
+        let lastMessageHtml = '<span class="text-gray-500">Nenhuma mensagem ainda.</span>';
+        if (lastMessage) {
+            const messageText = lastMessage.type === 'image' ? '📷 Foto' : (lastMessage.type === 'audio' ? '🎤 Áudio' : (lastMessage.text || ''));
+            const senderPrefix = lastMessage.senderId === state.currentUserId ? "Você: " : "";
+            lastMessageHtml = `<span class="text-gray-400 truncate">${senderPrefix}${messageText}</span>`;
+        }
+
+        const timestamp = lastMessage?.timestamp ? formatTimestamp(lastMessage.timestamp) : '';
+
+        return `
+            <div class="room-item group relative p-3 mx-2 rounded-xl flex items-center hover:bg-gray-800 cursor-pointer transition-all duration-200" data-room-id="${room.id}">
+                <div class="relative flex-shrink-0">
+                    <img src="${photoURL}" class="w-14 h-14 rounded-full object-cover ring-2 ring-gray-700/50 group-hover:ring-blue-500 transition-all duration-300" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(roomName[0])}&background=random&color=fff';">
                 </div>
-                  <!-- Área central com nome centralizado -->
-                <div class="flex-1 flex items-center justify-center min-w-0 mx-4 relative z-10">
-                    <div class="text-center cursor-pointer group" onclick="document.querySelector('#room-header-name').click()">
-                        <!-- Nome centralizado -->
-                        <span id="room-header-name" class="font-bold text-lg text-white truncate max-w-[200px] group-hover:text-blue-400 transition-colors duration-300 bg-gradient-to-r from-white to-gray-200 bg-clip-text block">${displayName}</span>
-                        <div class="typing-indicator-container text-xs text-gray-400 h-4 w-full">
-                            ${roomData.isDirectMessage ? '<span class="text-gray-500 text-xs">Toque para ver detalhes</span>' : `<span class="text-gray-500">${roomData.members?.length || 0} membros</span>`}
-                        </div>
+                <div class="flex-1 ml-4 min-w-0 border-b border-gray-800 group-hover:border-gray-700 py-3 pr-2">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-white truncate">${roomName}</h3>
+                        <span class="text-xs text-gray-500 flex-shrink-0 ml-2">${timestamp}</span>
+                    </div>
+                    <div class="flex justify-between items-start mt-1">
+                        ${lastMessageHtml}
+                        <!-- Futuramente, um contador de mensagens não lidas pode ir aqui -->
                     </div>
                 </div>
-                
-                <!-- Foto do usuário no canto direito (sem indicador verde) -->
-                <div class="flex items-center space-x-2 relative z-10">
-                    ${headerButtons}
-                    <div class="relative cursor-pointer" onclick="document.querySelector('#room-header-pic').click()">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-0.5 hover:scale-105 transition-transform duration-300">
-                            <div class="w-full h-full rounded-full overflow-hidden bg-gray-800 ring-2 ring-gray-700/50 hover:ring-blue-500/30 transition-all duration-300">
-                                <img id="room-header-pic" src="${photo}" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300" onerror="this.src='https://placehold.co/48x48/cccccc/ffffff?text=?';">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Linha decorativa sutil -->
-                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
-            </header>
-            <div class="messages-container flex-1 overflow-y-auto p-4 space-y-4"></div>
-            <div id="recording-indicator" class="hidden items-center justify-center p-4 bg-gradient-to-r from-red-900/80 via-red-800/80 to-red-900/80 text-red-100 backdrop-blur-xl border-t border-red-700/50">
-                <!-- Efeito de gradiente sutil -->
-                <div class="absolute inset-0 bg-gradient-to-r from-red-600/10 via-pink-600/10 to-red-600/10"></div>
-                
-                <div class="flex items-center space-x-3 relative z-10">
-                    <div class="relative">
-                        <div class="w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50"></div>
-                        <div class="absolute inset-0 w-4 h-4 bg-red-400 rounded-full animate-ping"></div>
-                    </div>
-                    <span id="recording-timer" class="font-semibold text-lg">00:00</span>
-                    <span class="text-red-300 text-sm">Gravando áudio...</span>
-                </div>
-                
-                <!-- Linha decorativa -->
-                <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent"></div>
-            </div>            <form class="chat-form relative p-3 border-t border-gray-800/50 form-blur flex items-center space-x-3 flex-shrink-0 backdrop-blur-xl bg-gradient-to-r from-gray-900/90 via-gray-800/90 to-gray-900/90">
-                <!-- Efeito de gradiente sutil no fundo -->
-                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/3 via-purple-600/3 to-indigo-600/3"></div>
-                  <!-- Botão de anexar mídia -->
-                <button type="button" id="attach-media-btn" class="group relative p-2.5 rounded-full hover:bg-gradient-to-r hover:from-emerald-600/20 hover:to-green-600/20 transition-all duration-300 hover:scale-110 z-10">
-                    <svg class="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                    </svg>
-                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/10 to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button><!-- Input de mensagem -->
-                <div class="flex-1 relative z-10">
-                    <input type="text" placeholder="Digite sua mensagem..." class="chat-input w-full bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-gray-600/50 rounded-full px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 hover:border-gray-500/70 text-sm"/>
-                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
-                  <!-- Botão dinâmico (microfone/enviar) -->
-                <button type="button" id="dynamic-action-btn" class="group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10">
-                    <!-- Ícone do microfone (padrão) - SEM hover vermelho -->
-                    <svg id="mic-icon" class="w-5 h-5 text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                    </svg>
-                    <!-- Ícone de enviar (oculto inicialmente) -->
-                    <svg id="send-icon" class="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors duration-300 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                    <!-- Removido o background gradient vermelho -->
-                </button>
-                
-                <!-- Linha decorativa sutil -->
-                <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
-            </form>
-        </div>`;        if(!isGuestView) {
-            const backBtn = container.querySelector('#back-to-list-btn');
-            if(backBtn) {
-                backBtn.onclick = () => { 
-                    document.getElementById('sidebar').classList.remove('-translate-x-full'); 
-                    document.getElementById('chat-panel').classList.add('translate-x-full'); 
-                    delete container.dataset.currentRoomId; 
-                };
-            }
-        } else {
-            const guestBtn = container.querySelector('#guest-settings-btn');
-            if(guestBtn) {
-                guestBtn.onclick = openUserSettings;
-            }
-        }        
-        // Event listeners para o cabeçalho
-        const headerPic = container.querySelector('#room-header-pic');
-        if(headerPic) {
-            headerPic.parentElement.onclick = () => openImageViewer(photo, { isRoom: true, isAdmin });
-        }
-        
-        const headerName = container.querySelector('#room-header-name');
-        if(headerName) {
-            headerName.onclick = () => openConversationSettings(roomData);
-        }
-        
-        // Event listeners para o formulário
-        container.querySelector('.chat-form').onsubmit = sendMessage;
-        container.querySelector('#attach-media-btn').onclick = () => document.getElementById('media-uploader').click();
-        
-        // Input e botão dinâmico
-        const chatInput = container.querySelector('.chat-input');
-        const dynamicBtn = container.querySelector('#dynamic-action-btn');
-        const micIcon = container.querySelector('#mic-icon');
-        const sendIcon = container.querySelector('#send-icon');        // Função para alternar entre microfone e enviar
-        function toggleButtonState() {
-            const hasText = chatInput.value.trim().length > 0;
-            
-            console.log('🔄 [TOGGLE] Iniciando toggleButtonState');
-            console.log('🔄 [TOGGLE] hasText:', hasText, 'value:', chatInput.value);
-            console.log('🔄 [TOGGLE] state.isRecording:', state.isRecording);
-            console.log('🔄 [TOGGLE] Classes atuais do botão:', dynamicBtn.className);
-            
-            if (hasText) {
-                console.log('📤 [TOGGLE] Mostrando botão de enviar');
-                // Mostrar botão de enviar
-                micIcon.classList.add('hidden');
-                sendIcon.classList.remove('hidden');
-                
-                // Garantir que não está gravando quando muda para enviar
-                state.isRecording = false;
-                
-                // Atualizar classes do botão para estilo azul
-                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-blue-600/20 transition-all duration-300 hover:scale-110 z-10';
-                console.log('📤 [TOGGLE] Classes do botão definidas para ENVIAR:', dynamicBtn.className);
-                
-                // Remover todos os event listeners de áudio
-                dynamicBtn.removeEventListener('mousedown', startRecording);
-                dynamicBtn.removeEventListener('mouseup', stopRecording);
-                dynamicBtn.removeEventListener('touchstart', startRecording);
-                dynamicBtn.removeEventListener('touchend', stopRecording);
-                console.log('📤 [TOGGLE] Listeners de gravação removidos');
-                
-                // Definir como botão de enviar
-                dynamicBtn.onclick = (e) => {
-                    e.preventDefault();
-                    console.log('📤 [CLICK] Enviando mensagem via botão dinâmico');
-                    
-                    // Verificar se há texto antes de enviar
-                    if (chatInput.value.trim()) {
-                        // Simular envio da mensagem
-                        const form = container.querySelector('.chat-form');
-                        const event = new Event('submit', { bubbles: true, cancelable: true });
-                        form.dispatchEvent(event);
-                    }
-                };            } else {
-                console.log('🎤 [TOGGLE] Mostrando botão de microfone');
-                // Mostrar botão de microfone
-                micIcon.classList.remove('hidden');
-                sendIcon.classList.add('hidden');
-                
-                // SEMPRE garantir que o estado de gravação esteja limpo
-                state.isRecording = false;
-                console.log('🎤 [TOGGLE] state.isRecording forçado para false');
-                
-                // Forçar reset da UI de gravação se a função estiver disponível
-                if (typeof updateRecordingUI === 'function') {
-                    console.log('🎤 [TOGGLE] Chamando updateRecordingUI(false)');
-                    updateRecordingUI(false);
-                }
-                
-                // SEMPRE limpar classes vermelhas antes de aplicar as corretas
-                dynamicBtn.classList.remove('animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90');
-                
-                // Atualizar classes do botão para estilo neutro (cinza)
-                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                console.log('🎤 [TOGGLE] Classes do botão definidas para MICROFONE:', dynamicBtn.className);
-                
-                // Limpar estilo inline se houver
-                dynamicBtn.style.background = '';
-                dynamicBtn.style.backgroundColor = '';
-                
-                // Remover onclick de enviar
-                dynamicBtn.onclick = null;
-                console.log('🎤 [TOGGLE] onClick removido');
-                
-                // Remover listeners antigos para evitar duplicação
-                dynamicBtn.removeEventListener('mousedown', startRecording);
-                dynamicBtn.removeEventListener('mouseup', stopRecording);
-                dynamicBtn.removeEventListener('touchstart', startRecording);
-                dynamicBtn.removeEventListener('touchend', stopRecording);
-                console.log('🎤 [TOGGLE] Listeners antigos removidos');
-                
-                // Adicionar event listeners para gravação de áudio apenas se as funções existirem
-                if (typeof startRecording === 'function' && typeof stopRecording === 'function') {
-                    dynamicBtn.addEventListener('mousedown', startRecording);
-                    dynamicBtn.addEventListener('mouseup', stopRecording);
-                    dynamicBtn.addEventListener('touchstart', startRecording, { passive: false });
-                    dynamicBtn.addEventListener('touchend', stopRecording);
-                    console.log('🎤 [TOGGLE] Novos listeners de gravação adicionados');
-                } else {
-                    console.log('⚠️ [TOGGLE] Funções de gravação não encontradas');
-                }
-            }
-            
-            console.log('🔄 [TOGGLE] toggleButtonState finalizado');
-        }        // Monitorar mudanças no input
-        chatInput.addEventListener('input', () => {
-            console.log('🔤 [INPUT] Event input disparado, valor atual:', chatInput.value);
-            toggleButtonState();
-            handleTyping();
-        });
-        
-        // Monitorar quando o campo perde o foco
-        chatInput.addEventListener('blur', () => {
-            console.log('🔤 [BLUR] Campo perdeu foco');
-            setTimeout(() => {
-                console.log('🔤 [BLUR] Timeout executado, chamando toggleButtonState');
-                toggleButtonState();
-            }, 100);
-        });        // Garantir estado inicial (microfone visível, enviar oculto)
-        chatInput.value = ''; // Limpar qualquer valor
-        toggleButtonState(); // Usar a função centralizada
-        console.log('🎯 [INIT] Estado inicial configurado via toggleButtonState');
-        
-        // Estado inicial
-        toggleButtonState();
-          // Event listener para configurações da sala
-        const roomSettingsBtn = container.querySelector('#room-settings-btn');
-        if (roomSettingsBtn) roomSettingsBtn.onclick = openRoomSettings;
-          // Debug final - verificar estado após configuração completa
-        setTimeout(() => {
-            console.log('🎯 [FINAL_CHECK] Verificação final da configuração do chat:');
-            console.log('🎯 [FINAL_CHECK] chatInput.value:', chatInput.value);
-            console.log('🎯 [FINAL_CHECK] micIcon.hidden:', micIcon.classList.contains('hidden'));
-            console.log('🎯 [FINAL_CHECK] sendIcon.hidden:', sendIcon.classList.contains('hidden'));
-            console.log('🎯 [FINAL_CHECK] dynamicBtn.className:', dynamicBtn.className);
-            console.log('🎯 [FINAL_CHECK] state.isRecording:', state.isRecording);            
-            // Testar se os listeners estão funcionando
-            console.log('🎯 [FINAL_CHECK] Listeners ativos no botão:', {
-                mousedown: !!dynamicBtn.onmousedown,
-                mouseup: !!dynamicBtn.onmouseup,
-                onclick: !!dynamicBtn.onclick
-            });            // Adicionar função global de emergência para debug
-            window.forceResetButton = function() {
-                console.log('🚨 [EMERGENCY] Função de emergência chamada pelo usuário');
-                const chatInput = document.querySelector('.chat-input');
-                const dynamicBtn = document.querySelector('#dynamic-action-btn');
-                const micIcon = document.querySelector('#mic-icon');
-                const sendIcon = document.querySelector('#send-icon');
-                
-                if (dynamicBtn && micIcon && sendIcon) {
-                    // Forçar estado limpo
-                    state.isRecording = false;
-                    
-                    // Mostrar microfone
-                    micIcon.classList.remove('hidden');
-                    sendIcon.classList.add('hidden');
-                    
-                    // Limpar completamente o botão
-                    dynamicBtn.className = '';
-                    dynamicBtn.removeAttribute('style');
-                    dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                    
-                    // Garantir que não há estilos inline
-                    dynamicBtn.style.background = '';
-                    dynamicBtn.style.backgroundColor = '';
-                    
-                    console.log('🚨 [EMERGENCY] Botão resetado com sucesso!');
-                    console.log('🚨 [EMERGENCY] Classes finais:', dynamicBtn.className);
-                } else {
-                    console.log('🚨 [EMERGENCY] Elementos não encontrados');
-                }
-            };
-              // Função para debug do estado atual
-            window.debugButtonState = function() {
-                const dynamicBtn = document.querySelector('#dynamic-action-btn');
-                const chatInput = document.querySelector('.chat-input');
-                const micIcon = document.querySelector('#mic-icon');
-                const sendIcon = document.querySelector('#send-icon');
-                const computedStyle = window.getComputedStyle(dynamicBtn);
-                
-                console.log('🔍 [DEBUG] Estado completo:', {
-                    isRecording: state.isRecording,
-                    inputValue: chatInput?.value,
-                    buttonClasses: dynamicBtn?.className,
-                    buttonStyle: dynamicBtn?.style.cssText,
-                    computedBg: computedStyle.backgroundColor,
-                    computedBgImage: computedStyle.backgroundImage,
-                    micHidden: micIcon?.classList.contains('hidden'),
-                    sendHidden: sendIcon?.classList.contains('hidden'),
-                    allClasses: Array.from(dynamicBtn?.classList || [])
-                });
-                
-                // Verificar se há CSS conflitante
-                const allStyles = [];
-                for (let i = 0; i < document.styleSheets.length; i++) {
-                    try {
-                        const rules = document.styleSheets[i].cssRules || document.styleSheets[i].rules;
-                        for (let j = 0; j < rules.length; j++) {
-                            if (rules[j].selectorText && rules[j].selectorText.includes('dynamic-action-btn')) {
-                                allStyles.push({
-                                    selector: rules[j].selectorText,
-                                    cssText: rules[j].cssText
-                                });
-                            }
-                        }
-                    } catch (e) {
-                        // Ignorar erros de CORS
-                    }
-                }
-                console.log('🔍 [DEBUG] CSS rules aplicadas:', allStyles);            };
-            
-            // Função para forçar estado correto de forma ULTRA DRÁSTICA
-            window.forceMicrophoneState = function() {
-                console.log('🚨 [ULTRA_FORCE] Forçando estado de microfone ULTRA DRÁSTICAMENTE');
-                
-                const dynamicBtn = document.querySelector('#dynamic-action-btn');
-                const micIcon = document.querySelector('#mic-icon');
-                const sendIcon = document.querySelector('#send-icon');
-                
-                if (dynamicBtn && micIcon && sendIcon) {
-                    // Limpar estado
-                    state.isRecording = false;
-                    
-                    // Mostrar ícone correto
-                    micIcon.classList.remove('hidden');
-                    sendIcon.classList.add('hidden');
-                    
-                    // LIMPEZA ULTRA DRÁSTICA
-                    dynamicBtn.removeAttribute('class');
-                    dynamicBtn.removeAttribute('style');
-                    
-                    // Aplicar CSS inline forçado
-                    dynamicBtn.style.cssText = `
-                        background: transparent !important;
-                        background-color: transparent !important;
-                        background-image: none !important;
-                        position: relative;
-                        padding: 0.625rem;
-                        border-radius: 9999px;
-                        transition: all 0.3s;
-                        z-index: 10;
-                    `;
-                    
-                    // Aplicar classes
-                    dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                    
-                    // Remover todos os event listeners e re-aplicar apenas os de microfone
-                    const newBtn = dynamicBtn.cloneNode(true);
-                    dynamicBtn.parentNode.replaceChild(newBtn, dynamicBtn);
-                    
-                    console.log('🚨 [ULTRA_FORCE] Botão completamente recriado');
-                    console.log('🚨 [ULTRA_FORCE] Novo background:', window.getComputedStyle(newBtn).backgroundColor);
-                }
-            };
-            
-            console.log('🎯 [FINAL_CHECK] Funções de emergência criadas: window.forceResetButton(), window.debugButtonState(), window.forceMicrophoneState()');
-              // Monitoramento contínuo para auto-correção
-            const continuousMonitor = setInterval(() => {
-                const btn = document.querySelector('#dynamic-action-btn');
-                const input = document.querySelector('.chat-input');
-                const micIcon = document.querySelector('#mic-icon');
-                const sendIcon = document.querySelector('#send-icon');
-                
-                if (btn && input && input.value.trim() === '' && !state.isRecording && micIcon && sendIcon) {
-                    if (btn.className.includes('red') || btn.className.includes('pulse')) {
-                        console.log('🔄 [AUTO_MONITOR] Detectado botão vermelho incorreto - auto-corrigindo');
-                        
-                        // Correção direta sem toggleButtonState
-                        state.isRecording = false;
-                        micIcon.classList.remove('hidden');
-                        sendIcon.classList.add('hidden');
-                        btn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                        btn.removeAttribute('style');
-                        
-                        console.log('🔄 [AUTO_MONITOR] Botão corrigido automaticamente');
-                    }
-                }
-            }, 1000); // Verificar a cada segundo
-            
-            // Parar o monitor após 2 minutos (para não sobrecarregar)
-            setTimeout(() => {
-                clearInterval(continuousMonitor);
-                console.log('🔄 [AUTO_MONITOR] Monitor contínuo desativado após 2 minutos');
-            }, 120000);
-        }, 1000);
-    }
-
-    function subscribeToMessages(roomId, container) {
-        if(state.unsubscribeMessages) state.unsubscribeMessages();
-        if(state.readReceiptObserver) state.readReceiptObserver.disconnect();
-        const q = query(collection(db, `rooms/${roomId}/messages`), orderBy('createdAt', 'asc'));
-        state.unsubscribeMessages = onSnapshot(q, snapshot => {
-            if(!container) return;
-            let lastSenderId = null;
-            const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
-            container.innerHTML = snapshot.docs.map(doc => {
-                const msg = doc.data();
-                const sentByMe = msg.senderId === state.currentUserId;
-                const showSender = msg.senderId !== lastSenderId && !sentByMe;
-                lastSenderId = msg.senderId;
-                let contentHtml = '';
-                if(msg.type === 'image') {
-                    contentHtml = `<img src="${msg.mediaUrl}" class="chat-image rounded-lg max-w-xs max-h-64 object-cover cursor-pointer" data-src="${msg.mediaUrl}" />`;
-                } else if (msg.type === 'video') {
-                    contentHtml = `<video src="${msg.mediaUrl}" class="rounded-lg max-w-xs max-h-64" controls></video>`;
-                } else if (msg.type === 'audio') {
-                    contentHtml = `<audio src="${msg.mediaUrl}" controls class="max-w-xs"></audio>`;                } else {
-                    contentHtml = `<div class="max-w-[280px] sm:max-w-[320px] p-3 rounded-2xl ${sentByMe ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg' : 'bg-gradient-to-br from-gray-800 to-gray-700 text-gray-100 border border-gray-600/30'} break-words overflow-wrap-anywhere whitespace-pre-wrap leading-relaxed">${msg.content}</div>`;
-                }
-                let seenHtml = '';
-                if(sentByMe) {
-                    const allMembers = state.currentRoomData?.members || [];
-                    const seenByCount = Object.keys(msg.seenBy || {}).length;
-                    const allHaveSeen = seenByCount >= allMembers.length - 1;
-                    const seenColor = allHaveSeen ? 'text-blue-400' : 'text-gray-400';
-                    seenHtml = `<svg class="seen-icon ${seenColor}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
-                }
-                return `<div class="flex flex-col w-full ${sentByMe ? 'items-end' : 'items-start'} message-item" data-id="${doc.id}">
-                    ${showSender ? `<div class="text-xs text-gray-500 mb-1 px-1">${msg.senderName || 'Usuário'}</div>` : ''}
-                    <div class="flex items-center">
-                        ${contentHtml}
-                        ${sentByMe ? seenHtml : ''}
-                    </div>
-                </div>`;
-            }).join('');
-            container.querySelectorAll('.chat-image').forEach(img => {
-                img.onclick = () => openImageViewer(img.dataset.src);
-            });
-            setupReadReceipts(snapshot.docs);
-            if (isScrolledToBottom) { container.scrollTop = container.scrollHeight; }
-        });
-    }
-    
-    function setupReadReceipts(messageDocs) {
-        if (state.readReceiptObserver) state.readReceiptObserver.disconnect();
-        const observerCallback = (entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const messageId = entry.target.dataset.id;
-                    const messageRef = doc(db, `rooms/${state.currentRoomData.id}/messages`, messageId);
-                    updateDoc(messageRef, { [`seenBy.${state.currentUserId}`]: true });
-                    observer.unobserve(entry.target);
-                }
-            });
-        };
-        state.readReceiptObserver = new IntersectionObserver(observerCallback, { threshold: 0.8 });
-        messageDocs.forEach(messageDoc => {
-            const messageData = messageDoc.data();
-            if (messageData.senderId !== state.currentUserId && !(messageData.seenBy && messageData.seenBy[state.currentUserId])) {
-                const el = document.querySelector(`.message-item[data-id="${messageDoc.id}"]`);
-                if(el) state.readReceiptObserver.observe(el);
-            }
-        });
-    }    async function sendMessage(e) {
-        e.preventDefault();
-        console.log('📬 [SEND] sendMessage iniciada');
-        
-        const input = e.target.querySelector('.chat-input');
-        const text = input.value;
-        console.log('📬 [SEND] Texto da mensagem:', text);
-        
-        if(!text.trim()) {
-            console.log('📬 [SEND] Texto vazio, cancelando envio');
-            return;
-        }
-          console.log('📬 [SEND] Limpando input');
-        input.value = '';
-        
-        // CORREÇÃO IMEDIATA E AGRESSIVA para o botão vermelho
-        console.log('📬 [SEND] Aplicando correção imediata do botão');
-        state.isRecording = false;
-        
-        const dynamicBtn = document.querySelector('#dynamic-action-btn');
-        const micIcon = document.querySelector('#mic-icon');
-        const sendIcon = document.querySelector('#send-icon');
-        
-        if (dynamicBtn && micIcon && sendIcon) {
-            // Forçar estado de microfone IMEDIATAMENTE
-            micIcon.classList.remove('hidden');
-            sendIcon.classList.add('hidden');
-            
-            // Limpar TODAS as classes vermelhas de forma agressiva
-            dynamicBtn.classList.remove('animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90', 'bg-red-500', 'bg-red-600');
-            
-            // Aplicar classes corretas
-            dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-              // Limpar estilos inline
-            dynamicBtn.style.background = '';
-            dynamicBtn.style.backgroundColor = '';
-            
-            // FORÇAR limpeza do estado de hover/focus
-            dynamicBtn.blur();
-            dynamicBtn.onmouseout = null;
-            dynamicBtn.onmouseleave = null;
-            
-            // Criar um evento artificial para "sair" do hover
-            const mouseLeaveEvent = new MouseEvent('mouseleave', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-            dynamicBtn.dispatchEvent(mouseLeaveEvent);
-            
-            console.log('📬 [SEND] Botão corrigido imediatamente - classes:', dynamicBtn.className);
-            console.log('📬 [SEND] Estado de hover forçadamente limpo');
-        }
-          // Verificação adicional após um delay para garantir que ficou correto
-        setTimeout(() => {
-            console.log('📬 [SEND] Verificação final do estado do botão');
-            const finalBtn = document.querySelector('#dynamic-action-btn');
-            const finalMic = document.querySelector('#mic-icon');
-            const finalSend = document.querySelector('#send-icon');
-            
-            if (finalBtn && finalMic && finalSend) {
-                console.log('📬 [SEND] Estado visual atual:', {
-                    className: finalBtn.className,
-                    style: finalBtn.style.cssText,
-                    computedStyle: window.getComputedStyle(finalBtn).backgroundColor,
-                    micHidden: finalMic.classList.contains('hidden'),
-                    sendHidden: finalSend.classList.contains('hidden')
-                });
-                  // Se ainda estiver vermelho VISUALMENTE, corrigir drasticamente
-                const computedBg = window.getComputedStyle(finalBtn).backgroundColor;
-                const isVisuallyRed = finalBtn.className.includes('red') || finalBtn.className.includes('pulse') || 
-                                    computedBg.includes('255') || computedBg.includes('red');
-                
-                // NOVA VERIFICAÇÃO: Verificar se é o ícone que está vermelho
-                const micIcon = finalBtn.querySelector('#mic-icon');
-                const micComputedColor = micIcon ? window.getComputedStyle(micIcon).color : 'none';
-                
-                console.log('📬 [SEND] Diagnóstico detalhado:', {
-                    buttonBg: computedBg,
-                    micIconColor: micComputedColor,
-                    isVisuallyRed: isVisuallyRed,
-                    hasRedClass: finalBtn.className.includes('red')
-                });
-                
-                if (isVisuallyRed || micComputedColor.includes('255, 0, 0') || micComputedColor.includes('red')) {
-                    console.log('⚠️ [SEND] Problema detectado! Aplicando correção DRÁSTICA');
-                    console.log('⚠️ [SEND] Background computado:', computedBg);
-                    console.log('⚠️ [SEND] Cor do ícone:', micComputedColor);
-                    
-                    // RESET COMPLETO E DRÁSTICO
-                    finalBtn.removeAttribute('class');
-                    finalBtn.removeAttribute('style');
-                    
-                    // Limpar estados de hover/focus/active
-                    finalBtn.blur();
-                    finalBtn.style.cssText = 'pointer-events: none';
-                    setTimeout(() => {
-                        finalBtn.style.cssText = '';
-                    }, 10);
-                    
-                    finalBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                    
-                    // Forçar estilos inline para garantir
-                    finalBtn.style.backgroundColor = 'transparent';
-                    finalBtn.style.background = 'transparent';
-                    finalBtn.style.backgroundImage = 'none';
-                    
-                    // Garantir ícones corretos e suas cores
-                    finalMic.classList.remove('hidden');
-                    finalSend.classList.add('hidden');
-                    
-                    // FORÇAR cor do ícone para cinza
-                    if (micIcon) {
-                        micIcon.style.color = '#9ca3af'; // text-gray-400
-                    }
-                    
-                    console.log('⚠️ [SEND] Correção DRÁSTICA aplicada');
-                    console.log('⚠️ [SEND] Novo background:', window.getComputedStyle(finalBtn).backgroundColor);
-                    console.log('⚠️ [SEND] Nova cor do ícone:', micIcon ? window.getComputedStyle(micIcon).color : 'none');
-                }
-            }
-        }, 200);
-
-        const roomId = state.currentRoomData.id;
-        const batch = writeBatch(db);
-        const roomRef = doc(db, 'rooms', roomId);
-        const newMsgRef = doc(collection(db, `rooms/${roomId}/messages`));
-
-        batch.set(newMsgRef, {
-            content: text, type: 'text', senderId: state.currentUserId, 
-            senderName: state.currentUserData.username,
-            senderPhoto: state.currentUserData.photoURL,
-            seenBy: {}, createdAt: serverTimestamp()
-        });
-
-        batch.update(roomRef, { 
-            lastMessage: {
-                text: text.substring(0, 40),
-                senderId: state.currentUserId,
-                senderName: state.currentUserData.username,
-                senderPhoto: state.currentUserData.photoURL,
-                createdAt: serverTimestamp()
-            }
-        });        await batch.commit();
-        
-        console.log('📬 [SEND] Mensagem enviada para o Firebase, campo limpo');
-        console.log('📬 [SEND] sendMessage finalizada');
-        
-        const userTypingRef = doc(db, 'rooms', state.currentRoomData.id);
-        await updateDoc(userTypingRef, { typing: arrayRemove({uid: state.currentUserId, name: state.currentUserData.username}) });
-        clearTimeout(state.typingTimeout);    }
-    
-    async function sendAudioMessage(url, duration) {
-        console.log('🎵 [AUDIO_MSG] sendAudioMessage iniciada');
-        if(!state.currentRoomData) return;
-        const roomId = state.currentRoomData.id;
-        const batch = writeBatch(db);
-        const roomRef = doc(db, 'rooms', roomId);
-        const newMsgRef = doc(collection(db, `rooms/${roomId}/messages`));
-        const contentText = `🎤 Áudio (${duration}s)`;
-
-        batch.set(newMsgRef, {
-            type: 'audio', mediaUrl: url, duration: duration, 
-            senderId: state.currentUserId, senderName: state.currentUserData.username,
-            senderPhoto: state.currentUserData.photoURL,
-            seenBy: {}, createdAt: serverTimestamp()
-        });
-
-        batch.update(roomRef, { 
-            lastMessage: {
-                text: contentText,
-                senderId: state.currentUserId,
-                senderName: state.currentUserData.username,
-                senderPhoto: state.currentUserData.photoURL,
-                createdAt: serverTimestamp()
-            }
-        });
-        
-        await batch.commit();
-        console.log('🎵 [AUDIO_MSG] Mensagem de áudio enviada para o Firebase');
-        
-        // Verificar se o botão ainda está vermelho após envio de áudio
-        setTimeout(() => {
-            const dynamicBtn = document.getElementById('dynamic-action-btn');
-            if (dynamicBtn) {
-                console.log('🎵 [AUDIO_MSG] Verificação pós-envio - classes do botão:', dynamicBtn.className);
-                console.log('🎵 [AUDIO_MSG] state.isRecording:', state.isRecording);
-                
-                // Forçar reset se necessário
-                if (dynamicBtn.className.includes('red') || dynamicBtn.className.includes('pulse')) {
-                    console.log('🎵 [AUDIO_MSG] PROBLEMA: Botão ainda vermelho após envio de áudio!');
-                    console.log('🎵 [AUDIO_MSG] Forçando reset das classes');
-                    
-                    state.isRecording = false;
-                    updateRecordingUI(false);
-                }
-            }
-        }, 200);
-    }
-
-
-    async function sendMediaMessage(type, url, fileName) {
-        if(!state.currentRoomData) return;
-        const roomId = state.currentRoomData.id;
-        const batch = writeBatch(db);
-        const roomRef = doc(db, 'rooms', roomId);
-        const newMsgRef = doc(collection(db, `rooms/${roomId}/messages`));
-        const contentText = type === 'image' ? '📷 Imagem' : '📹 Vídeo';
-
-        batch.set(newMsgRef, {
-            type: type, mediaUrl: url, fileName: fileName, 
-            senderId: state.currentUserId, senderName: state.currentUserData.username,
-            senderPhoto: state.currentUserData.photoURL,
-            seenBy: {}, createdAt: serverTimestamp()
-        });
-
-        batch.update(roomRef, { 
-            lastMessage: {
-                text: contentText,
-                senderId: state.currentUserId,
-                senderName: state.currentUserData.username,
-                senderPhoto: state.currentUserData.photoURL,
-                createdAt: serverTimestamp()
-            }
-        });
-        
-        await batch.commit();
-    }
-
-    function shareRoom(roomId) {
-        const modal = document.getElementById('share-link-modal');
-        const input = document.getElementById('share-link-input');
-        const copyBtn = document.getElementById('copy-link-btn');
-        const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-        input.value = link;
-        modal.classList.remove('hidden');
-        copyBtn.onclick = () => {
-             if (navigator.clipboard) {
-                 navigator.clipboard.writeText(link).then(() => {
-                     showNotification("Link de convite copiado!");
-                     modal.classList.add('hidden');
-                 });
-             }
-        };
-    }    function handleTyping() {
-        console.log('⌨️ [TYPING] handleTyping chamada');
-        if(!state.currentRoomData) return;
-        const userTypingRef = doc(db, 'rooms', state.currentRoomData.id);
-        clearTimeout(state.typingTimeout);
-        updateDoc(userTypingRef, { typing: arrayUnion({uid: state.currentUserId, name: state.currentUserData.username}) });
-        state.typingTimeout = setTimeout(() => {
-            console.log('⌨️ [TYPING] Timeout de typing executado - removendo usuário da lista');
-            updateDoc(userTypingRef, { typing: arrayRemove({uid: state.currentUserId, name: state.currentUserData.username}) });
-        }, 2000);
-    }
-
-    function updateTypingIndicator(typingUsers) {
-        const chatPanel = document.getElementById('chat-panel');
-        const guestPanel = document.getElementById('guest-container');
-        const container = chatPanel?.dataset.currentRoomId ? chatPanel.querySelector('.typing-indicator-container') : guestPanel.querySelector('.typing-indicator-container');
-        if (!container) return;
-        const otherTypingUsers = (typingUsers || []).filter(u => u.uid !== state.currentUserId);
-        if (otherTypingUsers.length === 0) { container.innerHTML = ''; } 
-        else {
-            const names = otherTypingUsers.map(u => u.name.split(' ')[0]).join(', ');
-            const verb = otherTypingUsers.length > 1 ? 'estão' : 'está';
-            container.innerHTML = `<p>${names} ${verb} digitando...</p>`;
-        }
-    }
-      function openUserSettings() {
-        const modal = document.getElementById('user-settings-modal');
-        modal.classList.remove('hidden');
-        document.getElementById('user-settings-pic').src = state.currentUserData.photoURL;
-        const nameInput = document.getElementById('user-settings-name');
-        nameInput.value = state.currentUserData.username;
-        document.getElementById('logout-btn').onclick = () => {
-            document.getElementById('user-settings-modal').classList.add('hidden');
-            signOut(auth);
-        };
-        document.getElementById('user-settings-pic').parentElement.onclick = () => {
-             state.imageUploadContext = { type: 'user' };
-             document.getElementById('image-uploader').click();
-        };
-        nameInput.onblur = async () => {
-            let newName = nameInput.value.trim();
-            if (state.currentUserData.isGuest) {
-                const guestPrefix = "Convidado: ";
-                let rawName = newName.startsWith(guestPrefix) ? newName.substring(guestPrefix.length) : newName;
-                rawName = rawName.trim();
-
-                if (!rawName) {
-                    nameInput.value = state.currentUserData.username;
-                    showNotification("O nome de convidado não pode ser vazio.", "error");
-                    return;
-                }
-                newName = guestPrefix + rawName;
-            }
-
-            if (newName && newName !== state.currentUserData.username) {
-                const updateData = { username: newName };
-                if (state.currentUserData.isGuest) {
-                    updateData.guest_name_lowercase = newName.replace("Convidado: ", "").trim().toLowerCase();
-                } else {
-                    updateData.username_lowercase = newName.toLowerCase();
-                }
-                await updateDoc(doc(db, 'users', state.currentUserId), updateData);
-                showNotification("Nome atualizado!");
-            }
-            nameInput.value = newName;
-        };
-    }    function openConversationSettings(roomData) {
-        const modal = document.getElementById('conversation-settings-modal');
-        const displayName = getRoomDisplayName(roomData, state.currentUserId);
-        const otherUserId = roomData.isDirectMessage ? roomData.members.find(id => id !== state.currentUserId) : null;
-        const photo = roomData.isDirectMessage ? 
-            (roomData.memberPhotos?.[otherUserId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`) : 
-            (roomData.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName[0] || '?')}&background=A78BFA&color=fff&size=80`);
-        
-        // Preencher informações da conversa
-        document.getElementById('conversation-settings-pic').src = photo;
-        document.getElementById('conversation-settings-name').textContent = displayName;
-        document.getElementById('conversation-settings-type').textContent = roomData.isDirectMessage ? 'Conversa Direta' : 'Sala de Chat';
-          // Atualizar status online/offline do usuário
-        const statusIndicator = document.getElementById('user-status-indicator');
-        if (roomData.isDirectMessage && otherUserId) {
-            const isOnline = state.usersStatus[otherUserId]?.state === 'online';
-            const statusDot = statusIndicator.querySelector('.w-2');
-            const statusText = statusIndicator.querySelector('.text-xs');
-            
-            if (statusDot && statusText) {
-                if (isOnline) {
-                    statusDot.className = 'w-2 h-2 bg-green-500 rounded-full animate-pulse';
-                    statusText.className = 'text-xs text-green-400';
-                    statusText.textContent = 'Online';
-                } else {
-                    statusDot.className = 'w-2 h-2 bg-gray-400 rounded-full';
-                    statusText.className = 'text-xs text-gray-400';
-                    statusText.textContent = 'Offline';
-                }
-            }
-            statusIndicator.style.display = 'flex';
-        } else {
-            // Ocultar status para conversas em grupo
-            statusIndicator.style.display = 'none';
-        }
-        
-        // Mostrar/esconder botão de bloquear baseado no tipo de conversa
-        const blockBtn = document.getElementById('block-user-btn');
-        if (roomData.isDirectMessage && !state.currentUserData.isGuest) {
-            blockBtn.style.display = 'flex';
-            blockBtn.textContent = 'Bloquear Usuário';
-        } else {
-            blockBtn.style.display = 'none';
-        }
-        
-        modal.classList.remove('hidden');
-        
-        // Event listeners do modal
-        document.getElementById('close-conversation-settings-btn').onclick = () => {
-            modal.classList.add('hidden');
-        };
-        
-        document.getElementById('clear-chat-btn').onclick = async () => {
-            const confirmed = await showCustomConfirm('Limpar Conversa', 'Tem certeza que deseja limpar todas as mensagens desta conversa? Esta ação não pode ser desfeita.');
-            if (confirmed) {
-                try {
-                    // Buscar todas as mensagens
-                    const messagesRef = collection(db, `rooms/${roomData.id}/messages`);
-                    const messagesSnapshot = await getDocs(messagesRef);
-                    
-                    // Deletar mensagens em lote
-                    const batch = writeBatch(db);
-                    messagesSnapshot.docs.forEach(doc => {
-                        batch.delete(doc.ref);
-                    });
-                    await batch.commit();
-                    
-                    showNotification('Conversa limpa com sucesso!');
-                    modal.classList.add('hidden');
-                } catch (error) {
-                    console.error('Erro ao limpar conversa:', error);
-                    showNotification('Erro ao limpar conversa.', 'error');
-                }
-            }
-        };
-        
-        document.getElementById('block-user-btn').onclick = async () => {
-            if (!roomData.isDirectMessage) return;
-            
-            const confirmed = await showCustomConfirm('Bloquear Usuário', 'Tem certeza que deseja bloquear este usuário? Vocês não poderão mais se enviar mensagens.');
-            if (confirmed) {
-                try {
-                    // Adicionar à lista de bloqueados
-                    await updateDoc(doc(db, 'users', state.currentUserId), {
-                        blockedUsers: arrayUnion(otherUserId)
-                    });
-                    
-                    // Adicionar o usuário atual à lista de bloqueados do outro usuário
-                    await updateDoc(doc(db, 'users', otherUserId), {
-                        blockedUsers: arrayUnion(state.currentUserId)
-                    });
-                    
-                    showNotification('Usuário bloqueado com sucesso.');
-                    modal.classList.add('hidden');
-                    
-                    // Voltar à lista de conversas
-                    document.getElementById('sidebar').classList.remove('-translate-x-full');
-                    document.getElementById('chat-panel').classList.add('translate-x-full');
-                } catch (error) {
-                    console.error('Erro ao bloquear usuário:', error);
-                    showNotification('Erro ao bloquear usuário.', 'error');
-                }
-            }
-        };
-        
-        // Fechar modal ao clicar fora
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
-            }
-        };
-    }
-
-    function openUserSearch() {
-        const modal = document.getElementById('user-search-modal');
-        modal.classList.remove('hidden');
-        const searchInput = document.getElementById('user-search-input');
-        const resultsContainer = document.getElementById('user-search-results');
-        let searchTimeout;
-        const performSearch = async () => {
-            const searchTerm = searchInput.value.trim().toLowerCase();
-            if (!searchTerm) { resultsContainer.innerHTML = ''; return; }
-            const regularSearch = query(collection(db, 'users'), where('username_lowercase', '>=', searchTerm), where('username_lowercase', '<=', searchTerm + '\uf8ff'));
-            const guestSearch = query(collection(db, 'users'), where('guest_name_lowercase', '>=', searchTerm), where('guest_name_lowercase', '<=', searchTerm + '\uf8ff'));
-            const [regularResults, guestResults] = await Promise.all([getDocs(regularSearch), getDocs(guestSearch)]);
-            const combinedResults = new Map();
-            regularResults.forEach(doc => combinedResults.set(doc.id, doc.data()));
-            guestResults.forEach(doc => combinedResults.set(doc.id, doc.data()));
-            const me = state.currentUserData;
-            resultsContainer.innerHTML = combinedResults.size === 0
-                ? `<p class="p-4 text-center text-gray-500">Nenhum usuário encontrado.</p>`
-                : [...combinedResults.values()].map(user => {
-                    if (user.uid === state.currentUserId) return '';
-                    const isFriend = me.friends?.includes(user.uid);
-                    const hasPendingRequestToMe = me.friendRequests?.some(req => req.from === user.uid);
-                    const hasIPendingRequestToThem = user.friendRequests?.some(req => req.from === state.currentUserId);
-                    let actionButton = '';
-                    if (isFriend) {
-                        actionButton = `<button class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-md" disabled>Amigo</button>`;
-                    } else if (hasPendingRequestToMe || hasIPendingRequestToThem) {
-                        actionButton = `<button class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-md" disabled>Pendente</button>`;
-                    } else if (!me.isGuest) {
-                        actionButton = `<button class="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-md add-friend-btn" data-user-id="${user.uid}">Adicionar</button>`;
-                    }
-                    return `<div class="p-3 flex items-center hover:bg-gray-700 rounded-lg">
-                        <div class="flex-1 flex items-center space-x-3 cursor-pointer user-chat-opener" data-user-id="${user.uid}" data-username="${user.username}" data-user-photo="${user.photoURL}">
-                            <div class="w-10 h-10 rounded-full overflow-hidden"><img src="${user.photoURL}" class="w-full h-full object-cover"></div>
-                            <span class="text-gray-200">${user.username}</span>
-                        </div>
-                        ${actionButton}
-                    </div>`;
-                }).join('');
-            document.querySelectorAll('.add-friend-btn').forEach(btn => {
-                btn.onclick = (e) => { e.stopPropagation(); sendFriendRequest(btn.dataset.userId); };
-            });
-            document.querySelectorAll('.user-chat-opener').forEach(item => {
-                item.onclick = async () => {
-                    const targetUserId = item.dataset.userId;
-                    try {
-                        await createOrGetDirectMessageRoom(targetUserId, item.dataset.username, item.dataset.userPhoto);
-                        modal.classList.add('hidden'); searchInput.value = ''; resultsContainer.innerHTML = '';
-                    } catch (error) { showNotification("Não foi possível iniciar a conversa."); }
-                };
-            });
-        };
-        searchInput.onkeyup = () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(performSearch, 300); };
-    }
-    
-    async function createOrGetDirectMessageRoom(targetUserId, targetUsername, targetUserPhoto) {
-        const roomMembers = [state.currentUserId, targetUserId].sort();
-        const roomId = `dm_${roomMembers.join('_')}`;
-        const roomRef = doc(db, 'rooms', roomId);
-        const docSnap = await getDoc(roomRef);
-        if (!docSnap.exists()) {
-            await setDoc(roomRef, {
-                isDirectMessage: true, members: roomMembers, admins: roomMembers, 
-                memberDetails: { [state.currentUserId]: state.currentUserData.username, [targetUserId]: targetUsername },
-                memberPhotos: { [state.currentUserId]: state.currentUserData.photoURL, [targetUserId]: targetUserPhoto },
-                typing: [], createdAt: serverTimestamp()
-            });
-        }
-        openRoom(roomId);
-    }
-
-    async function sendFriendRequest(targetUserId) {
-        const targetUserRef = doc(db, 'users', targetUserId);
-        const request = { from: state.currentUserId, username: state.currentUserData.username, photoURL: state.currentUserData.photoURL, timestamp: Timestamp.now() };
-        await updateDoc(targetUserRef, { friendRequests: arrayUnion(request) });
-        const searchInput = document.getElementById('user-search-input');
-        if(searchInput) searchInput.dispatchEvent(new Event('keyup'));
-        showNotification('Pedido de amizade enviado!');
-    }
-    
-    async function openFriendRequestsModal() {
-        const modal = document.getElementById('friend-requests-modal');
-        modal.classList.remove('hidden');
-        const listContainer = document.getElementById('friend-requests-list');
-        const requests = state.currentUserData.friendRequests || [];
-        if (requests.length === 0) { listContainer.innerHTML = `<p class="p-4 text-center text-gray-500">Nenhum pedido de amizade.</p>`; return; }
-        listContainer.innerHTML = requests.map(req => {
-            return `<div class="p-3 flex items-center border-b border-gray-700">
-                <div class="w-10 h-10 rounded-full overflow-hidden mr-3"><img src="${req.photoURL}" class="w-full h-full object-cover"></div>
-                <span class="flex-1">${req.username}</span>
-                <button class="bg-green-500 text-white px-3 py-1 rounded-md mr-2 accept-friend-btn" data-requester-id="${req.from}">Aceitar</button>
-                <button class="bg-red-500 text-white px-3 py-1 rounded-md decline-friend-btn" data-requester-id="${req.from}">Recusar</button>
-            </div>`;
-        }).join('');
-        document.querySelectorAll('.accept-friend-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const requesterId = btn.dataset.requesterId;
-                const batch = writeBatch(db);
-                batch.update(doc(db, 'users', state.currentUserId), { friends: arrayUnion(requesterId) });
-                batch.update(doc(db, 'users', requesterId), { friends: arrayUnion(state.currentUserId) });
-                const myRequestList = state.currentUserData.friendRequests.filter(r => r.from !== requesterId);
-                batch.update(doc(db, 'users', state.currentUserId), { friendRequests: myRequestList });
-                await batch.commit();
-                showNotification("Amigo adicionado!");
-                modal.classList.add('hidden');
-            };
-        });
-        document.querySelectorAll('.decline-friend-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const requesterId = btn.dataset.requesterId;
-                const myRequestList = state.currentUserData.friendRequests.filter(r => r.from !== requesterId);
-                await updateDoc(doc(db, 'users', state.currentUserId), { friendRequests: myRequestList });
-                showNotification("Pedido recusado.");
-                modal.classList.add('hidden');
-            };
-        });
-    }
-
-    async function openRoomSettings() {
-        const modal = document.getElementById('room-settings-modal');
-        modal.classList.remove('hidden');
-        const room = state.currentRoomData;
-        const addMemberSection = document.getElementById('add-member-section');
-        addMemberSection.classList.toggle('hidden', room.isDirectMessage);
-        document.getElementById('add-member-btn').onclick = openAddMemberModal;
-        document.getElementById('room-settings-pic').src = room.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(room.name[0] || '?')}&background=A78BFA&color=fff&size=40`;
-        const nameInput = document.getElementById('room-settings-name');
-        nameInput.value = room.name;
-        nameInput.onblur = async () => {
-            const newName = nameInput.value.trim();
-            if (newName && newName !== state.currentRoomData.name) {
-                await updateDoc(doc(db, 'rooms', room.id), { name: newName });
-                showNotification("Nome da sala atualizado!");
-            }
-        };
-        document.getElementById('room-settings-pic').parentElement.onclick = () => {
-            state.imageUploadContext = { type: 'room', id: room.id };
-            document.getElementById('image-uploader').click();
-        };
-        document.getElementById('clear-chat-btn').onclick = async () => {
-             if(await showCustomConfirm('Limpar Mensagens', `Tem certeza que deseja apagar TODAS as mensagens da sala "${room.name}"? Esta ação não pode ser desfeita.`)) {
-                 await clearChatForEveryone(room.id);
-             }
-        };
-        const membersList = document.getElementById('room-members-list');
-        membersList.innerHTML = `<p>A carregar membros...</p>`;
-        const usersQuery = query(collection(db, 'users'), where('uid', 'in', room.members));
-        const usersSnapshot = await getDocs(usersQuery);
-        const usersData = usersSnapshot.docs.map(d => d.data());
-        membersList.innerHTML = usersData.map(user => {
-            const isAdmin = room.admins.includes(user.uid);
-            let userActions = '';
-            if (user.uid !== room.creatorUid && room.admins.includes(state.currentUserId)) {
-                userActions += `<button class="ml-auto px-3 py-1 text-sm rounded-md ${isAdmin ? 'bg-yellow-500 text-white' : 'bg-gray-600'} admin-toggle-btn" data-uid="${user.uid}">${isAdmin ? 'Rebaixar' : 'Promover'}</button>`;
-                userActions += `<button class="ml-2 px-3 py-1 text-sm rounded-md bg-red-600 text-white remove-user-btn" data-uid="${user.uid}" data-username="${user.username}">&times;</button>`;
-            }
-            return `<div class="flex items-center p-2 rounded-lg hover:bg-gray-700">
-                <div class="w-8 h-8 rounded-full overflow-hidden mr-3"><img src="${user.photoURL}" class="w-full h-full object-cover"></div>
-                <span class="flex-1">${user.username} ${user.uid === state.currentUserId ? '(Você)' : ''} ${user.uid === room.creatorUid ? '<span class="text-xs text-yellow-400 font-bold">Dono</span>' : ''}</span>
-                <div class="flex items-center space-x-2">${userActions}</div>
-            </div>`
-        }).join('');
-        membersList.querySelectorAll('.admin-toggle-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const targetUid = btn.dataset.uid;
-                const isTargetAdmin = state.currentRoomData.admins.includes(targetUid);
-                const operation = isTargetAdmin ? arrayRemove(targetUid) : arrayUnion(targetUid);
-                await updateDoc(doc(db, 'rooms', room.id), { admins: operation });
-                showNotification(`Usuário ${isTargetAdmin ? 'rebaixado' : 'promovido'}.`);
-            };
-        });
-        membersList.querySelectorAll('.remove-user-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const targetUid = btn.dataset.uid;
-                const targetUsername = btn.dataset.username;
-                 if (await showCustomConfirm('Remover Usuário', `Tem certeza que deseja remover ${targetUsername} da sala?`)) {
-                     await updateDoc(doc(db, 'rooms', room.id), { members: arrayRemove(targetUid), admins: arrayRemove(targetUid) });
-                     showNotification(`${targetUsername} foi removido(a) da sala.`);
-                 }
-            };
-        });
-    }
-
-    async function openAddMemberModal() {
-        const modal = document.getElementById('add-member-modal');
-        modal.classList.remove('hidden');
-        const listContainer = document.getElementById('add-member-list');
-        listContainer.innerHTML = `<p>A carregar amigos...</p>`;
-        const friends = state.currentUserData.friends || [];
-        const currentMembers = state.currentRoomData.members || [];
-        const friendsToAdd = friends.filter(id => !currentMembers.includes(id));
-        if (friendsToAdd.length === 0) { listContainer.innerHTML = `<p class="p-4 text-center text-gray-500">Todos os seus amigos já estão neste grupo.</p>`; return; }
-        const usersQuery = query(collection(db, 'users'), where('uid', 'in', friendsToAdd));
-        const usersSnap = await getDocs(usersQuery);
-        listContainer.innerHTML = usersSnap.docs.map(doc => {
-            const user = doc.data();
-            return `<div class="p-3 flex items-center border-b border-gray-700">
-                <div class="w-10 h-10 rounded-full overflow-hidden mr-3"><img src="${user.photoURL}" class="w-full h-full object-cover"></div>
-                <span class="flex-1">${user.username}</span>
-                <button class="bg-blue-500 text-white px-3 py-1 rounded-md add-to-group-btn" data-user-id="${user.uid}">Adicionar</button>
-            </div>`;
-        }).join('');
-        listContainer.querySelectorAll('.add-to-group-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const userId = btn.dataset.userId;
-                await updateDoc(doc(db, 'rooms', state.currentRoomData.id), { members: arrayUnion(userId) });
-                showNotification("Membro adicionado!");
-                btn.disabled = true;
-                btn.textContent = 'Adicionado';
-            };
-        });
-    }
-
-    async function clearChatForEveryone(roomId) {
-        document.getElementById('loading-overlay').classList.remove('hidden');
-        const messagesRef = collection(db, `rooms/${roomId}/messages`);
-        const querySnapshot = await getDocs(messagesRef);
-        const batch = writeBatch(db);
-        querySnapshot.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
-        document.getElementById('loading-overlay').classList.add('hidden');
-        showNotification("O histórico da sala foi limpo.");
-        document.getElementById('room-settings-modal').classList.add('hidden');
-    }
-    
-    function openImageViewer(src, { isUser = false, isRoom = false, isAdmin = false } = {}) {
-        const modal = document.getElementById('image-viewer-modal');
-        document.getElementById('image-viewer-pic').src = src;
-        const actionsContainer = document.getElementById('image-viewer-actions');
-        actionsContainer.innerHTML = '';
-        if ((isUser) || (isRoom && isAdmin)) {
-            const changeButton = document.createElement('button');
-            changeButton.className = 'p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-lg';
-            changeButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2-2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`;
-            changeButton.onclick = () => {
-                state.imageUploadContext = { type: isUser ? 'user' : 'room', id: isUser ? state.currentUserId : state.currentRoomData.id };
-                document.getElementById('image-uploader').click();
-                modal.classList.add('hidden');
-            };
-            actionsContainer.appendChild(changeButton);
-        }
-        modal.classList.remove('hidden');
-    }
-
-    async function handleMediaUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const isProfileUpload = state.imageUploadContext?.type;
-        if (!isProfileUpload && !state.currentRoomData) {
-            showNotification("Você precisa estar em uma sala para enviar mídias.", "error");
-            return;
-        }
-        document.getElementById('loading-overlay').classList.remove('hidden');
-        const fileType = file.type.startsWith('image/') ? 'image' : (file.type.startsWith('video/') ? 'video' : null);
-        
-        if (isProfileUpload) {
-            if (fileType !== 'image') {
-                showNotification("Apenas imagens são permitidas para fotos de perfil.", "error");
-                document.getElementById('loading-overlay').classList.add('hidden');
-                return;
-            }
-            const { type, id } = state.imageUploadContext;
-            const path = `${type}_photos/${id || state.currentUserId}/${Date.now()}_${file.name}`;
-            try {
-                const fileRef = storageRef(storage, path);
-                await uploadBytes(fileRef, file);
-                const downloadURL = await getDownloadURL(fileRef);
-                if (type === 'user') {
-                    await updateDoc(doc(db, 'users', state.currentUserId), { photoURL: downloadURL });
-                    showNotification("Foto de perfil atualizada!");
-                } else if (type === 'room') {
-                    await updateDoc(doc(db, 'rooms', id), { photoURL: downloadURL });
-                    showNotification("Foto da sala atualizada!");
-                }
-            } catch (error) { showNotification("Falha ao atualizar a foto.", "error"); }
-        } else {
-            if (!fileType) {
-                showNotification("Tipo de arquivo não suportado.", "error");
-                document.getElementById('loading-overlay').classList.add('hidden');
-                return;
-            }
-            const path = `chat_media/${state.currentRoomData.id}/${Date.now()}_${file.name}`;
-            try {
-                const fileRef = storageRef(storage, path);
-                await uploadBytes(fileRef, file);
-                const downloadURL = await getDownloadURL(fileRef);
-                await sendMediaMessage(fileType, downloadURL, file.name);
-            } catch (error) { showNotification("Falha ao enviar mídia.", "error"); }
-        }
-        document.getElementById('loading-overlay').classList.add('hidden');
-        state.imageUploadContext = null;
-        e.target.value = '';
-    }
-
-    function setupPresenceSystem() {
-       if (!auth.currentUser || auth.currentUser.isAnonymous) return;
-       const myUid = auth.currentUser.uid;
-       const userStatusRef = rtdbRef(rtdb, 'status/' + myUid);
-       const isOfflineForRTDB = { state: 'offline', last_changed: rtdbServerTimestamp() };
-       const isOnlineForRTDB = { state: 'online', last_changed: rtdbServerTimestamp() };
-       onValue(rtdbRef(rtdb, '.info/connected'), (snapshot) => {
-           if (snapshot.val() === false) { set(userStatusRef, isOfflineForRTDB); return; }
-           onDisconnect(userStatusRef).set(isOfflineForRTDB).then(() => { set(userStatusRef, isOnlineForRTDB); });
-       });
-    }    async function setupPushNotifications() {
-        if (!messaging) {
-            console.warn('Firebase Messaging não está disponível');
-            return false;
-        }
-
-        // Verificar se o navegador suporta notificações
-        if (!('Notification' in window)) {
-            console.warn('Este navegador não suporta notificações');
-            return false;
-        }
-
-        try {
-            // Verificar se já tem permissão
-            let permission = Notification.permission;
-            console.log('Permissão atual das notificações:', permission);
-            
-            // Se não tem permissão, solicitar
-            if (permission === 'default') {
-                console.log('Solicitando permissão de notificações...');
-                  // Suporte para diferentes navegadores
-                if (Notification.requestPermission) {
-                    console.log('Chamando Notification.requestPermission()...');
-                    try {
-                        // Tentar a forma moderna (retorna Promise)
-                        permission = await Notification.requestPermission();
-                    } catch (e) {
-                        console.log('Tentativa com Promise falhou, tentando forma legacy...');
-                        // Fallback para navegadores antigos (callback)
-                        permission = await new Promise((resolve) => {
-                            Notification.requestPermission((result) => {
-                                resolve(result);
-                            });
-                        });
-                    }
-                } else {
-                    console.error('Notification.requestPermission não está disponível');
-                    return false;
-                }
-                
-                console.log('Resultado da permissão:', permission);
-            }
-            
-            if (permission === 'granted') {
-                console.log('Permissão concedida, obtendo token...');
-                const vapidKey = "BBo4U4SIypBpGZvoVaAXWee9fmBOEsl8ck9GzYiGF0s7mQaUm5l3Mc0tDGA-zb6VzhJpAIeQXgD4t4AgANHj8Z0";
-                const currentToken = await getToken(messaging, { vapidKey: vapidKey });
-
-                if (currentToken) {
-                    await updateDoc(doc(db, 'users', state.currentUserId), {
-                        fcmTokens: arrayUnion(currentToken)
-                    });
-                    console.log('Token de notificação salvo:', currentToken);
-                    
-                    // Configurar listener para mensagens em primeiro plano
-                    onMessage(messaging, (payload) => {
-                        console.log('Mensagem recebida em primeiro plano. ', payload);
-                        showNotification(`${payload.notification.title}: ${payload.notification.body}`);
-                    });
-                    
-                    return true;
-                } else {
-                    console.warn('Falha ao obter token de notificação');
-                    return false;
-                }
-            } else if (permission === 'denied') {
-                console.warn('Permissão para notificações negada pelo usuário');
-                return false;
-            } else {
-                console.warn('Usuário não respondeu à solicitação de permissão ou cancelou');
-                return false;
-            }
-        } catch (err) {
-            console.error('Erro ao configurar notificações:', err);
-            return false;
-        }
-    }
-
-    function checkNotificationPermission() {
-        // Verifica se o navegador suporta notificações
-        if (!('Notification' in window)) {
-            return 'not-supported';
-        }
-        
-        // Retorna o status atual da permissão
-        return Notification.permission;
-    }    function showMandatoryNotificationsModal() {
-        const modal = document.getElementById('mandatory-notifications-modal');
-        const statusEl = document.getElementById('mandatory-notifications-status');
-        const button = document.getElementById('activate-mandatory-notifications-btn');
-        
-        modal.classList.remove('hidden');
-        statusEl.textContent = '';
-        button.disabled = false;
-        button.innerHTML = `
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-            </svg>
-            <span>Ativar Notificações</span>
+            </div>
         `;
-        
-        button.onclick = async () => {
-            button.disabled = true;
-            button.innerHTML = `
-                <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                <span>Aguardando...</span>
-            `;
-            statusEl.textContent = 'Clique em "Permitir" quando o navegador perguntar sobre notificações...';
-            statusEl.className = 'text-xs text-center text-blue-400';
-            
-            const success = await setupPushNotifications();
-            
-            if (success) {
-                button.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span>Notificações Ativadas!</span>
-                `;
-                button.className = 'w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-2';
-                statusEl.textContent = '✓ Notificações ativadas com sucesso! Redirecionando...';
-                statusEl.className = 'text-xs text-center text-green-400';
-                
-                setTimeout(async () => {
-                    modal.classList.add('hidden');
-                    
-                    // Continuar com o setup do app
-                    const params = new URLSearchParams(window.location.search);
-                    const roomIdFromUrl = params.get('room');
-                    
-                    await setupMainUI(roomIdFromUrl);
-                    setupPresenceSystem();
-                    monitorNotificationStatus();
-                }, 2000);
-            } else {
-                button.disabled = false;
-                button.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                    <span>Tentar Novamente</span>
-                `;
-                button.className = 'w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 flex items-center justify-center space-x-2';
-                
-                const currentPermission = Notification.permission;
-                if (currentPermission === 'denied') {
-                    statusEl.textContent = '✗ Você negou as notificações. Para ativar, vá em Configurações do navegador > Notificações > Permitir para este site.';
-                    statusEl.className = 'text-xs text-center text-red-400';
-                } else {
-                    statusEl.textContent = '✗ Não foi possível ativar as notificações. Tente novamente.';
-                    statusEl.className = 'text-xs text-center text-red-400';
-                }
-            }
-        };
     }
 
-    function enforceNotifications() {
-        // Não verificar para usuários convidados
-        if (state.currentUserData?.isGuest) {
-            return true;
-        }
+    // Função básica para abrir uma sala/conversa
+    async function openRoom(roomId, isFromUrl = false) {
+        if (!roomId) return;
         
-        const permission = checkNotificationPermission();
-        
-        if (permission === 'not-supported') {
-            console.warn('Notificações não suportadas neste navegador');
-            return true; // Permitir acesso mesmo sem suporte
-        }
-        
-        if (permission !== 'granted') {
-            showMandatoryNotificationsModal();
-            return false;
-        }
-        
-        return true;
-    }    // Função para monitorar mudanças no status das notificações
-    function monitorNotificationStatus() {
-        if (!('Notification' in window) || state.currentUserData?.isGuest) {
-            return;
-        }
-        
-        // Verificar periodicamente se as notificações foram desabilitadas
-        const checkInterval = setInterval(() => {
-            const permission = checkNotificationPermission();
-            
-            if (permission !== 'granted') {
-                // Notificações foram desabilitadas, bloquear acesso
-                clearInterval(checkInterval);
-                
-                // Ocultar o app principal
-                document.getElementById('app-container').classList.add('hidden');
-                document.getElementById('guest-container').classList.add('hidden');
-                
-                // Mostrar modal obrigatório
-                showMandatoryNotificationsModal();
-            }
-        }, 5000); // Verificar a cada 5 segundos
-        
-        // Armazenar o intervalo para limpeza posterior
-        state.notificationCheckInterval = checkInterval;
-    }
-
-
-    function showNotification(message, type = 'success') {
-        const toast = document.getElementById('notification-toast');
-        toast.textContent = message;
-        toast.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl z-[101] ${type === 'success' ? 'bg-blue-500' : 'bg-red-500'}`;
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 3000);
-    }
-
-    function showCustomConfirm(title, message) {
-        return new Promise(resolve => {
-            const modal = document.getElementById('custom-confirm-modal');
-            document.getElementById('custom-confirm-title').textContent = title;
-            document.getElementById('custom-confirm-message').textContent = message;
-            modal.classList.remove('hidden');
-            const onOk = () => { cleanup(); resolve(true); };
-            const onCancel = () => { cleanup(); resolve(false); };
-            const cleanup = () => {
-                modal.classList.add('hidden');
-                document.getElementById('custom-confirm-ok-btn').removeEventListener('click', onOk);
-                document.getElementById('custom-confirm-cancel-btn').removeEventListener('click', onCancel);
-            };
-            document.getElementById('custom-confirm-ok-btn').addEventListener('click', onOk);
-            document.getElementById('custom-confirm-cancel-btn').addEventListener('click', onCancel);
-        });
-    }
-
-    function showCustomPrompt(title, message) {
-        return new Promise(resolve => {
-            const modal = document.getElementById('custom-prompt-modal');
-            document.getElementById('custom-prompt-title').textContent = title;
-            document.getElementById('custom-prompt-message').textContent = message;
-            const input = document.getElementById('custom-prompt-input');
-            input.value = '';
-            modal.classList.remove('hidden'); input.focus();
-            const submit = () => {
-                const value = input.value.trim();
-                if (value) { cleanup(value); }
-            };
-            const onEnter = (e) => { if (e.key === 'Enter') submit(); };
-            const cleanup = (value) => {
-                 modal.classList.add('hidden');
-                 document.getElementById('custom-prompt-ok-btn').removeEventListener('click', submit);
-                 input.removeEventListener('keyup', onEnter);
-                 resolve(value);
-            }
-            document.getElementById('custom-prompt-ok-btn').addEventListener('click', submit);
-            input.addEventListener('keyup', onEnter);
-        });
-    }    async function startRecording(e) {
-        e.preventDefault();
-        console.log('🎙️ [START_REC] startRecording chamada');
-        console.log('🎙️ [START_REC] state.isRecording atual:', state.isRecording);
-        
-        if (state.isRecording) {
-            console.log('🎙️ [START_REC] Já está gravando, cancelando');
-            return;
-        }
-        
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showNotification("Gravação de áudio não é suportada neste navegador.", "error");
-            console.error("🎙️ [START_REC] MediaDevices API not supported.");
-            return;
-        }
-
         try {
-            console.log('🎙️ [START_REC] Solicitando permissão do microfone');
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const roomRef = doc(db, 'rooms', roomId);
+            const roomDoc = await getDoc(roomRef);
             
-            console.log('🎙️ [START_REC] Permissão concedida, configurando gravação');
-            state.isRecording = true;
-            state.audioChunks = [];
-            state.mediaRecorder = new MediaRecorder(stream);
-
-            state.mediaRecorder.ondataavailable = event => {
-                console.log('🎙️ [START_REC] Dados de áudio disponíveis');
-                state.audioChunks.push(event.data);
-            };
-
-            state.mediaRecorder.onstop = async () => {
-                console.log('🎙️ [START_REC] Gravação parada, processando áudio');
-                const duration = Math.round((Date.now() - state.recordingStartTime) / 1000);
-                const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
+            if (!roomDoc.exists()) {
+                showNotification("Esta conversa não existe mais.", "error");
+                return;
+            }
+            
+            const roomData = { id: roomDoc.id, ...roomDoc.data() };
+            
+            // Verifica se o usuário é membro da sala
+            if (!roomData.members.includes(state.currentUserId)) {
+                showNotification("Você não tem acesso a esta conversa.", "error");
+                return;
+            }
+            
+            // Atualiza o painel de chat com a conversa selecionada
+            const chatPanel = document.getElementById('chat-panel');
+            if (chatPanel) {
+                chatPanel.dataset.currentRoomId = roomId;
                 
-                document.getElementById('loading-overlay').classList.remove('hidden');
+                // Aqui você pode implementar a lógica para carregar mensagens
+                chatPanel.innerHTML = `
+                    <div class="h-full flex items-center justify-center text-center p-4">
+                        <p class="text-gray-500">Conversa: ${getRoomDisplayName(roomData, state.currentUserId)}</p>
+                    </div>
+                `;
                 
-                const path = `chat_audio/${state.currentRoomData.id}/${Date.now()}.webm`;
-                const fileRef = storageRef(storage, path);
-                try {
-                    await uploadBytes(fileRef, audioBlob);
-                    const downloadURL = await getDownloadURL(fileRef);
-                    await sendAudioMessage(downloadURL, duration);
-                    console.log('🎙️ [START_REC] Áudio enviado com sucesso');
-                } catch (error) {
-                    showNotification("Falha ao enviar áudio.", "error");
-                    console.error("🎙️ [START_REC] Audio upload error:", error);
-                } finally {
-                    document.getElementById('loading-overlay').classList.add('hidden');
-                }
-                
-                stream.getTracks().forEach(track => track.stop());
-                console.log('🎙️ [START_REC] Stream fechado');
-            };
-
-            state.recordingStartTime = Date.now();
-            state.mediaRecorder.start();
-            console.log('🎙️ [START_REC] Gravação iniciada, chamando updateRecordingUI(true)');
-            updateRecordingUI(true);
-
-        } catch (err) {
-            console.error("🎙️ [START_REC] Error accessing microphone:", err);
-            showNotification("Não foi possível acessar o microfone. Verifique as permissões.", "error");
+                console.log("Sala aberta:", roomData);
+                // TODO: Implementar carregamento de mensagens aqui
+            }
+            
+        } catch (error) {
+            console.error("Erro ao abrir sala:", error);
+            showNotification("Erro ao abrir conversa.", "error");
         }
     }
 
-    function stopRecording(e) {
-        e.preventDefault();
-        console.log('🛑 [STOP_REC] stopRecording chamada');
-        console.log('🛑 [STOP_REC] state.isRecording:', state.isRecording);
-        console.log('🛑 [STOP_REC] state.mediaRecorder:', !!state.mediaRecorder);
+    // Função básica para criar ou obter uma conversa direta
+    async function createOrGetDirectMessageRoom(otherUserId, otherUsername, otherUserPhoto) {
+        if (!otherUserId || otherUserId === state.currentUserId) return;
         
-        if (!state.isRecording || !state.mediaRecorder) {
-            console.log('🛑 [STOP_REC] Não está gravando ou sem MediaRecorder, cancelando');
-            return;
-        }
-        
-        console.log('🛑 [STOP_REC] Parando gravação');
-        state.mediaRecorder.stop();
-        state.isRecording = false;
-        console.log('🛑 [STOP_REC] state.isRecording definido como false, chamando updateRecordingUI(false)');
-        updateRecordingUI(false);
-    }    function updateRecordingUI(isRecording) {
-        // STACK TRACE para debug
-        console.log('🎨 [UI] ===== updateRecordingUI CHAMADA =====');
-        console.log('🎨 [UI] isRecording:', isRecording);
-        console.log('🎨 [UI] state.isRecording:', state.isRecording);
-        console.log('🎨 [UI] Stack trace:', new Error().stack);
-        
-        const indicator = document.getElementById('recording-indicator');
-        const timerEl = document.getElementById('recording-timer');
-        const dynamicBtn = document.getElementById('dynamic-action-btn');
-        
-        console.log('🎨 [UI] Elementos encontrados:', {
-            indicator: !!indicator,
-            timerEl: !!timerEl,
-            dynamicBtn: !!dynamicBtn
-        });
-        
-        if (!indicator || !timerEl) {
-            console.log('🎨 [UI] Elementos não encontrados, cancelando');
-            return;        }
-        
-        // VERIFICAÇÃO CRÍTICA: Se não está gravando, NUNCA aplicar vermelho
-        if (isRecording && state.isRecording) {
-            console.log('🔴 [UI] Ativando modo de gravação - botão vermelho');
-            indicator.classList.remove('hidden');
-            indicator.classList.add('flex');
+        try {
+            // Cria um ID único para a conversa direta baseado nos IDs dos usuários
+            const roomId = `dm_${[state.currentUserId, otherUserId].sort().join('_')}`;
             
-            // Mudar estilo do botão para vermelho durante gravação
-            if (dynamicBtn) {
-                const oldClassName = dynamicBtn.className;
-                dynamicBtn.className = 'group relative p-2.5 rounded-full bg-gradient-to-r from-red-500/80 to-red-600/80 hover:from-red-600/90 hover:to-red-700/90 transition-all duration-300 scale-110 z-10 animate-pulse';
-                console.log('🔴 [UI] Classes do botão alteradas de:', oldClassName);
-                console.log('🔴 [UI] Classes do botão alteradas para:', dynamicBtn.className);
+            const roomRef = doc(db, 'rooms', roomId);
+            const roomDoc = await getDoc(roomRef);
+            
+            if (!roomDoc.exists()) {
+                // Cria nova conversa direta
+                const newRoomData = {
+                    id: roomId,
+                    name: '', // Conversas diretas não têm nome fixo
+                    isDirectMessage: true,
+                    members: [state.currentUserId, otherUserId],
+                    memberDetails: {
+                        [state.currentUserId]: state.currentUserData.username,
+                        [otherUserId]: otherUsername
+                    },
+                    memberPhotos: {
+                        [state.currentUserId]: state.currentUserData.photoURL || '',
+                        [otherUserId]: otherUserPhoto || ''
+                    },
+                    createdAt: new Date(),
+                    lastMessage: null
+                };
+                
+                await setDoc(roomRef, newRoomData);
+                console.log("Nova conversa direta criada:", roomId);
             }
             
-            state.recordingTimerInterval = setInterval(() => {
-                const seconds = Math.floor((Date.now() - state.recordingStartTime) / 1000);
-                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-                const secs = (seconds % 60).toString().padStart(2, '0');
-                timerEl.textContent = `${mins}:${secs}`;
-            }, 1000);
-        } else {
-            console.log('⚪ [UI] FORÇANDO MODO CINZA - state.isRecording:', state.isRecording, 'isRecording:', isRecording);
-            console.log('⚪ [UI] Desativando modo de gravação - botão cinza');
-            indicator.classList.add('hidden');
-            indicator.classList.remove('flex');
+            // Abre a conversa
+            await openRoom(roomId);
             
-            // SEMPRE limpar estado de gravação
-            state.isRecording = false;
-            
-            // Voltar estilo do botão para neutro - SEMPRE aplicar
-            if (dynamicBtn) {
-                const oldClassName = dynamicBtn.className;
-                
-                // MÉTODO SUPER AGRESSIVO: Remover TODAS as classes vermelhas possíveis
-                const redClasses = ['animate-pulse', 'scale-110', 'bg-gradient-to-r', 'from-red-500/80', 'to-red-600/80', 'hover:from-red-600/90', 'hover:to-red-700/90', 'bg-red-500', 'bg-red-600', 'bg-red-700', 'text-red-500', 'border-red-500'];
-                redClasses.forEach(cls => dynamicBtn.classList.remove(cls));
-                  // Limpar className completamente e re-aplicar
-                dynamicBtn.className = '';
-                dynamicBtn.removeAttribute('style');
-                
-                // Forçar estilos inline para garantir background transparente
-                dynamicBtn.style.backgroundColor = 'transparent';
-                dynamicBtn.style.background = 'transparent';
-                dynamicBtn.style.backgroundImage = 'none';
-                
-                // Aplicar classes corretas
-                dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                
-                console.log('⚪ [UI] Classes do botão alteradas de:', oldClassName);
-                console.log('⚪ [UI] Classes do botão alteradas para:', dynamicBtn.className);
-                console.log('⚪ [UI] Background forçado para transparente');
-                
-                // Verificação imediata com estilo computado
-                setTimeout(() => {
-                    const computedBg = window.getComputedStyle(dynamicBtn).backgroundColor;
-                    console.log('⚪ [UI] Background computado após reset:', computedBg);
-                    
-                    if (dynamicBtn.className.includes('red') || dynamicBtn.className.includes('pulse') || 
-                        computedBg.includes('255') || computedBg.includes('red')) {
-                        
-                        console.log('⚠️ [UI] AINDA VERMELHO após reset! classes:', dynamicBtn.className, 'computed:', computedBg);
-                        
-                        // RESET ULTRA AGRESSIVO
-                        dynamicBtn.removeAttribute('class');
-                        dynamicBtn.removeAttribute('style');
-                        dynamicBtn.style.cssText = 'background: transparent !important; background-color: transparent !important;';
-                        dynamicBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                        
-                        console.log('⚠️ [UI] Reset ULTRA AGRESSIVO aplicado');
-                        console.log('⚠️ [UI] Novo background:', window.getComputedStyle(dynamicBtn).backgroundColor);
-                    }
-                }, 10);
-                
-                // Verificação adicional após mais tempo
-                setTimeout(() => {
-                    if (dynamicBtn.className.includes('red') || dynamicBtn.className.includes('pulse')) {
-                        console.log('🚨 [UI] PROBLEMA PERSISTENTE! Clonando botão...');
-                        const newBtn = dynamicBtn.cloneNode(true);
-                        newBtn.className = 'group relative p-2.5 rounded-full hover:bg-gray-700/30 transition-all duration-300 hover:scale-110 z-10';
-                        dynamicBtn.parentNode.replaceChild(newBtn, dynamicBtn);
-                    }
-                }, 300);
-            }
-            
-            clearInterval(state.recordingTimerInterval);
-            timerEl.textContent = '00:00';
+        } catch (error) {
+            console.error("Erro ao criar/abrir conversa direta:", error);
+            showNotification("Erro ao abrir conversa com o usuário.", "error");
         }
-        
-        console.log('🎨 [UI] updateRecordingUI finalizada');
     }
-
-    document.addEventListener('DOMContentLoaded', main);
 </script>
 <script>
     // --- Lógica para ajuste de altura do viewport em celulares ---
@@ -3201,116 +1336,89 @@
             }).catch((err) => {                console.warn('Falha no registro do Service Worker: ', err);
             });    }
 
-// Função para controlar a visibilidade do menu
-function toggleBottomNav(show) {
-    const bottomNav = document.getElementById('bottom-nav-menu');
-    if (bottomNav) {
-        if (show) {
-            bottomNav.classList.remove('hidden');
-        } else {
-            bottomNav.classList.add('hidden');
-        }
+    // === CORREÇÃO PARA TECLADO VIRTUAL EM PWA ===
+
+    // Função para detectar se é PWA instalada
+    function isPWA() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               window.navigator.standalone === true ||
+               document.referrer.includes('android-app://');
     }
-}
 
-// Na função handleAuthChange, adicione o controle do menu
-// Substitua a parte onde você configura as telas por:
-if (user) {
-    // ... seu código existente ...
-    
-    if (roomIdFromUrl && user.isAnonymous) {
-        // Para convidados em salas específicas - esconder menu
-        toggleBottomNav(false);
-        await setupGuestUI(roomIdFromUrl);
-    } else {
-        // Para usuários normais - mostrar menu apenas na tela principal
-        await setupMainUI(roomIdFromUrl);
-        // Se não estiver em uma sala específica, mostrar menu
-        if (!roomIdFromUrl) {            toggleBottomNav(true);
-        }
+    // Configurar altura real da viewport
+    function setRealVH() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--real-vh', `${vh}px`);
     }
-} else {
-    // Na tela de login - esconder menu
-    toggleBottomNav(false);
-    // ... resto do seu código de login ...
-}
 
-// Fix para teclado mobile
-let initialViewportHeight = window.innerHeight;
-let currentInput = null;
-
-// Detectar quando input recebe foco
-document.addEventListener('focusin', function(e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        currentInput = e.target;
-        e.target.classList.add('input-focus');
+    // Detectar aparição do teclado virtual
+    function setupKeyboardDetection() {
+        let initialViewportHeight = window.innerHeight;
+        let currentViewportHeight = window.innerHeight;
         
-        // Adicionar classe para ajustar layout
-        document.body.classList.add('keyboard-adjust');
-        
-        // Se for um modal, ajustar posicionamento
-        const modal = e.target.closest('.modal');
-        if (modal) {
-            modal.classList.add('keyboard-open');
-        }
-        
-        // Scroll para o input após um delay
-        setTimeout(() => {
-            if (currentInput) {
-                currentInput.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center',
-                    inline: 'nearest'
-                });
+        const handleResize = () => {
+            currentViewportHeight = window.innerHeight;
+            const heightDifference = initialViewportHeight - currentViewportHeight;
+            
+            // Se a diferença for maior que 150px, provavelmente o teclado apareceu
+            if (heightDifference > 150) {
+                document.body.classList.add('keyboard-open');
+                setRealVH();
+            } else {
+                document.body.classList.remove('keyboard-open');
+                setRealVH();
             }
-        }, 300);
-    }
-});
-
-// Detectar quando input perde foco
-document.addEventListener('focusout', function(e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        e.target.classList.remove('input-focus');
-        document.body.classList.remove('keyboard-adjust');
+        };
         
-        // Remover classe do modal
-        const modal = e.target.closest('.modal');
-        if (modal) {
-            modal.classList.remove('keyboard-open');
-        }
-        
-        currentInput = null;
-    }
-});
-
-// Detectar mudança na altura da viewport (teclado aparecendo/sumindo)
-function handleViewportChange() {
-    const currentHeight = window.innerHeight;
-    const heightDifference = initialViewportHeight - currentHeight;
-    
-    if (heightDifference > 150) { // Teclado apareceu
-        document.body.style.paddingBottom = '0px';
-        
-        if (currentInput) {
+        // Detectar mudanças no viewport
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', () => {
             setTimeout(() => {
-                currentInput.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }, 100);
-        }
-    } else { // Teclado sumiu
-        document.body.style.paddingBottom = '';
+                initialViewportHeight = window.innerHeight;
+                setRealVH();
+            }, 500);
+        });
     }
-}
 
-window.addEventListener('resize', handleViewportChange);
-window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-        initialViewportHeight = window.innerHeight;
-        handleViewportChange();
-    }, 500);
-});
+    // Scroll automático para inputs em foco
+    function setupInputFocusHandling() {
+        const inputs = document.querySelectorAll('input, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('focus', (e) => {
+                setTimeout(() => {
+                    if (isPWA()) {
+                        e.target.classList.add('input-focused');
+                        e.target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                            inline: 'nearest'
+                        });
+                    }
+                }, 300); // Delay para aguardar o teclado aparecer
+            });
+            
+            input.addEventListener('blur', (e) => {
+                e.target.classList.remove('input-focused');
+            });
+        });
+    }
+
+    // Inicializar correções quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+        setRealVH();
+        
+        if (isPWA()) {
+            setupKeyboardDetection();
+            setupInputFocusHandling();
+            
+            // Aplicar classe específica para PWA
+            document.body.classList.add('pwa-mode');
+        }
+    });
+
+    // Atualizar altura quando a tela redimensionar
+    window.addEventListener('resize', setRealVH);
 </script>
 </body>
 </html>
