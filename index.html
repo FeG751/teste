@@ -2211,44 +2211,68 @@
                     showNotification('Erro ao fazer logout.', 'error');
                 }
             });
-        }// Função para atualizar informações do usuário no modal de configurações
+        }        // Função updateSettingsUserInfo - VERSÃO CORRIGIDA V8
         async function updateSettingsUserInfo() {
             const user = auth.currentUser;
             if (!user) return;
             
-            const userNameElement = document.getElementById('settings-user-name');
-            const userStatusElement = document.getElementById('settings-user-status');
-            const displayNameElement = document.getElementById('settings-display-name');
-            const displayStatusElement = document.getElementById('settings-display-status');
-            const userPicElement = document.getElementById('settings-user-pic');
-            const userIconElement = document.getElementById('settings-user-icon');
+            const settingsUserName = document.getElementById('settings-user-name');
+            const settingsUserEmail = document.getElementById('settings-user-email');
+            const settingsUserPic = document.getElementById('settings-user-pic');
+            const settingsUserIcon = document.getElementById('settings-user-icon');
+            const settingsDisplayName = document.getElementById('settings-display-name');
+            const settingsDisplayStatus = document.getElementById('settings-display-status');
             
-            try {                // Buscar dados do usuário no Firebase
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                const userData = userDoc.data();
+            try {
+                // Usar sintaxe v8 do Firebase
+                const userDocRef = db.collection('users').doc(user.uid);
+                const userDoc = await userDocRef.get();
                 
-                // Nome do usuário
-                const displayName = userData?.username || (user.isAnonymous ? 'Usuário Convidado' : user.displayName || 'Usuário');
-                const statusMessage = userData?.status || 'Olá! Eu estou usando o 7Chat...';
-                
-                userNameElement.textContent = displayName;
-                userStatusElement.textContent = statusMessage;
-                displayNameElement.textContent = displayName;
-                displayStatusElement.textContent = statusMessage;
-                
-                // Foto do usuário (buscar do Firebase)
-                if (userData?.photoURL) {
-                    userPicElement.src = userData.photoURL;
-                    userPicElement.classList.remove('hidden');
-                    userIconElement.classList.add('hidden');
-                } else {
-                    userPicElement.classList.add('hidden');
-                    userIconElement.classList.remove('hidden');
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    
+                    // Nome
+                    const displayName = userData?.username || user.displayName || 'Usuário';
+                    if (settingsUserName) settingsUserName.textContent = displayName;
+                    if (settingsDisplayName) settingsDisplayName.textContent = displayName;
+                    
+                    // Email
+                    if (settingsUserEmail) {
+                        settingsUserEmail.textContent = user.isAnonymous ? 'Sessão temporária' : (user.email || 'Sem email');
+                    }
+                    
+                    // Status
+                    if (settingsDisplayStatus) {
+                        settingsDisplayStatus.textContent = userData?.status || 'Olá! Eu estou usando o 7Chat.';
+                    }
+                    
+                    // Foto
+                    if (userData?.photoURL) {
+                        if (settingsUserPic) {
+                            settingsUserPic.src = userData.photoURL;
+                            settingsUserPic.classList.remove('hidden');
+                        }
+                        if (settingsUserIcon) {
+                            settingsUserIcon.classList.add('hidden');
+                        }
+                    } else {
+                        if (settingsUserPic) {
+                            settingsUserPic.classList.add('hidden');
+                        }
+                        if (settingsUserIcon) {
+                            settingsUserIcon.classList.remove('hidden');
+                        }
+                    }
+                    
+                    // NOVO: Carregar efeito do nome
+                    if (userData?.nameEffect) {
+                        applyNameEffectToInterface(userData.nameEffect);
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados do usuário:', error);
             }
-        }        // Carregar dados do usuário após login
+        }// Carregar dados do usuário após login
         async function loadUserDataOnLogin() {            const user = auth.currentUser;
             if (!user) return;
             
@@ -2363,9 +2387,7 @@
         
         await db.collection('users').doc(user.uid).set(baseProfile);
         console.log('✅ Perfil de usuário criado');
-    }
-
-    // Inicializar modal de perfil
+    }    // Corrigir o event listener que está causando o erro "Cannot read properties of null"
     function initializeProfile() {
         const userProfileBtn = document.getElementById('user-profile-btn');
         const profileModal = document.getElementById('profile-modal');
@@ -2373,35 +2395,51 @@
         const editProfileBtn = document.getElementById('edit-profile-btn');
         const changePhotoFromProfileBtn = document.getElementById('change-photo-from-profile-btn');
         
-        // Abrir modal de perfil
-        userProfileBtn?.addEventListener('click', () => {
-            updateProfileModal();
-            profileModal.classList.remove('hidden');
-        });
+        // Verificar se os elementos existem antes de adicionar event listeners
+        if (userProfileBtn && profileModal) {
+            // Abrir modal de perfil
+            userProfileBtn.addEventListener('click', () => {
+                updateProfileModal();
+                profileModal.classList.remove('hidden');
+            });
+        }
         
-        // Fechar modal
-        closeProfileBtn?.addEventListener('click', () => {
-            profileModal.classList.add('hidden');
-        });
-        
-        // Fechar clicando fora
-        profileModal?.addEventListener('click', (e) => {
-            if (e.target === profileModal) {
+        if (closeProfileBtn && profileModal) {
+            // Fechar modal
+            closeProfileBtn.addEventListener('click', () => {
                 profileModal.classList.add('hidden');
-            }
-        });
+            });
+        }
         
-        // Botão editar perfil
-        editProfileBtn?.addEventListener('click', () => {
-            profileModal.classList.add('hidden');
-            openEditNameModal();
-        });
+        if (profileModal) {
+            // Fechar clicando fora
+            profileModal.addEventListener('click', (e) => {
+                if (e.target === profileModal) {
+                    profileModal.classList.add('hidden');
+                }
+            });
+        }
         
-        // Botão trocar foto
-        changePhotoFromProfileBtn?.addEventListener('click', () => {
-            profileModal.classList.add('hidden');
-            document.getElementById('photo-upload-input').click();        });
-    }    
+        if (editProfileBtn && profileModal) {
+            // Botão editar perfil
+            editProfileBtn.addEventListener('click', () => {
+                profileModal.classList.add('hidden');
+                openEditNameModal();
+            });
+        }
+        
+        // Verificar se o botão trocar foto existe antes de adicionar listener
+        if (changePhotoFromProfileBtn && profileModal) {
+            // Botão trocar foto
+            changePhotoFromProfileBtn.addEventListener('click', () => {
+                profileModal.classList.add('hidden');
+                const photoUploadInput = document.getElementById('photo-upload-input');
+                if (photoUploadInput) {
+                    photoUploadInput.click();
+                }
+            });
+        }
+    }
 
     // Nova função para abrir modal de edição de status
     function openEditStatusModal() {
@@ -2424,9 +2462,7 @@
         editNameInput.value = settingsDisplayName.textContent;
         editNameModal.classList.remove('hidden');
         setTimeout(() => editNameInput.focus(), 100);
-    }
-
-    // Atualizar modal de perfil
+    }    // Função updateProfileModal - VERSÃO CORRIGIDA V8
     async function updateProfileModal() {
         const user = auth.currentUser;
         if (!user) return;
@@ -2437,29 +2473,35 @@
         const profileModalIcon = document.getElementById('profile-modal-icon');
         
         try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
+            // Usar sintaxe v8 do Firebase
+            const userDocRef = db.collection('users').doc(user.uid);
+            const userDoc = await userDocRef.get();
             
-            // Nome
-            if (user.isAnonymous) {
-                profileModalName.textContent = userData?.username || 'Usuário Convidado';
-                profileModalEmail.textContent = 'Sessão temporária';
-            } else {
-                profileModalName.textContent = userData?.username || user.displayName || 'Usuário';
-                profileModalEmail.textContent = user.email || 'Sem email';
-            }
-            
-            // Foto
-            if (userData?.photoURL) {
-                profileModalPic.src = userData.photoURL;
-                profileModalPic.classList.remove('hidden');
-                profileModalIcon.classList.add('hidden');
-            } else {
-                profileModalPic.classList.add('hidden');
-                profileModalIcon.classList.remove('hidden');
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                
+                // Nome
+                if (user.isAnonymous) {
+                    profileModalName.textContent = userData?.username || 'Usuário Convidado';
+                    profileModalEmail.textContent = 'Sessão temporária';
+                } else {
+                    profileModalName.textContent = userData?.username || user.displayName || 'Usuário';
+                    profileModalEmail.textContent = user.email || 'Sem email';
+                }
+                
+                // Foto
+                if (userData?.photoURL) {
+                    profileModalPic.src = userData.photoURL;
+                    profileModalPic.classList.remove('hidden');
+                    profileModalIcon.classList.add('hidden');
+                } else {
+                    profileModalPic.classList.add('hidden');
+                    profileModalIcon.classList.remove('hidden');
+                }
             }
         } catch (error) {
-            console.error('Erro ao carregar dados do perfil:', error);        }
+            console.error('Erro ao carregar dados do perfil:', error);
+        }
     }
 
     // Inicializar tela de perfil detalhado
@@ -2502,9 +2544,7 @@
                 document.getElementById('settings-modal').classList.remove('hidden');
             }
         });
-    }
-
-    // Atualizar dados da tela de perfil detalhado
+    }    // Função updateProfileDetail - VERSÃO CORRIGIDA V8
     async function updateProfileDetail() {
         const user = auth.currentUser;
         if (!user) return;
@@ -2516,31 +2556,37 @@
         const iconElement = document.getElementById('profile-detail-icon');
         
         try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
+            // Usar sintaxe v8 do Firebase
+            const userDocRef = db.collection('users').doc(user.uid);
+            const userDoc = await userDocRef.get();
             
-            // Nome
-            if (user.isAnonymous) {
-                nameElement.textContent = userData?.username || 'Usuário Convidado';
-            } else {
-                nameElement.textContent = userData?.username || user.displayName || 'Usuário';
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                
+                // Nome
+                if (user.isAnonymous) {
+                    nameElement.textContent = userData?.username || 'Usuário Convidado';
+                } else {
+                    nameElement.textContent = userData?.username || user.displayName || 'Usuário';
+                }
+                
+                // Status/Recado
+                statusElement.textContent = userData?.status || 'Olá! Eu estou usando o 7Chat.';
+                
+                // Telefone
+                phoneElement.textContent = userData?.phone || '+55 (11) 99999-9999';
+                
+                // Foto
+                if (userData?.photoURL) {
+                    picElement.src = userData.photoURL;
+                    picElement.classList.remove('hidden');
+                    iconElement.classList.add('hidden');
+                } else {
+                    picElement.classList.add('hidden');
+                    iconElement.classList.remove('hidden');
+                }
             }
-            
-            // Status/Recado
-            statusElement.textContent = userData?.status || 'Olá! Eu estou usando o 7Chat.';
-            
-            // Telefone
-            phoneElement.textContent = userData?.phone || '+55 (11) 99999-9999';
-            
-            // Foto
-            if (userData?.photoURL) {
-                picElement.src = userData.photoURL;
-                picElement.classList.remove('hidden');
-                iconElement.classList.add('hidden');
-            } else {
-                picElement.classList.add('hidden');
-                iconElement.classList.remove('hidden');
-            }        } catch (error) {
+        } catch (error) {
             console.error('Erro ao carregar dados do perfil detalhado:', error);
         }
     }
@@ -2742,54 +2788,67 @@
                 namePreview.classList.add(`name-effect-${effect}`);
             }
         }
-        
-        // Carregar efeito atual do usuário
+          // Função para carregar efeito atual do usuário - VERSÃO CORRIGIDA V8
         async function loadUserCurrentEffect() {
             try {
-                const user = auth.currentUser;
-                if (user) {
-                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (!currentUser) {
+                    console.log('❌ Usuário não logado');
+                    return;
+                }
+                
+                console.log('🎨 Carregando efeito atual do usuário...');
+                
+                // Usar sintaxe v8 do Firebase
+                const userDocRef = db.collection('users').doc(currentUser.uid);
+                const userDoc = await userDocRef.get();
+                
+                if (userDoc.exists) {
                     const userData = userDoc.data();
-                    const currentEffect = userData?.nameEffect || 'none';
+                    const currentEffect = userData.nameEffect || 'none';
                     
-                    selectedEffect = currentEffect;
+                    console.log('✅ Efeito atual carregado:', currentEffect);
                     
-                    // Selecionar a opção correta
+                    // Limpar seleções anteriores
                     document.querySelectorAll('.effect-radio').forEach(radio => {
                         radio.classList.remove('selected');
                     });
                     
-                    const currentOption = document.querySelector(`[data-effect="${currentEffect}"]`);
-                    if (currentOption) {
-                        currentOption.querySelector('.effect-radio').classList.add('selected');
+                    // Marcar o efeito atual como selecionado
+                    const currentRadio = document.querySelector(`input[name="nameEffect"][value="${currentEffect}"]`);
+                    if (currentRadio) {
+                        currentRadio.checked = true;
+                        currentRadio.closest('.effect-radio').classList.add('selected');
                     }
                     
-                    updateNamePreview(currentEffect);
+                } else {
+                    console.log('⚠️ Documento do usuário não encontrado');
                 }
+                
             } catch (error) {
-                console.error('Erro ao carregar efeito atual:', error);
+                console.error('❌ Erro ao carregar efeito atual:', error);
             }
         }
-    }
-
-    // Função para aplicar efeito do nome em toda a interface
+    }    // Função para aplicar efeito de nome na interface
     function applyNameEffectToInterface(effect) {
-        const nameElements = [
-            document.getElementById('settings-user-name'),
-            document.getElementById('settings-display-name')
-        ];
-        
-        nameElements.forEach(element => {
-            if (element) {
-                // Remover todas as classes de efeito
+        try {
+            // Encontrar todos os elementos que mostram o nome do usuário
+            const nameElements = document.querySelectorAll('[data-user-name], .user-display-name, #settings-user-name');
+            
+            nameElements.forEach(element => {
+                // Remover classes de efeito existentes
                 element.className = element.className.replace(/name-effect-\w+/g, '');
                 
-                // Adicionar nova classe de efeito
-                if (effect !== 'none') {
+                // Adicionar novo efeito se não for 'none'
+                if (effect && effect !== 'none') {
                     element.classList.add(`name-effect-${effect}`);
                 }
-            }
-        });
+            });
+            
+            console.log('✅ Efeito de nome aplicado:', effect);
+            
+        } catch (error) {
+            console.error('❌ Erro ao aplicar efeito de nome:', error);
+        }
     }
 
     // Função para atualizar nome na interface
@@ -2910,33 +2969,96 @@
                 bannerPreviewBg.classList.add(`name-banner-${banner}`);
             }
         }
-        
-        // Carregar banner atual do usuário
+          // Função para carregar banner atual do usuário - VERSÃO CORRIGIDA V8
         async function loadUserCurrentBanner() {
             try {
-                const user = auth.currentUser;
-                if (user) {
-                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (!currentUser) {
+                    console.log('❌ Usuário não logado');
+                    return;
+                }
+                
+                console.log('🎨 Carregando banner atual do usuário...');
+                
+                // Usar sintaxe v8 do Firebase
+                const userDocRef = db.collection('users').doc(currentUser.uid);
+                const userDoc = await userDocRef.get();
+                
+                if (userDoc.exists) {
                     const userData = userDoc.data();
-                    const currentBanner = userData?.userBanner || 'none';
+                    const currentBanner = userData.nameBanner || 'none';
                     
-                    selectedBanner = currentBanner;
+                    console.log('✅ Banner atual carregado:', currentBanner);
                     
-                    // Selecionar a opção correta
+                    // Limpar seleções anteriores
                     document.querySelectorAll('.banner-radio').forEach(radio => {
                         radio.classList.remove('selected');
                     });
                     
-                    const currentOption = document.querySelector(`[data-banner="${currentBanner}"]`);
-                    if (currentOption) {
-                        currentOption.querySelector('.banner-radio').classList.add('selected');
+                    // Marcar o banner atual como selecionado
+                    const currentRadio = document.querySelector(`input[name="nameBanner"][value="${currentBanner}"]`);
+                    if (currentRadio) {
+                        currentRadio.checked = true;
+                        currentRadio.closest('.banner-radio').classList.add('selected');
                     }
                     
-                    updateBannerPreview(currentBanner);
+                } else {
+                    console.log('⚠️ Documento do usuário não encontrado');
                 }
+                
             } catch (error) {
-                console.error('Erro ao carregar banner atual:', error);
+                console.error('❌ Erro ao carregar banner atual:', error);
+            }        }
+    }
+
+    // Função para salvar efeito de nome - VERSÃO CORRIGIDA V8
+    async function saveNameEffect(effect) {
+        try {
+            if (!currentUser) {
+                console.log('❌ Usuário não logado');
+                return;
             }
+            
+            console.log('💾 Salvando efeito de nome:', effect);
+            
+            // Usar sintaxe v8 do Firebase
+            const userDocRef = db.collection('users').doc(currentUser.uid);
+            await userDocRef.update({
+                nameEffect: effect,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            console.log('✅ Efeito salvo com sucesso!');
+            showNotification('Efeito de nome salvo!', 'success');
+            
+        } catch (error) {
+            console.error('❌ Erro ao salvar efeito:', error);
+            showNotification('Erro ao salvar efeito', 'error');
+        }
+    }
+
+    // Função para salvar banner de nome - VERSÃO CORRIGIDA V8
+    async function saveNameBanner(banner) {
+        try {
+            if (!currentUser) {
+                console.log('❌ Usuário não logado');
+                return;
+            }
+            
+            console.log('💾 Salvando banner de nome:', banner);
+            
+            // Usar sintaxe v8 do Firebase
+            const userDocRef = db.collection('users').doc(currentUser.uid);
+            await userDocRef.update({
+                nameBanner: banner,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            console.log('✅ Banner salvo com sucesso!');
+            showNotification('Banner de nome salvo!', 'success');
+            
+        } catch (error) {
+            console.error('❌ Erro ao salvar banner:', error);
+            showNotification('Erro ao salvar banner', 'error');
         }
     }
 
