@@ -245,16 +245,18 @@
     import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- CONFIGURAÇÃO DO FIREBASE ---    const firebaseConfig = {
+    // --- CONFIGURAÇÃO DO FIREBASE ---
+    const firebaseConfig = {
         apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
         authDomain: "seu-projeto-chat.firebaseapp.com",
+        databaseURL: "https://seu-projeto-chat-default-rtdb.firebaseio.com",
         projectId: "seu-projeto-chat",
         storageBucket: "seu-projeto-chat.firebasestorage.app",
         messagingSenderId: "259194791953",
         appId: "1:259194791953:web:587ea979f1f26aff2629b0"
     };
 
-    // ADICIONAR após linha 256:
+    // DEBUG - Firebase Config
     console.log('🔧 Firebase Config:', firebaseConfig);
     console.log('🔧 AuthDomain:', firebaseConfig.authDomain);
 
