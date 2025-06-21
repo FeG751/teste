@@ -2445,10 +2445,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('📱 7Chat carregado!');
     
     // Aguardar que tudo carregue
-    setTimeout(() => {
-        try {
-            if (!conversationManager) {
-                conversationManager = new ConversationManager();
+    setTimeout(() => {        try {
+            if (!window.conversationManager) {
+                window.conversationManager = new ConversationManager();
                 conversationManager.init();
             }
         } catch (error) {
@@ -2481,21 +2480,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function bindUI() {
         console.log('🔧 Configurando event listeners...');
-        
-        // Login
+          // Login
         const loginForm = document.getElementById('login-form');
         if (loginForm) {
-            loginForm.addEventListener('submit', handleLogin);
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email-input').value;
+                const password = document.getElementById('password-input').value;
+                if (!email || !password) {
+                    alert('Por favor, preencha todos os campos.');
+                    return;
+                }
+                currentUser = {
+                    email: email,
+                    name: email.split('@')[0],
+                    photoURL: null,
+                    isGuest: false
+                };
+                showMainApp();
+            });
             console.log('✅ Formulário de login configurado');
         } else {
             console.error('❌ Formulário de login não encontrado!');
         }
-        
-        const guestBtn = document.getElementById('main-guest-login-btn');
+          const guestBtn = document.getElementById('main-guest-login-btn');
         if (guestBtn) {
-            guestBtn.addEventListener('click', () => {
-                console.log('🔄 Tentando login como convidado...');
-                auth.signInAnonymously();
+            guestBtn.addEventListener('click', function() {
+                currentUser = {
+                    email: 'convidado@7chat.com',
+                    name: 'Convidado',
+                    photoURL: null,
+                    isGuest: true
+                };
+                showMainApp();
             });
             console.log('✅ Botão de convidado configurado');
         } else {
