@@ -690,9 +690,8 @@
 #photo-viewer-modal {
     position: fixed !important;
     top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;    height: 100vh !important;
-    background: rgba(0, 0, 0, 0.9) !important;
+    left: 0 !important;    width: 100% !important;    height: 100vh !important;
+    background: transparent !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     z-index: 10000 !important;
@@ -729,29 +728,28 @@
 /* Botão X elegante ao lado */
 #close-photo-viewer-btn {
     position: absolute !important;
-    top: 20px !important;
-    right: -60px !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    top: 12px !important;
+    right: 12px !important;
+    background: rgba(31, 41, 55, 0.85) !important; /* cinza escuro opaco, bom contraste */
+    border: none !important;
     border-radius: 50% !important;
     width: 44px !important;
     height: 44px !important;
-    color: white !important;
-    font-size: 20px !important;
+    color: #fff !important;
+    font-size: 22px !important;
     font-weight: bold !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    z-index: 11 !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
 #close-photo-viewer-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    transform: scale(1.1) !important;
+    background: #4f46e5 !important;
+    color: #fff !important;
+    transform: scale(1.08) !important;
 }
 
 @keyframes photoZoomIn {
@@ -779,16 +777,18 @@
 /* Responsividade para mobile */
 @media (max-width: 768px) {
     #photo-viewer-modal img {
-        width: 240px !important;
-        height: 240px !important;
+        width: 80vw !important;
+        height: 80vw !important;
+        max-width: 240px !important;
+        max-height: 240px !important;
     }
-    
     #close-photo-viewer-btn {
-        top: 10px !important;
-        right: -50px !important;
-        width: 40px !important;
-        height: 40px !important;
+        top: 8px !important;
+        right: 8px !important;
+        width: 36px !important;
+        height: 36px !important;
         font-size: 18px !important;
+        z-index: 12 !important;
     }
 }
 
