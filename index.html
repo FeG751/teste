@@ -686,40 +686,68 @@
     z-index: 9999 !important;
 }
 
-/* Modal de visualização de imagem */
+/* Modal de visualização de imagem - FORMATO OVAL */
 #image-viewer-modal {
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
     animation: fadeInViewer 0.3s ease-out;
 }
 
+#image-viewer-modal .image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
 #image-viewer-modal img {
-    max-width: 90vw;
-    max-height: 90vh;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-/* Animação de entrada */
+/* Versão maior para mobile */
+@media (max-width: 768px) {
+    #image-viewer-modal .image-container {
+        width: 250px;
+        height: 250px;
+    }
+}
+
+/* Animação de entrada melhorada */
 @keyframes fadeInViewer {
     from { 
         opacity: 0; 
         backdrop-filter: blur(0px);
+        transform: scale(0.8);
     }
     to { 
         opacity: 1; 
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(15px);
+        transform: scale(1);
     }
 }
 
-/* Botão de fechar responsivo */
+/* Botão de fechar melhorado */
 #close-image-viewer-btn {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     border-radius: 50%;
-    padding: 8px;
+    padding: 12px;
     backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
 }
 
 #close-image-viewer-btn:hover {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
 }
 
 /* Mobile específico */
@@ -728,18 +756,13 @@
         padding: 0;
     }
     
-    #image-viewer-modal img {
-        max-width: 100vw;
-        max-height: 100vh;
-    }
-    
     #close-image-viewer-btn {
-        top: max(16px, env(safe-area-inset-top, 16px));
-        right: 16px;
+        top: max(20px, env(safe-area-inset-top, 20px));
+        right: 20px;
     }
 }
 
-/* Foto de perfil clicável nas configurações */
+/* Foto de perfil clicável nas configurações - SEM LUPA */
 #settings-user-pic {
     cursor: pointer;
     transition: transform 0.2s ease, opacity 0.2s ease;
@@ -747,39 +770,16 @@
 
 #settings-user-pic:hover {
     transform: scale(1.05);
-    opacity: 0.9;
+    opacity: 0.85;
 }
 
 #settings-user-pic:not(.hidden) {
     cursor: pointer;
 }
 
-/* Indicador visual de que é clicável */
+/* Container simples sem lupa */
 .settings-user-pic-container {
     position: relative;
-}
-
-.settings-user-pic-container::after {
-    content: '🔍';
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: rgba(59, 130, 246, 0.9);
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-}
-
-.settings-user-pic-container:hover::after {
-    opacity: 1;
 }
 </style>
 </head>
@@ -1243,23 +1243,23 @@
     </div>
 </div>
 
-<!-- Modal de Visualização da Imagem -->
+<!-- Modal de Visualização da Imagem - FORMATO OVAL -->
 <div id="image-viewer-modal" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[100]">
     <div class="relative w-full h-full flex items-center justify-center p-4">
         <!-- Botão Fechar -->
-        <button id="close-image-viewer-btn" class="absolute top-4 right-4 text-white hover:text-gray-300 z-20">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="close-image-viewer-btn" class="absolute top-6 right-6 text-white hover:text-gray-300 z-20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
         
-        <!-- Imagem -->
-        <div class="max-w-full max-h-full flex items-center justify-center">
-            <img id="viewer-image" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Foto do perfil">
+        <!-- Container da Imagem Oval -->
+        <div class="image-container">
+            <img id="viewer-image" alt="Foto do perfil">
         </div>
         
         <!-- Indicador de toque para fechar (mobile) -->
-        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm opacity-75">
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white text-sm opacity-75 bg-black bg-opacity-50 px-4 py-2 rounded-full">
             Toque para fechar
         </div>
     </div>
@@ -2396,39 +2396,61 @@
         }
     }
 
-    // NOVA FUNÇÃO - Inicializar visualizador de imagem
+    // NOVA FUNÇÃO - Inicializar visualizador de imagem    // FUNÇÃO CORRIGIDA - Inicializar visualizador de imagem
     function initializeImageViewer() {
         const imageViewerModal = document.getElementById('image-viewer-modal');
         const viewerImage = document.getElementById('viewer-image');
         const closeViewerBtn = document.getElementById('close-image-viewer-btn');
         const settingsUserPic = document.getElementById('settings-user-pic');
         
+        console.log('🖼️ Inicializando visualizador de imagem...');
+        console.log('Modal encontrado:', !!imageViewerModal);
+        console.log('Imagem encontrada:', !!viewerImage);
+        console.log('Foto do usuário encontrada:', !!settingsUserPic);
+        
         // Função para abrir visualizador
         function openImageViewer(imageSrc) {
-            if (imageSrc && !imageSrc.includes('placeholder') && !imageSrc.includes('default')) {
+            console.log('📸 Tentando abrir imagem:', imageSrc);
+            
+            if (imageSrc && !imageSrc.includes('placeholder') && !imageSrc.includes('default') && imageSrc.trim() !== '') {
                 viewerImage.src = imageSrc;
                 imageViewerModal.classList.remove('hidden');
-                
-                // Prevenir scroll do body
                 document.body.style.overflow = 'hidden';
+                
+                console.log('✅ Modal aberto com sucesso');
+            } else {
+                console.log('❌ Imagem inválida ou não encontrada');
+                showNotification('Nenhuma imagem para visualizar', 'error');
             }
         }
         
         // Função para fechar visualizador
         function closeImageViewer() {
+            console.log('❌ Fechando visualizador');
             imageViewerModal.classList.add('hidden');
-            
-            // Restaurar scroll do body
             document.body.style.overflow = '';
         }
         
         // Clique na foto de perfil nas configurações
-        settingsUserPic?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (!settingsUserPic.classList.contains('hidden')) {
-                openImageViewer(settingsUserPic.src);
-            }
-        });
+        if (settingsUserPic) {
+            settingsUserPic.addEventListener('click', (e) => {
+                e.stopPropagation();
+                console.log('🖱️ Clique na foto detectado');
+                console.log('Foto está oculta?', settingsUserPic.classList.contains('hidden'));
+                console.log('Src da imagem:', settingsUserPic.src);
+                
+                if (!settingsUserPic.classList.contains('hidden') && settingsUserPic.src) {
+                    openImageViewer(settingsUserPic.src);
+                } else {
+                    console.log('❌ Foto está oculta ou sem src');
+                    showNotification('Nenhuma foto de perfil disponível', 'error');
+                }
+            });
+            
+            console.log('✅ Event listener adicionado à foto');
+        } else {
+            console.error('❌ Foto de perfil não encontrada!');
+        }
         
         // Clique no botão fechar
         closeViewerBtn?.addEventListener('click', closeImageViewer);
@@ -2447,10 +2469,11 @@
             }
         });
         
-        // Toque na imagem para fechar (mobile)
-        viewerImage?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            closeImageViewer();
+        // Toque no modal para fechar (mobile)
+        imageViewerModal?.addEventListener('click', (e) => {
+            if (e.target === imageViewerModal || e.target.closest('.image-container')) {
+                closeImageViewer();
+            }
         });
     }
 
