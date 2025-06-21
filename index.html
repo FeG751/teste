@@ -1593,8 +1593,7 @@
             const editNameOption = document.getElementById('settings-edit-name-option');
             const editStatusOption = document.getElementById('settings-edit-status-option');            const nameEffectsOption = document.getElementById('settings-name-effects-option');
             const logoutOption = document.getElementById('logout-option');
-            
-            // DEBUG: Capturar todos os cliques no modal de configurações
+              // DEBUG: Capturar todos os cliques no modal de configurações
             settingsModal?.addEventListener('click', function(e) {
                 console.log('🎯 CLIQUE no modal de configurações:', {
                     target: e.target,
@@ -1602,18 +1601,22 @@
                     targetClass: e.target.className,
                     targetTagName: e.target.tagName
                 });
+                
+                // Ignorar cliques na foto e seus elementos filhos
+                if (e.target.closest('#settings-photo-container')) {
+                    console.log('🚫 Clique na foto ignorado pelo listener geral');
+                    return;
+                }
+                
+                // Fechar modal se clicar fora
+                if (e.target === settingsModal) {
+                    settingsModal.classList.add('hidden');
+                }
             });
             
             // Fechar modal de configurações
             closeSettingsBtn?.addEventListener('click', () => {
                 settingsModal.classList.add('hidden');
-            });
-            
-            // Fechar clicando fora
-            settingsModal?.addEventListener('click', (e) => {
-                if (e.target === settingsModal) {
-                    settingsModal.classList.add('hidden');
-                }
             });
               // Abrir modal de edição de nome
             editNameOption?.addEventListener('click', function(e) {
@@ -2537,8 +2540,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('❌ closePhotoViewer() chamada');
         photoViewerModal.classList.add('hidden');
         document.body.style.overflow = 'auto';    }
-    
-    // Event listener para abrir o modal quando clicar na foto das configurações
+      // Event listener para abrir o modal quando clicar na foto das configurações
     const settingsUserPhotoContainer = document.getElementById('settings-photo-container');
     console.log('🎯 settingsUserPhotoContainer encontrado:', settingsUserPhotoContainer);
 
@@ -2546,6 +2548,7 @@ document.addEventListener('DOMContentLoaded', function() {
         settingsUserPhotoContainer.addEventListener('click', function(e) {
             console.log('🔥 CLIQUE na foto das configurações detectado!', e);
             e.stopPropagation(); // Impedir propagação do evento
+            e.preventDefault(); // Impedir comportamento padrão
             openPhotoViewer();
         });
         console.log('✅ Event listener da foto adicionado');
