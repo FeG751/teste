@@ -1044,9 +1044,13 @@
 </div>
 
 <!-- Modal de Visualização da Foto -->
-<div id="photo-viewer-modal" class="modal">
+<div id="photo-viewer-modal" class="modal hidden">
     <div class="modal-content flex items-center justify-center relative">
-        <img src="" alt="Perfil">
+        <img id="photo-viewer-image" src="" alt="Perfil" class="hidden">
+        <svg id="photo-viewer-icon" class="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+        <div id="photo-viewer-username" class="absolute bottom-4 text-white font-medium text-lg hidden">Usuário</div>
         <button id="close-photo-viewer-btn" type="button">&times;</button>
     </div>
 </div>
