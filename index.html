@@ -113,7 +113,7 @@
     }
 
     /* Estilos dos modais em tela cheia com safe area */
-    #profile-modal, #edit-name-modal, #settings-modal, #user-profile-detail-modal {
+    #profile-modal, #edit-name-modal, #edit-recado-modal, #settings-modal, #user-profile-detail-modal {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -549,6 +549,7 @@
         initializeSettings();
         initializeProfile();
         initializeEditName();
+        initializeEditRecado();
         initializeProfileDetail();
 
         // Renderizar conversas vazias inicialmente
@@ -708,10 +709,23 @@
         function initializeSettings() {
             const settingsModal = document.getElementById('settings-modal');
             const closeSettingsBtn = document.getElementById('close-settings-btn');
+            const logoutBtn = document.getElementById('logout-btn');
             
             // Fechar modal de configurações
             closeSettingsBtn?.addEventListener('click', () => {
                 settingsModal.classList.add('hidden');
+            });
+            
+            // Logout
+            logoutBtn?.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    settingsModal.classList.add('hidden');
+                    showNotification('Logout realizado com sucesso!', 'info');
+                } catch (error) {
+                    console.error('Erro ao fazer logout:', error);
+                    showNotification('Erro ao fazer logout.', 'error');
+                }
             });
             
             // Fechar clicando fora
@@ -938,6 +952,9 @@
                         showNotification('Nome atualizado com sucesso!', 'info');
                         updateProfileModal();
                         updateSettingsUserInfo();
+                        updateProfileDetail();
+                        // Reabrir o modal de perfil detalhado
+                        document.getElementById('user-profile-detail-modal').classList.remove('hidden');
                     }
                 } catch (error) {
                     console.error('Erro ao atualizar nome:', error);
@@ -945,20 +962,19 @@
                 }
             }
         });
-          // Cancelar edição
+        // Cancelar edição
         cancelEditNameBtn?.addEventListener('click', () => {
             editNameModal.classList.add('hidden');
-        });
-        
-        // Adicionar event listener para o segundo botão cancelar
-        document.getElementById('cancel-edit-name-btn-2')?.addEventListener('click', () => {
-            editNameModal.classList.add('hidden');
+            // Reabrir o modal de perfil detalhado
+            document.getElementById('user-profile-detail-modal').classList.remove('hidden');
         });
         
         // Fechar clicando fora
         editNameModal?.addEventListener('click', (e) => {
             if (e.target === editNameModal) {
                 editNameModal.classList.add('hidden');
+                // Reabrir o modal de perfil detalhado
+                document.getElementById('user-profile-detail-modal').classList.remove('hidden');
             }
         });
         
@@ -974,12 +990,79 @@
     function openEditNameModal() {
         const editNameModal = document.getElementById('edit-name-modal');
         const editNameInput = document.getElementById('edit-name-input');
-        const profileModalName = document.getElementById('profile-modal-name');
+        const profileDetailName = document.getElementById('profile-detail-name');
         
         // Preencher com nome atual
-        editNameInput.value = profileModalName.textContent;
+        editNameInput.value = profileDetailName.textContent;
         editNameModal.classList.remove('hidden');
         setTimeout(() => editNameInput.focus(), 100);
+    }
+
+    function openEditRecadoModal() {
+        const editRecadoModal = document.getElementById('edit-recado-modal');
+        const editRecadoInput = document.getElementById('edit-recado-input');
+        const profileDetailStatus = document.getElementById('profile-detail-status');
+        
+        // Preencher com recado atual
+        editRecadoInput.value = profileDetailStatus.textContent;
+        editRecadoModal.classList.remove('hidden');
+        setTimeout(() => editRecadoInput.focus(), 100);
+    }
+
+    // Inicializar modal de edição de recado
+    function initializeEditRecado() {
+        const editRecadoModal = document.getElementById('edit-recado-modal');
+        const saveRecadoBtn = document.getElementById('save-recado-btn');
+        const cancelEditRecadoBtn = document.getElementById('cancel-edit-recado-btn');
+        const editRecadoInput = document.getElementById('edit-recado-input');
+        
+        // Salvar recado
+        saveRecadoBtn?.addEventListener('click', async () => {
+            const newRecado = editRecadoInput.value.trim();
+            if (newRecado) {
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await setDoc(doc(db, 'users', user.uid), {
+                            status: newRecado
+                        }, { merge: true });
+                        
+                        editRecadoModal.classList.add('hidden');
+                        showNotification('Recado atualizado com sucesso!', 'info');
+                        updateSettingsUserInfo();
+                        updateProfileDetail();
+                        // Reabrir o modal de perfil detalhado
+                        document.getElementById('user-profile-detail-modal').classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar recado:', error);
+                    showNotification('Erro ao atualizar recado.', 'error');
+                }
+            }
+        });
+        
+        // Cancelar edição
+        cancelEditRecadoBtn?.addEventListener('click', () => {
+            editRecadoModal.classList.add('hidden');
+            // Reabrir o modal de perfil detalhado
+            document.getElementById('user-profile-detail-modal').classList.remove('hidden');
+        });
+        
+        // Fechar clicando fora
+        editRecadoModal?.addEventListener('click', (e) => {
+            if (e.target === editRecadoModal) {
+                editRecadoModal.classList.add('hidden');
+                // Reabrir o modal de perfil detalhado
+                document.getElementById('user-profile-detail-modal').classList.remove('hidden');
+            }
+        });
+        
+        // Enter para salvar
+        editRecadoInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveRecadoBtn.click();
+            }
+        });
     }
 
     // Atualizar modal de perfil
@@ -1025,6 +1108,7 @@
         const backBtn = document.getElementById('back-from-profile-detail-btn');
         const editPhotoBtn = document.getElementById('edit-photo-btn');
         const editNameSection = document.getElementById('edit-name-section');
+        const editStatusSection = document.getElementById('edit-status-section');
         const photoUploadInput = document.getElementById('photo-upload-input');
         
         // Abrir tela de perfil detalhado
@@ -1051,6 +1135,12 @@
             openEditNameModal();
         });
         
+        // Editar recado
+        editStatusSection?.addEventListener('click', () => {
+            profileDetailModal.classList.add('hidden');
+            openEditRecadoModal();
+        });
+        
         // Fechar clicando fora
         profileDetailModal?.addEventListener('click', (e) => {
             if (e.target === profileDetailModal) {
@@ -1067,7 +1157,6 @@
         
         const nameElement = document.getElementById('profile-detail-name');
         const statusElement = document.getElementById('profile-detail-status');
-        const phoneElement = document.getElementById('profile-detail-phone');
         const picElement = document.getElementById('profile-detail-pic');
         const iconElement = document.getElementById('profile-detail-icon');
         
@@ -1084,9 +1173,6 @@
             
             // Status/Recado
             statusElement.textContent = userData?.status || 'Olá! Eu estou usando o 7Chat.';
-            
-            // Telefone
-            phoneElement.textContent = userData?.phone || '+55 (11) 99999-9999';
             
             // Foto
             if (userData?.photoURL) {
@@ -1141,6 +1227,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h4v4H4V4zm16 0h4v4h-4V4zm0 16h4v4h-4v-4zM4 16h4v4H4v-4z"></path>
                     </svg>
                 </div>
+            </div>
+            <!-- Botão de Sair -->
+            <div class="mt-4 pt-4 border-t border-gray-600">
+                <button id="logout-btn" class="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Sair</span>
+                </button>
             </div>
         </div>
     </div>
@@ -1225,24 +1320,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>
-                <div class="profile-detail-section flex items-center justify-between" id="edit-phone-section">
-                    <div class="flex-1">
-                        <div class="profile-detail-label">Número de telefone</div>
-                        <div id="profile-detail-phone" class="profile-detail-value">+55 (11) 99999-9999</div>
-                    </div>
-                    <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </div>
-                <div class="profile-detail-section flex items-center justify-between" id="edit-links-section">
-                    <div class="flex-1">
-                        <div class="profile-detail-label">Links</div>
-                        <div class="text-green-400 font-medium">Adicionar links</div>
-                    </div>
-                    <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </div>
             </div>
         </div>
     </div>
@@ -1250,21 +1327,38 @@
 
 <!-- Modal de Edição de Nome -->
 <div id="edit-name-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] p-4">
-    <div class="modal-content bg-gray-800 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
-        <div class="modal-header flex justify-between items-center p-4">
-            <h3 class="text-xl font-bold text-white">Editar Nome</h3>
-            <button id="cancel-edit-name-btn" class="text-gray-500 hover:text-gray-300 text-2xl" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">&times;</button>
+    <div class="modal-content bg-gray-900 w-full max-w-md border-0">
+        <div class="modal-header flex items-center justify-between p-4 bg-gray-800">
+            <button id="cancel-edit-name-btn" class="text-white font-medium hover:text-gray-300 transition-colors" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">
+                Cancelar
+            </button>
+            <h3 class="text-xl font-semibold text-white">Nome</h3>
+            <button id="save-name-btn" class="text-blue-400 font-medium hover:text-blue-300 transition-colors" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">
+                Salvar
+            </button>
         </div>
-        <div class="p-6 space-y-6">
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-400">Nome:</label>
-                <input type="text" id="edit-name-input" placeholder="Digite seu nome..." class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" maxlength="30"/>
-                <p class="text-xs text-gray-500">Máximo 30 caracteres</p>
-            </div>
-            <div class="flex space-x-3">
-                <button id="cancel-edit-name-btn-2" class="flex-1 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300 font-medium">Cancelar</button>
-                <button id="save-name-btn" class="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 font-medium">Salvar</button>
-            </div>
+        <div class="p-6">
+            <input type="text" id="edit-name-input" placeholder="Digite seu nome..." class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" maxlength="30"/>
+            <p class="text-xs text-gray-500 mt-2">Máximo 30 caracteres</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição de Recado -->
+<div id="edit-recado-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] p-4">
+    <div class="modal-content bg-gray-900 w-full max-w-md border-0">
+        <div class="modal-header flex items-center justify-between p-4 bg-gray-800">
+            <button id="cancel-edit-recado-btn" class="text-white font-medium hover:text-gray-300 transition-colors" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">
+                Cancelar
+            </button>
+            <h3 class="text-xl font-semibold text-white">Recado</h3>
+            <button id="save-recado-btn" class="text-blue-400 font-medium hover:text-blue-300 transition-colors" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">
+                Salvar
+            </button>
+        </div>
+        <div class="p-6">
+            <input type="text" id="edit-recado-input" placeholder="Digite seu recado..." class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" maxlength="100"/>
+            <p class="text-xs text-gray-500 mt-2">Máximo 100 caracteres</p>
         </div>
     </div>
 </div>
