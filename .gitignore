@@ -1,0 +1,39 @@
+# Firebase configuration with actual credentials
+# Keep firebase-config.js out of version control to protect your Firebase credentials
+# Uncomment the line below after you configure your Firebase settings:
+# firebase-config.js
+
+# Node modules (if any)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+tmp/
+*.tmp
