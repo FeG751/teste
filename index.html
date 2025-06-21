@@ -2533,6 +2533,123 @@
 <input type="file" id="photo-upload-input" accept="image/*" class="hidden">
 
 <script>
+// DEPURAÇÃO 1: Verificar se o modal existe no DOM
+console.log('🔍 DEPURAÇÃO - Verificando elementos do modal:');
+console.log('Modal exists:', document.getElementById('photo-viewer-modal'));
+console.log('Image exists:', document.getElementById('photo-viewer-image'));
+console.log('Icon exists:', document.getElementById('photo-viewer-icon'));
+console.log('Username exists:', document.getElementById('photo-viewer-username'));
+console.log('Close btn exists:', document.getElementById('close-photo-viewer-btn'));
+
+// DEPURAÇÃO 2: Verificar o clique na foto
+document.addEventListener('DOMContentLoaded', function() {
+    const photoContainer = document.getElementById('settings-photo-container');
+    
+    if (photoContainer) {
+        console.log('✅ Photo container encontrado!');
+        
+        photoContainer.addEventListener('click', function(e) {
+            console.log('🖱️ CLIQUE DETECTADO na foto!');
+            console.log('Event:', e);
+            
+            // Verificar se a função openPhotoViewer existe
+            if (typeof openPhotoViewer === 'function') {
+                console.log('✅ Função openPhotoViewer existe');
+                openPhotoViewer();
+            } else {
+                console.log('❌ Função openPhotoViewer NÃO existe');
+            }
+        });
+    } else {
+        console.log('❌ Photo container NÃO encontrado!');
+    }
+});
+
+// DEPURAÇÃO 3: Modificar a função openPhotoViewer para mais logs
+function openPhotoViewer() {
+    console.log('🔍 === INÍCIO openPhotoViewer ===');
+    
+    const photoViewerModal = document.getElementById('photo-viewer-modal');
+    console.log('Modal element:', photoViewerModal);
+    
+    if (!photoViewerModal) {
+        console.log('❌ ERRO: Modal não encontrado!');
+        return;
+    }
+    
+    // Verificar classes atuais
+    console.log('Classes atuais do modal:', photoViewerModal.className);
+    
+    // Tentar diferentes métodos para mostrar
+    console.log('🔄 Tentando remover classe hidden...');
+    photoViewerModal.classList.remove('hidden');
+    
+    console.log('🔄 Tentando adicionar classe show...');
+    photoViewerModal.classList.add('show');
+    
+    console.log('🔄 Tentando style.display...');
+    photoViewerModal.style.display = 'flex';
+    
+    console.log('🔄 Tentando z-index...');
+    photoViewerModal.style.zIndex = '99999';
+    
+    console.log('Classes após modificação:', photoViewerModal.className);
+    console.log('Style display:', photoViewerModal.style.display);
+    console.log('Style z-index:', photoViewerModal.style.zIndex);
+    
+    // Verificar se está visível
+    const computedStyle = window.getComputedStyle(photoViewerModal);
+    console.log('Computed display:', computedStyle.display);
+    console.log('Computed visibility:', computedStyle.visibility);
+    console.log('Computed z-index:', computedStyle.zIndex);
+    
+    console.log('🔍 === FIM openPhotoViewer ===');
+}
+
+// DEPURAÇÃO 4: Verificar se há conflitos de CSS
+function checkCSSConflicts() {
+    const modal = document.getElementById('photo-viewer-modal');
+    if (modal) {
+        const styles = window.getComputedStyle(modal);
+        console.log('🎨 CSS COMPUTED STYLES:');
+        console.log('Display:', styles.display);
+        console.log('Position:', styles.position);
+        console.log('Z-index:', styles.zIndex);
+        console.log('Top:', styles.top);
+        console.log('Left:', styles.left);
+        console.log('Width:', styles.width);
+        console.log('Height:', styles.height);
+        console.log('Background:', styles.backgroundColor);
+        console.log('Opacity:', styles.opacity);
+    }
+}
+
+// DEPURAÇÃO 5: Listar todos os elementos com z-index alto
+function checkZIndexConflicts() {
+    const allElements = document.querySelectorAll('*');
+    const highZIndex = [];
+    
+    allElements.forEach(el => {
+        const zIndex = window.getComputedStyle(el).zIndex;
+        if (zIndex !== 'auto' && parseInt(zIndex) > 1000) {
+            highZIndex.push({
+                element: el,
+                zIndex: zIndex,
+                id: el.id || 'sem-id',
+                classes: el.className
+            });
+        }
+    });
+    
+    console.log('🔍 ELEMENTOS COM Z-INDEX ALTO:', highZIndex);
+}
+
+// Execute essas funções para testar
+setTimeout(() => {
+    checkCSSConflicts();
+    checkZIndexConflicts();
+}, 2000);
+
 // Funcionalidade do Modal de Visualização da Foto
 document.addEventListener('DOMContentLoaded', function() {
     const photoViewerModal = document.getElementById('photo-viewer-modal');
