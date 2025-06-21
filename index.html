@@ -3558,6 +3558,7 @@ function setupNotificationsListener() {
 }
 
 // Função para aceitar solicitação de amizade - VERSÃO REAL
+// Função para aceitar solicitação de amizade - VERSÃO CORRIGIDA
 async function acceptFriendRequest(requestId) {
     try {
         console.log('✅ Aceitando solicitação:', requestId);
@@ -3575,22 +3576,23 @@ async function acceptFriendRequest(requestId) {
         const requestData = requestDoc.data();
         console.log('📋 Dados da solicitação:', requestData);
         
-        // Usar transação para garantir consistência
+        // Usar transação para garantir consistência - VERSÃO CORRIGIDA
         await db.runTransaction(async (transaction) => {
-            // 1. Atualizar status da solicitação
-            transaction.update(requestRef, {
-                status: 'accepted',
-                acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            // 2. Buscar dados dos usuários
+            // 1. PRIMEIRO: Fazer todas as LEITURAS
             const currentUserRef = db.collection('users').doc(currentUser.uid);
             const friendUserRef = db.collection('users').doc(requestData.from);
             
             const currentUserDoc = await transaction.get(currentUserRef);
             const friendUserDoc = await transaction.get(friendUserRef);
             
-            // 3. Adicionar como amigos mútuos
+            // 2. DEPOIS: Fazer todas as ESCRITAS
+            // Atualizar status da solicitação
+            transaction.update(requestRef, {
+                status: 'accepted',
+                acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Adicionar como amigos mútuos
             const currentUserData = currentUserDoc.data() || {};
             const friendUserData = friendUserDoc.data() || {};
             
