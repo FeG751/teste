@@ -1633,13 +1633,12 @@
     </div>
 </div>
 
-<script type="module">
-    // --- IMPORTAÇÕES ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    // --- CONFIGURAÇÃO DO FIREBASE ---
+<script>
+    // Firebase Configuration - VERSÃO CORRIGIDA
     const firebaseConfig = {
         apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
         authDomain: "seu-projeto-chat.firebaseapp.com",
@@ -1650,16 +1649,18 @@
         appId: "1:259194791953:web:587ea979f1f26aff2629b0"
     };
 
-    // DEBUG - Firebase Config
-    console.log('🔧 Firebase Config:', firebaseConfig);
-    console.log('🔧 AuthDomain:', firebaseConfig.authDomain);
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
 
-    // --- VARIÁVEIS GLOBAIS ---
-    let app, auth, db;
-    const state = { 
-        currentUserId: null, 
-        currentUserData: null
-    };
+    // Inicializar serviços
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Variáveis globais
+    let currentUser = null;
+    let unsubscribeAuth = null;
+
+    console.log('🔥 Firebase inicializado com sucesso!');
 
     // --- FUNÇÕES AUXILIARES ---
     function showNotification(message, type = 'info') {
@@ -1742,31 +1743,27 @@
         
         activeElement.classList.remove('text-gray-400');
         activeElement.classList.add('text-indigo-400', 'border-t-2', 'border-indigo-500');
-    }
-
-    // --- FUNÇÕES PRINCIPAIS ---
+    }    // --- FUNÇÕES PRINCIPAIS ---
     function main() {
         console.log('🚀 Inicializando aplicação...');
         
         try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);            console.log('✅ Firebase inicializado com sucesso');
+            console.log('✅ Firebase já inicializado com sucesso');
             
-            // DEBUG - Adicionar após linha 359
+            // DEBUG - Verificar elementos do DOM
             console.log('🔧 Debug - Elementos encontrados:');
             console.log('Login form:', document.getElementById('login-form'));
             console.log('Guest login btn:', document.getElementById('main-guest-login-btn'));
             console.log('Auth object:', auth);
-            
-            bindUI();
-            onAuthStateChanged(auth, handleAuthChange);
+              bindUI();
+            unsubscribeAuth = auth.onAuthStateChanged(handleAuthChange);
             
             console.log('✅ Event listeners configurados');
             
         } catch (error) {
-            console.error('❌ Erro ao inicializar Firebase:', error);
-            showNotification('Erro de conexão. Tente recarregar a página.', 'error');        }
+            console.error('❌ Erro ao inicializar aplicação:', error);
+            showNotification('Erro de conexão. Tente recarregar a página.', 'error');
+        }
     }
 
     function bindUI() {
@@ -1785,7 +1782,7 @@
         if (guestBtn) {
             guestBtn.addEventListener('click', () => {
                 console.log('🔄 Tentando login como convidado...');
-                signInAnonymously(auth);
+                auth.signInAnonymously();
             });
             console.log('✅ Botão de convidado configurado');
         } else {
@@ -2104,10 +2101,8 @@
                 
                 // Restaurar container das configurações
                 photoContainer.innerHTML = originalContent;
-                
-                // Salvar no Firestore
-                const userRef = doc(db, 'users', currentUser.uid);
-                await updateDoc(userRef, {
+                  // Salvar no Firestore
+                await db.collection('users').doc(currentUser.uid).update({
                     photoURL: resizedImage,
                     updatedAt: new Date()
                 });
@@ -2207,9 +2202,8 @@
             });
             
             // Logout
-            logoutOption?.addEventListener('click', async () => {
-                try {
-                    await signOut(auth);
+            logoutOption?.addEventListener('click', async () => {                try {
+                    await auth.signOut();
                     settingsModal.classList.add('hidden');
                     showNotification('Logout realizado com sucesso!', 'info');
                 } catch (error) {
@@ -2229,9 +2223,8 @@
             const userPicElement = document.getElementById('settings-user-pic');
             const userIconElement = document.getElementById('settings-user-icon');
             
-            try {
-                // Buscar dados do usuário no Firebase
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
+            try {                // Buscar dados do usuário no Firebase
+                const userDoc = await db.collection('users').doc(user.uid).get();
                 const userData = userDoc.data();
                 
                 // Nome do usuário
@@ -2256,12 +2249,11 @@
                 console.error('Erro ao carregar dados do usuário:', error);
             }
         }        // Carregar dados do usuário após login
-        async function loadUserDataOnLogin() {
-            const user = auth.currentUser;
+        async function loadUserDataOnLogin() {            const user = auth.currentUser;
             if (!user) return;
             
             try {
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userDoc = await db.collection('users').doc(user.uid).get();
                 const userData = userDoc.data();
                 
                 // Carregar foto salva
@@ -2298,23 +2290,22 @@
             console.log('📧 Email:', email);
             console.log('🔑 Senha fornecida:', password ? 'Sim' : 'Não');
             
-            const result = await signInWithEmailAndPassword(auth, email, password);
+            const result = await auth.signInWithEmailAndPassword(email, password);
             console.log('✅ Login realizado com sucesso:', result.user.uid);
             
         } catch (err) {
             console.error('❌ Erro no login:', err);
             showNotification("Falha no login: " + err.message, "error");
         }
-    }async function handleAuthChange(user) {
+    }    async function handleAuthChange(user) {
         const bottomNav = document.getElementById('bottom-nav');
         
         if (user) {
-            state.currentUserId = user.uid;
+            currentUser = user;
             console.log('✅ Usuário logado:', user.uid);
-            
-            // Criar perfil se não existir
-            let userSnap = await getDoc(doc(db, 'users', user.uid));
-            if (!userSnap.exists()) {
+              // Criar perfil se não existir
+            let userSnap = await db.collection('users').doc(user.uid).get();
+            if (!userSnap.exists) {
                 await createUserProfile(user);
             }
               // Mostrar interface principal
@@ -2330,10 +2321,9 @@
             setTimeout(() => {
                 renderAllConversations();
             }, 500);
-            
-        } else {
+              } else {
             console.log('❌ Usuário não logado');
-            state.currentUserId = null;
+            currentUser = null;
             
             // Mostrar tela de login
             document.getElementById('app-container').classList.add('hidden');
@@ -2344,7 +2334,7 @@
             // Esconder navegação inferior
             bottomNav.classList.add('hidden');
         }
-    }    async function createUserProfile(user) {
+    }async function createUserProfile(user) {
         const baseProfile = { 
             uid: user.uid, 
             friends: [], 
@@ -2353,11 +2343,10 @@
         };
 
         if (user.isAnonymous) {
-            const guestName = await showCustomPrompt("Bem-vindo(a)!", "Para entrar, por favor, digite seu nome de convidado.");
-            if (!guestName) { 
-                await signOut(auth); 
+            const guestName = await showCustomPrompt("Bem-vindo(a)!", "Para entrar, por favor, digite seu nome de convidado.");            if (!guestName) { 
+                await auth.signOut(); 
                 throw new Error("Guest name not provided."); 
-            }            Object.assign(baseProfile, {
+            }Object.assign(baseProfile, {
                 username: `Convidado: ${guestName.trim()}`,
                 isGuest: true,
                 photoURL: null
@@ -2372,7 +2361,7 @@
             });
         }
         
-        await setDoc(doc(db, 'users', user.uid), baseProfile);
+        await db.collection('users').doc(user.uid).set(baseProfile);
         console.log('✅ Perfil de usuário criado');
     }
 
@@ -2568,9 +2557,8 @@
             const newName = editNameInput.value.trim();
             if (newName) {
                 try {
-                    const user = auth.currentUser;
-                    if (user) {
-                        await updateDoc(doc(db, 'users', user.uid), {
+                    const user = auth.currentUser;                    if (user) {
+                        await db.collection('users').doc(user.uid).update({
                             username: newName
                         });
                         
@@ -2620,9 +2608,8 @@
             const newStatus = editStatusInput.value.trim();
             if (newStatus) {
                 try {
-                    const user = auth.currentUser;
-                    if (user) {
-                        await updateDoc(doc(db, 'users', user.uid), {
+                    const user = auth.currentUser;                    if (user) {
+                        await db.collection('users').doc(user.uid).update({
                             status: newStatus
                         });
                         
@@ -2709,9 +2696,8 @@
         // Salvar efeito
         saveEffectsBtn?.addEventListener('click', async () => {
             try {
-                const user = auth.currentUser;
-                if (user) {
-                    await updateDoc(doc(db, 'users', user.uid), {
+                const user = auth.currentUser;                if (user) {
+                    await db.collection('users').doc(user.uid).update({
                         nameEffect: selectedEffect
                     });
                     
@@ -2881,9 +2867,8 @@
         // Salvar banner
         saveBannersBtn?.addEventListener('click', async () => {
             try {
-                const user = auth.currentUser;
-                if (user) {
-                    await updateDoc(doc(db, 'users', user.uid), {
+                const user = auth.currentUser;                if (user) {
+                    await db.collection('users').doc(user.uid).update({
                         userBanner: selectedBanner
                     });
                     
@@ -3411,11 +3396,11 @@ updateNotificationsBadge();
 let searchTimeout = null;
 let currentTab = 'online';
 
-// Função para buscar usuários reais no Firestore
-async function searchUsers(searchQuery) {
-    console.log('🔍 Buscando usuários reais por:', searchQuery);
+// Função para buscar usuários reais no Firestore - VERSÃO CORRIGIDA
+async function searchUsers(query) {
+    console.log('🔍 Buscando usuários reais por:', query);
     
-    if (!searchQuery.trim()) {
+    if (!query.trim()) {
         document.getElementById('search-initial-state').classList.remove('hidden');
         document.getElementById('search-no-results').classList.add('hidden'); 
         document.getElementById('search-results').innerHTML = '';
@@ -3426,29 +3411,25 @@ async function searchUsers(searchQuery) {
     document.getElementById('search-loading').classList.remove('hidden');
     
     try {
-        // Buscar usuários no Firestore
-        const usersRef = collection(db, 'users');
-        const searchQueryLower = searchQuery.toLowerCase();
+        // Buscar usuários no Firestore usando sintaxe v8
+        const usersRef = db.collection('users');
         
-        // Fazer múltiplas consultas para buscar por nome e email
-        const queryByDisplayName = query(
-            usersRef, 
-            where('displayName', '>=', searchQueryLower),
-            where('displayName', '<=', searchQueryLower + '\uf8ff'),
-            limit(20)
-        );
+        // Buscar por displayName
+        const queryByDisplayName = usersRef
+            .where('displayName', '>=', query.toLowerCase())
+            .where('displayName', '<=', query.toLowerCase() + '\uf8ff')
+            .limit(20);
         
-        const queryByEmail = query(
-            usersRef,
-            where('email', '>=', searchQueryLower),
-            where('email', '<=', searchQueryLower + '\uf8ff'),
-            limit(20)
-        );
+        // Buscar por email
+        const queryByEmail = usersRef
+            .where('email', '>=', query.toLowerCase())
+            .where('email', '<=', query.toLowerCase() + '\uf8ff')
+            .limit(20);
         
         // Executar ambas as consultas
         const [displayNameSnapshot, emailSnapshot] = await Promise.all([
-            getDocs(queryByDisplayName),
-            getDocs(queryByEmail)
+            queryByDisplayName.get(),
+            queryByEmail.get()
         ]);
         
         // Combinar resultados e remover duplicatas
@@ -3552,7 +3533,7 @@ function renderSearchResults(users) {
     }).join('');
 }
 
-// Função para enviar solicitação de amizade
+// Função para enviar solicitação de amizade - VERSÃO CORRIGIDA
 async function sendFriendRequest(targetUserId, targetUserName) {
     try {
         console.log('📤 Enviando solicitação de amizade para:', targetUserName);
@@ -3565,22 +3546,22 @@ async function sendFriendRequest(targetUserId, targetUserName) {
             to: targetUserId,
             toName: targetUserName,
             status: 'pending',
-            createdAt: new Date(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             type: 'friend_request'
         };
         
         // Salvar na coleção de friend_requests
-        await addDoc(collection(db, 'friend_requests'), friendRequestData);
+        await db.collection('friend_requests').add(friendRequestData);
         
         // Adicionar notificação para o usuário alvo
-        await addDoc(collection(db, 'notifications'), {
+        await db.collection('notifications').add({
             userId: targetUserId,
             type: 'friend_request',
             title: 'Nova solicitação de amizade',
             message: `${friendRequestData.fromName} quer ser seu amigo`,
             data: friendRequestData,
             read: false,
-            createdAt: new Date()
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
         console.log('✅ Solicitação enviada com sucesso!');
@@ -3628,14 +3609,27 @@ function switchTab(tabName) {
     }
 }
 
-// Função para carregar solicitações pendentes
+// Função para carregar solicitações pendentes - VERSÃO CORRIGIDA
 async function loadPendingRequests() {
     try {
-        const requestsRef = collection(db, 'friend_requests');
-        const q = query(requestsRef, where('from', '==', currentUser.uid), where('status', '==', 'pending'));
-        const snapshot = await getDocs(q);
+        console.log('📋 Carregando solicitações pendentes...');
+        
+        if (!currentUser) {
+            console.log('❌ Usuário não logado');
+            return;
+        }
+        
+        // Usar a sintaxe v8 do Firebase
+        const requestsRef = db.collection('friend_requests');
+        const q = requestsRef.where('from', '==', currentUser.uid).where('status', '==', 'pending');
+        const snapshot = await q.get();
         
         const pendingContainer = document.getElementById('content-pending');
+        if (!pendingContainer) {
+            console.log('❌ Container não encontrado');
+            return;
+        }
+        
         if (snapshot.empty) {
             pendingContainer.innerHTML = `
                 <div class="text-center text-gray-400 py-12">
@@ -3645,28 +3639,49 @@ async function loadPendingRequests() {
                 </div>
             `;
         } else {
-            const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const requests = [];
+            snapshot.forEach(doc => {
+                requests.push({ id: doc.id, ...doc.data() });
+            });
+            
             pendingContainer.innerHTML = `
                 <div class="space-y-3">
                     ${requests.map(request => `
                         <div class="bg-gray-700 rounded-lg p-4 flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                                 <div class="w-12 h-12 rounded-full bg-gray-600 overflow-hidden">
-                                    <img src="${request.fromPhoto || 'https://placehold.co/48x48/6b7280/ffffff?text=' + request.toName.charAt(0)}" alt="${request.toName}" class="w-full h-full object-cover">
+                                    <img src="${request.fromPhoto || 'https://placehold.co/48x48/6b7280/ffffff?text=' + (request.toName || 'U').charAt(0)}" alt="${request.toName || 'Usuário'}" class="w-full h-full object-cover">
                                 </div>
                                 <div>
-                                    <h4 class="text-white font-medium">${request.toName}</h4>
+                                    <h4 class="text-white font-medium">${request.toName || 'Usuário'}</h4>
                                     <p class="text-gray-400 text-sm">Solicitação enviada</p>
+                                    <p class="text-xs text-gray-500">${request.createdAt ? new Date(request.createdAt.toDate()).toLocaleDateString() : 'Hoje'}</p>
                                 </div>
                             </div>
-                            <span class="text-yellow-400 text-sm">Pendente</span>
+                            <span class="text-yellow-400 text-sm font-medium">Pendente</span>
                         </div>
                     `).join('')}
                 </div>
             `;
         }
+        
+        console.log('✅ Solicitações carregadas');
+        
     } catch (error) {
         console.error('❌ Erro ao carregar solicitações pendentes:', error);
+        const pendingContainer = document.getElementById('content-pending');
+        if (pendingContainer) {
+            pendingContainer.innerHTML = `
+                <div class="text-center text-gray-400 py-12">
+                    <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+                    <p class="text-lg mb-2">Erro ao carregar</p>
+                    <p class="text-sm text-red-400">${error.message}</p>
+                    <button onclick="loadPendingRequests()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
     }
 }
 
