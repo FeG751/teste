@@ -799,11 +799,12 @@
     }
     
     #close-photo-viewer-btn {
-        top: 5px !important;
-        right: -45px !important;
-        width: 36px !important;
-        height: 36px !important;
-        font-size: 16px !important;
+        top: 10px !important;
+        right: 10px !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 18px !important;
+        background: rgba(0, 0, 0, 0.8) !important;
     }
 }
 </style>
@@ -2663,24 +2664,30 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('📸 settingsUserPic:', settingsUserPic);
         console.log('👤 settingsUserIcon:', settingsUserIcon);
         console.log('📝 settingsUserName:', settingsUserName);
-        
-        // Atualizar o nome no modal
-        if (settingsUserName) {
+          // Atualizar o nome no modal
+        if (photoViewerUsername && settingsUserName) {
             photoViewerUsername.textContent = settingsUserName.textContent || 'Usuário';
         }
-        
-        // Verificar se tem foto personalizada ou usar ícone padrão
+          // Verificar se tem foto personalizada ou usar ícone padrão
         if (settingsUserPic && !settingsUserPic.classList.contains('hidden')) {
             console.log('✅ Usando foto personalizada');
             // Tem foto personalizada
-            photoViewerImage.src = settingsUserPic.src;
-            photoViewerImage.classList.remove('hidden');
-            photoViewerIcon.classList.add('hidden');
+            if (photoViewerImage) {
+                photoViewerImage.src = settingsUserPic.src;
+                photoViewerImage.classList.remove('hidden');
+            }
+            if (photoViewerIcon) {
+                photoViewerIcon.classList.add('hidden');
+            }
         } else {
             console.log('🔄 Usando ícone padrão');
             // Usar ícone padrão
-            photoViewerImage.classList.add('hidden');
-            photoViewerIcon.classList.remove('hidden');
+            if (photoViewerImage) {
+                photoViewerImage.classList.add('hidden');
+            }
+            if (photoViewerIcon) {
+                photoViewerIcon.classList.remove('hidden');
+            }
         }
         
         console.log('🎯 Mostrando modal de foto');
