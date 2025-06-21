@@ -2552,10 +2552,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('Aplicativo funcionando perfeitamente!', 'info');
             }
         });        // Inicializar busca
-        // initializeSearch(); // Função comentada temporariamente
-
-        // Inicializar foto do usuário
-        initializeUserPhoto();
+        // initializeSearch(); // Função comentada temporariamente        // Inicializar foto do usuário
+        // initializeUserPhoto(); // Função comentada temporariamente
 
         // Inicializar configurações
         initializeSettings();
@@ -2574,6 +2572,12 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeSearch() {
     console.log('🔍 Sistema de busca inicializado');
     // TODO: Implementar sistema de busca
+}
+
+// Função placeholder para fotos de usuário
+function initializeUserPhoto() {
+    console.log('📸 Sistema de fotos de usuário inicializado');
+    // TODO: Implementar sistema de fotos
 }
 </script>
     function renderAllConversations() {
@@ -2832,21 +2836,7 @@ function initializeSearch() {
             
         } catch (error) {
             console.error('❌ Erro ao salvar foto:', error);
-            showNotification(error.message || 'Erro ao salvar foto', 'error');
-        }
-    }
-
-    function initializeUserPhoto() {
-        const photoUploadInput = document.getElementById('photo-upload-input');
-        
-        photoUploadInput?.addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                await updateUserPhoto(file);
-                // Limpar input para permitir selecionar a mesma foto novamente
-                this.value = '';
-            }
-        });
+            showNotification(error.message || 'Erro ao salvar foto', 'error');        }
     }
 
     // Event listener atualizado para seleção de foto (ID alternativo)
