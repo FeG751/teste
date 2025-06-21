@@ -691,12 +691,11 @@
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100% !important;
-    height: 100vh !important;
+    width: 100% !important;    height: 100vh !important;
     background: rgba(0, 0, 0, 0.9) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 1000 !important; /* Reduzido de 10000 para 1000 */
+    z-index: 10000 !important;
     display: none !important; /* Começa oculto */
     align-items: center !important;
     justify-content: center !important;
@@ -1276,35 +1275,7 @@
                         </div>
                         <span class="text-white font-medium">Galáxia</span>
                     </div>
-                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
-                </div>            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Visualização da Foto do Usuário -->
-<div id="photo-viewer-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
-    <div class="modal-content relative max-w-sm w-full mx-4">
-        <!-- Botão Fechar -->
-        <button id="close-photo-viewer-btn" class="absolute -top-12 right-0 text-white hover:text-gray-300 text-3xl font-light transition-colors duration-300 z-10">
-            &times;
-        </button>
-        
-        <!-- Container da Foto -->
-        <div class="bg-gray-800 rounded-full p-4 shadow-2xl">
-            <div class="w-64 h-64 rounded-full overflow-hidden bg-gray-600 border-4 border-gray-500 mx-auto">
-                <img id="photo-viewer-image" class="w-full h-full object-cover hidden" alt="Foto do Usuário">
-                <div id="photo-viewer-icon" class="w-full h-full flex items-center justify-center">
-                    <svg class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Nome do usuário abaixo da foto -->
-        <div class="text-center mt-4">
-            <h3 id="photo-viewer-username" class="text-white font-semibold text-lg">Usuário</h3>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>                </div>            </div>
         </div>
     </div>
 </div>
