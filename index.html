@@ -113,7 +113,7 @@
     }
 
     /* Estilos dos modais em tela cheia com safe area */
-    #profile-modal, #edit-name-modal, #edit-status-modal, #settings-modal, #user-profile-detail-modal {
+    #profile-modal, #edit-name-modal, #edit-status-modal, #settings-modal, #user-profile-detail-modal, #name-effects-modal {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -217,6 +217,201 @@
         padding-top: max(20px, env(safe-area-inset-top, 20px)) !important;
         min-height: calc(60px + env(safe-area-inset-top, 20px)) !important;
     }
+}
+
+/* Efeitos especiais para nomes - MODERNOS E BONITOS */
+.name-effect-rainbow {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #ff9ff3);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbowMove 4s ease-in-out infinite;
+    font-weight: 600;
+}
+
+.name-effect-gold {
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ffb347);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    animation: goldShine 3s ease-in-out infinite;
+    font-weight: 700;
+}
+
+.name-effect-neon {
+    color: #00ffff;
+    text-shadow: 
+        0 0 5px #00ffff,
+        0 0 10px #00ffff,
+        0 0 15px #00ffff,
+        0 0 20px #00ffff;
+    animation: neonGlow 2s ease-in-out infinite alternate;
+    font-weight: 600;
+}
+
+.name-effect-holographic {
+    background: linear-gradient(45deg, #ff0080, #0080ff, #80ff00, #ff8000, #8000ff);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: holographicShift 5s ease-in-out infinite;
+    font-weight: 700;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.name-effect-sunset {
+    background: linear-gradient(45deg, #ff9a56, #ff6b9d, #c44569, #f8b500);
+    background-size: 250% 250%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: sunsetFlow 4s ease-in-out infinite;
+    font-weight: 600;
+}
+
+.name-effect-crystal {
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: crystalShine 4s ease-in-out infinite;
+    font-weight: 700;
+    filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.4));
+}
+
+.name-effect-fire {
+    background: linear-gradient(45deg, #ff4757, #ff3838, #ff6348, #ffa502, #ff7675);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fireFlicker 2s ease-in-out infinite;
+    font-weight: 700;
+    text-shadow: 0 0 15px rgba(255, 71, 87, 0.7);
+}
+
+.name-effect-ocean {
+    background: linear-gradient(45deg, #00c9ff, #92fe9d, #00b4db, #0083b0, #74b9ff);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: oceanWave 5s ease-in-out infinite;
+    font-weight: 600;
+    filter: drop-shadow(0 0 12px rgba(0, 201, 255, 0.4));
+}
+
+/* Animações dos efeitos */
+@keyframes rainbowMove {
+    0%, 100% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 50% 100%; }
+    75% { background-position: 0% 100%; }
+}
+
+@keyframes goldShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes neonGlow {
+    from { 
+        text-shadow: 
+            0 0 5px #00ffff,
+            0 0 10px #00ffff,
+            0 0 15px #00ffff,
+            0 0 20px #00ffff;
+    }
+    to { 
+        text-shadow: 
+            0 0 10px #00ffff,
+            0 0 20px #00ffff,
+            0 0 30px #00ffff,
+            0 0 40px #00ffff;
+    }
+}
+
+@keyframes holographicShift {
+    0% { background-position: 0% 50%; }
+    20% { background-position: 100% 50%; }
+    40% { background-position: 100% 0%; }
+    60% { background-position: 0% 0%; }
+    80% { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes sunsetFlow {
+    0%, 100% { background-position: 0% 50%; }
+    33% { background-position: 100% 0%; }
+    66% { background-position: 0% 100%; }
+}
+
+@keyframes crystalShine {
+    0%, 100% { background-position: 0% 50%; }
+    25% { background-position: 50% 0%; }
+    50% { background-position: 100% 50%; }
+    75% { background-position: 50% 100%; }
+}
+
+@keyframes fireFlicker {
+    0%, 100% { 
+        background-position: 0% 50%;
+        filter: brightness(1) saturate(1.2);
+    }
+    25% { 
+        background-position: 100% 30%;
+        filter: brightness(1.1) saturate(1.4);
+    }
+    50% { 
+        background-position: 80% 70%;
+        filter: brightness(0.9) saturate(1.1);
+    }
+    75% { 
+        background-position: 20% 20%;
+        filter: brightness(1.05) saturate(1.3);
+    }
+}
+
+@keyframes oceanWave {
+    0%, 100% { background-position: 0% 50%; }
+    20% { background-position: 80% 20%; }
+    40% { background-position: 100% 80%; }
+    60% { background-position: 20% 100%; }
+    80% { background-position: 0% 30%; }
+}
+
+/* Radio button selecionado */
+.effect-radio.selected {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.effect-radio.selected::after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background-color: white;
+    border-radius: 50%;
+    margin: 1px;
+}
+
+/* Incluir modal de efeitos na lista de modais em tela cheia */
+#name-effects-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background: #111827 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
 }
 </style>
 </head>
@@ -418,6 +613,16 @@
                     </div>
                     <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>                </div>
+                
+                <!-- Efeitos do Nome -->
+                <div id="settings-name-effects-option" class="profile-detail-section flex items-center justify-between cursor-pointer">
+                    <div>
+                        <div class="profile-detail-label">Efeitos do Nome</div>
+                        <div class="profile-detail-value">Personalizar aparência</div>
+                    </div>
+                    <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>
                 
@@ -490,6 +695,78 @@
                     maxlength="139"
                 ></textarea>
                 <p class="text-xs text-gray-500">Máximo 139 caracteres</p>
+            </div>
+        </div>    </div>
+</div>
+
+<!-- Modal de Efeitos do Nome -->
+<div id="name-effects-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
+    <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
+        <!-- Header do Modal -->
+        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
+            <button id="cancel-name-effects-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
+                Cancelar
+            </button>
+            <h3 class="text-white font-semibold text-lg">Efeitos do Nome</h3>
+            <button id="save-name-effects-btn" class="text-blue-400 hover:text-blue-300 font-medium">
+                Salvar
+            </button>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="p-6">
+            <!-- Preview do nome -->
+            <div class="text-center mb-6">
+                <p class="text-gray-400 text-sm mb-2">Prévia:</p>
+                <h2 id="name-preview" class="text-2xl font-bold text-white">Seu Nome</h2>
+            </div>
+            
+            <!-- Opções de efeitos -->
+            <div class="space-y-3">
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="none">
+                    <span class="text-white font-medium">Sem efeito</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="rainbow">
+                    <span class="name-effect-rainbow font-medium text-lg">Arco-íris</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="gold">
+                    <span class="name-effect-gold font-medium text-lg">Dourado</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="neon">
+                    <span class="name-effect-neon font-medium text-lg">Neon</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="holographic">
+                    <span class="name-effect-holographic font-medium text-lg">Holográfico</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="sunset">
+                    <span class="name-effect-sunset font-medium text-lg">Pôr do Sol</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="crystal">
+                    <span class="name-effect-crystal font-medium text-lg">Cristal</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="fire">
+                    <span class="name-effect-fire font-medium text-lg">Fogo</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+                
+                <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="ocean">
+                    <span class="name-effect-ocean font-medium text-lg">Oceano</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -689,10 +966,10 @@
         initializeUserPhoto();
 
         // Inicializar configurações
-        initializeSettings();
-        initializeProfile();
+        initializeSettings();        initializeProfile();
         initializeEditName();
         initializeEditStatus();
+        initializeNameEffects();
         initializeProfileDetail();
 
         // Renderizar conversas vazias inicialmente
@@ -852,6 +1129,7 @@
             const closeSettingsBtn = document.getElementById('close-settings-btn');
             const editNameOption = document.getElementById('settings-edit-name-option');
             const editStatusOption = document.getElementById('settings-edit-status-option');
+            const nameEffectsOption = document.getElementById('settings-name-effects-option');
             const logoutOption = document.getElementById('logout-option');
             
             // Fechar modal de configurações
@@ -889,7 +1167,7 @@
                     showNotification('Erro ao fazer logout.', 'error');
                 }
             });
-        }        // Função para atualizar informações do usuário no modal de configurações
+        }// Função para atualizar informações do usuário no modal de configurações
         async function updateSettingsUserInfo() {
             const user = auth.currentUser;
             if (!user) return;
@@ -927,7 +1205,7 @@
             } catch (error) {
                 console.error('Erro ao carregar dados do usuário:', error);
             }
-        }// Carregar dados do usuário após login
+        }        // Carregar dados do usuário após login
         async function loadUserDataOnLogin() {
             const user = auth.currentUser;
             if (!user) return;
@@ -951,10 +1229,15 @@
                     profileModalPic.classList.remove('hidden');
                     profileModalIcon.classList.add('hidden');
                 }
+                
+                // NOVO: Carregar efeito do nome
+                if (userData?.nameEffect) {
+                    applyNameEffectToInterface(userData.nameEffect);
+                }
             } catch (error) {
                 console.error('Erro ao carregar dados do usuário:', error);
             }
-        }    async function handleLogin(e) {
+        }async function handleLogin(e) {
         e.preventDefault();
         console.log('🔄 Tentativa de login iniciada...');
         
@@ -1331,10 +1614,287 @@
             } else {
                 picElement.classList.add('hidden');
                 iconElement.classList.remove('hidden');
-            }
-        } catch (error) {
+            }        } catch (error) {
             console.error('Erro ao carregar dados do perfil detalhado:', error);
         }
+    }
+
+    // NOVAS FUNÇÕES CORRIGIDAS - Substituindo as funções existentes
+    function initializeEditName() {
+        const editNameModal = document.getElementById('edit-name-modal');
+        const editNameInput = document.getElementById('edit-name-input');
+        const saveNameBtn = document.getElementById('save-name-btn');
+        const cancelEditNameBtn = document.getElementById('cancel-edit-name-btn');
+        
+        // Salvar nome
+        saveNameBtn?.addEventListener('click', async () => {
+            const newName = editNameInput.value.trim();
+            if (newName) {
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await updateDoc(doc(db, 'users', user.uid), {
+                            username: newName
+                        });
+                        
+                        // Atualizar na interface
+                        updateUserNameInInterface(newName);
+                        editNameModal.classList.add('hidden');
+                        
+                        // Voltar para configurações
+                        updateSettingsUserInfo();
+                        document.getElementById('settings-modal').classList.remove('hidden');
+                        
+                        showNotification('Nome atualizado com sucesso!', 'info');
+                    }
+                } catch (error) {
+                    console.error('Erro ao salvar nome:', error);
+                    showNotification('Erro ao salvar nome.', 'error');
+                }
+            }
+        });
+        
+        // Cancelar edição - CORRIGIDO para voltar às configurações
+        cancelEditNameBtn?.addEventListener('click', () => {
+            editNameModal.classList.add('hidden');
+            // Voltar para configurações ao invés de sair
+            updateSettingsUserInfo();
+            document.getElementById('settings-modal').classList.remove('hidden');
+        });
+        
+        // Fechar clicando fora
+        editNameModal?.addEventListener('click', (e) => {
+            if (e.target === editNameModal) {
+                editNameModal.classList.add('hidden');
+                updateSettingsUserInfo();
+                document.getElementById('settings-modal').classList.remove('hidden');
+            }
+        });
+    }
+
+    function initializeEditStatus() {
+        const editStatusModal = document.getElementById('edit-status-modal');
+        const editStatusInput = document.getElementById('edit-status-input');
+        const saveStatusBtn = document.getElementById('save-status-btn');
+        const cancelEditStatusBtn = document.getElementById('cancel-edit-status-btn');
+        
+        // Salvar status
+        saveStatusBtn?.addEventListener('click', async () => {
+            const newStatus = editStatusInput.value.trim();
+            if (newStatus) {
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await updateDoc(doc(db, 'users', user.uid), {
+                            status: newStatus
+                        });
+                        
+                        // Atualizar na interface
+                        updateUserStatusInInterface(newStatus);
+                        editStatusModal.classList.add('hidden');
+                        
+                        // Voltar para configurações
+                        updateSettingsUserInfo();
+                        document.getElementById('settings-modal').classList.remove('hidden');
+                        
+                        showNotification('Status atualizado com sucesso!', 'info');
+                    }
+                } catch (error) {
+                    console.error('Erro ao salvar status:', error);
+                    showNotification('Erro ao salvar status.', 'error');
+                }
+            }
+        });
+        
+        // Cancelar edição - CORRIGIDO para voltar às configurações
+        cancelEditStatusBtn?.addEventListener('click', () => {
+            editStatusModal.classList.add('hidden');
+            // Voltar para configurações ao invés de sair
+            updateSettingsUserInfo();
+            document.getElementById('settings-modal').classList.remove('hidden');
+        });
+        
+        // Fechar clicando fora
+        editStatusModal?.addEventListener('click', (e) => {
+            if (e.target === editStatusModal) {
+                editStatusModal.classList.add('hidden');
+                updateSettingsUserInfo();
+                document.getElementById('settings-modal').classList.remove('hidden');
+            }
+        });
+    }
+
+    // NOVA FUNÇÃO - Inicializar efeitos do nome
+    function initializeNameEffects() {
+        const nameEffectsModal = document.getElementById('name-effects-modal');
+        const namePreview = document.getElementById('name-preview');
+        const saveEffectsBtn = document.getElementById('save-name-effects-btn');
+        const cancelEffectsBtn = document.getElementById('cancel-name-effects-btn');
+        const effectOptions = document.querySelectorAll('.effect-option');
+        
+        let selectedEffect = 'none';
+        let currentUserName = 'Seu Nome';
+        
+        // Abrir modal de efeitos
+        const nameEffectsOption = document.getElementById('settings-name-effects-option');
+        nameEffectsOption?.addEventListener('click', () => {
+            document.getElementById('settings-modal').classList.add('hidden');
+            
+            // Carregar nome atual
+            const currentName = document.getElementById('settings-user-name').textContent;
+            currentUserName = currentName;
+            namePreview.textContent = currentName;
+            
+            // Carregar efeito atual do usuário
+            loadUserCurrentEffect();
+            
+            nameEffectsModal.classList.remove('hidden');
+        });
+        
+        // Selecionar efeito
+        effectOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remover seleção anterior
+                document.querySelectorAll('.effect-radio').forEach(radio => {
+                    radio.classList.remove('selected');
+                });
+                
+                // Adicionar seleção na nova opção
+                const radio = option.querySelector('.effect-radio');
+                radio.classList.add('selected');
+                
+                // Atualizar preview
+                selectedEffect = option.dataset.effect;
+                updateNamePreview(selectedEffect);
+            });
+        });
+        
+        // Salvar efeito
+        saveEffectsBtn?.addEventListener('click', async () => {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    await updateDoc(doc(db, 'users', user.uid), {
+                        nameEffect: selectedEffect
+                    });
+                    
+                    // Aplicar efeito em toda a interface
+                    applyNameEffectToInterface(selectedEffect);
+                    
+                    nameEffectsModal.classList.add('hidden');
+                    updateSettingsUserInfo();
+                    document.getElementById('settings-modal').classList.remove('hidden');
+                    
+                    showNotification('Efeito aplicado com sucesso!', 'info');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar efeito:', error);
+                showNotification('Erro ao aplicar efeito.', 'error');
+            }
+        });
+        
+        // Cancelar
+        cancelEffectsBtn?.addEventListener('click', () => {
+            nameEffectsModal.classList.add('hidden');
+            updateSettingsUserInfo();
+            document.getElementById('settings-modal').classList.remove('hidden');
+        });
+        
+        // Fechar clicando fora
+        nameEffectsModal?.addEventListener('click', (e) => {
+            if (e.target === nameEffectsModal) {
+                nameEffectsModal.classList.add('hidden');
+                updateSettingsUserInfo();
+                document.getElementById('settings-modal').classList.remove('hidden');
+            }
+        });
+        
+        // Função para atualizar preview
+        function updateNamePreview(effect) {
+            // Remover todas as classes de efeito
+            namePreview.className = 'text-2xl font-bold text-white';
+            
+            // Adicionar nova classe de efeito
+            if (effect !== 'none') {
+                namePreview.classList.add(`name-effect-${effect}`);
+            }
+        }
+        
+        // Carregar efeito atual do usuário
+        async function loadUserCurrentEffect() {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    const userData = userDoc.data();
+                    const currentEffect = userData?.nameEffect || 'none';
+                    
+                    selectedEffect = currentEffect;
+                    
+                    // Selecionar a opção correta
+                    document.querySelectorAll('.effect-radio').forEach(radio => {
+                        radio.classList.remove('selected');
+                    });
+                    
+                    const currentOption = document.querySelector(`[data-effect="${currentEffect}"]`);
+                    if (currentOption) {
+                        currentOption.querySelector('.effect-radio').classList.add('selected');
+                    }
+                    
+                    updateNamePreview(currentEffect);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar efeito atual:', error);
+            }
+        }
+    }
+
+    // Função para aplicar efeito do nome em toda a interface
+    function applyNameEffectToInterface(effect) {
+        const nameElements = [
+            document.getElementById('settings-user-name'),
+            document.getElementById('settings-display-name')
+        ];
+        
+        nameElements.forEach(element => {
+            if (element) {
+                // Remover todas as classes de efeito
+                element.className = element.className.replace(/name-effect-\w+/g, '');
+                
+                // Adicionar nova classe de efeito
+                if (effect !== 'none') {
+                    element.classList.add(`name-effect-${effect}`);
+                }
+            }
+        });
+    }
+
+    // Função para atualizar nome na interface
+    function updateUserNameInInterface(name) {
+        const nameElements = [
+            document.getElementById('settings-user-name'),
+            document.getElementById('settings-display-name')
+        ];
+        
+        nameElements.forEach(element => {
+            if (element) {
+                element.textContent = name;
+            }
+        });
+    }
+
+    // Função para atualizar status na interface
+    function updateUserStatusInInterface(status) {
+        const statusElements = [
+            document.getElementById('settings-user-status'),
+            document.getElementById('settings-display-status')
+        ];
+        
+        statusElements.forEach(element => {
+            if (element) {
+                element.textContent = status;
+            }
+        });
     }
 
     // INICIALIZAR APLICAÇÃO
