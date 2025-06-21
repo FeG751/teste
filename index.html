@@ -3406,21 +3406,16 @@ updateNotificationsBadge();
 </script>
 
 <script>
-// Dados simulados para teste da busca
-const mockUsers = [
-    { id: 1, name: 'João Silva', username: 'joaosilva', status: 'online', avatar: 'https://placehold.co/48x48/4f46e5/ffffff?text=JS' },
-    { id: 2, name: 'Maria Santos', username: 'mariasantos', status: 'offline', avatar: 'https://placehold.co/48x48/e74c3c/ffffff?text=MS' },
-    { id: 3, name: 'Pedro Costa', username: 'pedrocosta', status: 'away', avatar: 'https://placehold.co/48x48/2ecc71/ffffff?text=PC' },
-    { id: 4, name: 'Ana Oliveira', username: 'anaoliveira', status: 'busy', avatar: 'https://placehold.co/48x48/f39c12/ffffff?text=AO' }
-];
-
+// Remover dados simulados e usar dados reais do Firebase
+// Variáveis globais para busca e controle das abas
 let searchTimeout = null;
+let currentTab = 'online';
 
-// Função para buscar usuários
-function searchUsers(query) {
-    console.log('🔍 Buscando por:', query);
+// Função para buscar usuários reais no Firestore
+async function searchUsers(searchQuery) {
+    console.log('🔍 Buscando usuários reais por:', searchQuery);
     
-    if (!query.trim()) {
+    if (!searchQuery.trim()) {
         document.getElementById('search-initial-state').classList.remove('hidden');
         document.getElementById('search-no-results').classList.add('hidden'); 
         document.getElementById('search-results').innerHTML = '';
@@ -3430,12 +3425,64 @@ function searchUsers(query) {
     document.getElementById('search-initial-state').classList.add('hidden');
     document.getElementById('search-loading').classList.remove('hidden');
     
-    // Simular delay de busca
-    setTimeout(() => {
-        const results = mockUsers.filter(user => 
-            user.name.toLowerCase().includes(query.toLowerCase()) ||
-            user.username.toLowerCase().includes(query.toLowerCase())
+    try {
+        // Buscar usuários no Firestore
+        const usersRef = collection(db, 'users');
+        const searchQueryLower = searchQuery.toLowerCase();
+        
+        // Fazer múltiplas consultas para buscar por nome e email
+        const queryByDisplayName = query(
+            usersRef, 
+            where('displayName', '>=', searchQueryLower),
+            where('displayName', '<=', searchQueryLower + '\uf8ff'),
+            limit(20)
         );
+        
+        const queryByEmail = query(
+            usersRef,
+            where('email', '>=', searchQueryLower),
+            where('email', '<=', searchQueryLower + '\uf8ff'),
+            limit(20)
+        );
+        
+        // Executar ambas as consultas
+        const [displayNameSnapshot, emailSnapshot] = await Promise.all([
+            getDocs(queryByDisplayName),
+            getDocs(queryByEmail)
+        ]);
+        
+        // Combinar resultados e remover duplicatas
+        const foundUsers = new Map();
+        
+        displayNameSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            if (doc.id !== currentUser?.uid) { // Não mostrar o próprio usuário
+                foundUsers.set(doc.id, {
+                    id: doc.id,
+                    name: userData.displayName || userData.email,
+                    username: userData.email,
+                    status: userData.status || 'offline',
+                    avatar: userData.photoURL || `https://placehold.co/48x48/4f46e5/ffffff?text=${(userData.displayName || userData.email).charAt(0).toUpperCase()}`,
+                    lastSeen: userData.lastSeen || new Date()
+                });
+            }
+        });
+        
+        emailSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            if (doc.id !== currentUser?.uid && !foundUsers.has(doc.id)) {
+                foundUsers.set(doc.id, {
+                    id: doc.id,
+                    name: userData.displayName || userData.email,
+                    username: userData.email,
+                    status: userData.status || 'offline',
+                    avatar: userData.photoURL || `https://placehold.co/48x48/4f46e5/ffffff?text=${(userData.displayName || userData.email).charAt(0).toUpperCase()}`,
+                    lastSeen: userData.lastSeen || new Date()
+                });
+            }
+        });
+        
+        const results = Array.from(foundUsers.values());
         
         document.getElementById('search-loading').classList.add('hidden');
         
@@ -3446,40 +3493,226 @@ function searchUsers(query) {
             document.getElementById('search-no-results').classList.add('hidden');
             renderSearchResults(results);
         }
-    }, 800);
+        
+        console.log(`✅ Encontrados ${results.length} usuários`);
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar usuários:', error);
+        document.getElementById('search-loading').classList.add('hidden');
+        document.getElementById('search-no-results').classList.remove('hidden');
+        document.getElementById('search-results').innerHTML = '';
+    }
 }
 
-// Função para renderizar resultados
+// Função para determinar status do usuário baseado em lastSeen
+function getUserStatus(lastSeen) {
+    if (!lastSeen) return 'offline';
+    
+    const now = new Date();
+    const lastSeenDate = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
+    const diffMinutes = Math.floor((now - lastSeenDate) / (1000 * 60));
+    
+    if (diffMinutes < 5) return 'online';
+    if (diffMinutes < 30) return 'away';
+    return 'offline';
+}
+
+// Função para renderizar resultados com usuários reais
 function renderSearchResults(users) {
     const container = document.getElementById('search-results');
     
-    container.innerHTML = users.map(user => `
-        <div class="search-result-item">
-            <div class="flex items-center space-x-3">
-                <div class="relative">
-                    <div class="w-12 h-12 rounded-full overflow-hidden">
-                        <img src="${user.avatar}" alt="${user.name}" class="w-full h-full object-cover">
+    container.innerHTML = users.map(user => {
+        const status = getUserStatus(user.lastSeen);
+        const statusText = {
+            'online': 'Online',
+            'away': 'Ausente',
+            'offline': 'Offline'
+        };
+        
+        return `
+            <div class="search-result-item">
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <div class="w-12 h-12 rounded-full overflow-hidden">
+                            <img src="${user.avatar}" alt="${user.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/48x48/6b7280/ffffff?text=${user.name.charAt(0).toUpperCase()}'">
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-800 user-status-${status}"></div>
                     </div>
-                    <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-800 user-status-${user.status}"></div>
+                    <div>
+                        <h4 class="text-white font-medium">${user.name}</h4>
+                        <p class="text-gray-400 text-sm">${user.username}</p>
+                        <p class="text-xs text-gray-500">${statusText[status]}</p>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="text-white font-medium">${user.name}</h4>
-                    <p class="text-gray-400 text-sm">@${user.username}</p>
-                </div>
+                <button class="add-friend-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" data-user-id="${user.id}" data-user-name="${user.name}">
+                    Adicionar
+                </button>
             </div>
-            <button class="add-friend-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" data-user-id="${user.id}">
-                Adicionar
-            </button>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-// Event listeners
+// Função para enviar solicitação de amizade
+async function sendFriendRequest(targetUserId, targetUserName) {
+    try {
+        console.log('📤 Enviando solicitação de amizade para:', targetUserName);
+        
+        // Criar solicitação no Firestore
+        const friendRequestData = {
+            from: currentUser.uid,
+            fromName: currentUser.displayName || currentUser.email,
+            fromPhoto: currentUser.photoURL || null,
+            to: targetUserId,
+            toName: targetUserName,
+            status: 'pending',
+            createdAt: new Date(),
+            type: 'friend_request'
+        };
+        
+        // Salvar na coleção de friend_requests
+        await addDoc(collection(db, 'friend_requests'), friendRequestData);
+        
+        // Adicionar notificação para o usuário alvo
+        await addDoc(collection(db, 'notifications'), {
+            userId: targetUserId,
+            type: 'friend_request',
+            title: 'Nova solicitação de amizade',
+            message: `${friendRequestData.fromName} quer ser seu amigo`,
+            data: friendRequestData,
+            read: false,
+            createdAt: new Date()
+        });
+        
+        console.log('✅ Solicitação enviada com sucesso!');
+        showNotification(`Solicitação enviada para ${targetUserName}!`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Erro ao enviar solicitação:', error);
+        showNotification('Erro ao enviar solicitação', 'error');
+    }
+}
+
+// Função para trocar abas na tela de amigos
+function switchTab(tabName) {
+    console.log('🔄 Trocando para aba:', tabName);
+    
+    // Remover classe ativa de todas as abas
+    document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+        tab.classList.remove('text-blue-400', 'border-b-2', 'border-blue-500', 'bg-gray-700');
+        tab.classList.add('text-gray-400');
+    });
+    
+    // Adicionar classe ativa à aba selecionada
+    const activeTab = document.getElementById(`tab-${tabName}`);
+    if (activeTab) {
+        activeTab.classList.remove('text-gray-400');
+        activeTab.classList.add('text-blue-400', 'border-b-2', 'border-blue-500', 'bg-gray-700');
+    }
+    
+    // Esconder todo o conteúdo
+    document.querySelectorAll('[id^="content-"]').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Mostrar conteúdo da aba ativa
+    const activeContent = document.getElementById(`content-${tabName}`);
+    if (activeContent) {
+        activeContent.classList.remove('hidden');
+    }
+    
+    currentTab = tabName;
+    
+    // Carregar dados específicos da aba se necessário
+    if (tabName === 'pending') {
+        loadPendingRequests();
+    }
+}
+
+// Função para carregar solicitações pendentes
+async function loadPendingRequests() {
+    try {
+        const requestsRef = collection(db, 'friend_requests');
+        const q = query(requestsRef, where('from', '==', currentUser.uid), where('status', '==', 'pending'));
+        const snapshot = await getDocs(q);
+        
+        const pendingContainer = document.getElementById('content-pending');
+        if (snapshot.empty) {
+            pendingContainer.innerHTML = `
+                <div class="text-center text-gray-400 py-12">
+                    <i class="fas fa-clock text-6xl text-gray-600 mb-4"></i>
+                    <p class="text-lg mb-2">Nenhuma solicitação pendente</p>
+                    <p class="text-sm">Solicitações de amizade enviadas aparecerão aqui</p>
+                </div>
+            `;
+        } else {
+            const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            pendingContainer.innerHTML = `
+                <div class="space-y-3">
+                    ${requests.map(request => `
+                        <div class="bg-gray-700 rounded-lg p-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-full bg-gray-600 overflow-hidden">
+                                    <img src="${request.fromPhoto || 'https://placehold.co/48x48/6b7280/ffffff?text=' + request.toName.charAt(0)}" alt="${request.toName}" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium">${request.toName}</h4>
+                                    <p class="text-gray-400 text-sm">Solicitação enviada</p>
+                                </div>
+                            </div>
+                            <span class="text-yellow-400 text-sm">Pendente</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('❌ Erro ao carregar solicitações pendentes:', error);
+    }
+}
+
+// Event listeners principais - Sistema de amigos e busca
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando sistema de amigos e busca...');
+    
+    // Event listeners para abas
+    const tabOnline = document.getElementById('tab-online');
+    const tabAll = document.getElementById('tab-all');
+    const tabPending = document.getElementById('tab-pending');
+    const tabBlocked = document.getElementById('tab-blocked');
+    
+    if (tabOnline) {
+        tabOnline.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchTab('online');
+        });
+    }
+    
+    if (tabAll) {
+        tabAll.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchTab('all');
+        });
+    }
+    
+    if (tabPending) {
+        tabPending.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchTab('pending');
+        });
+    }
+    
+    if (tabBlocked) {
+        tabBlocked.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchTab('blocked');
+        });
+    }
+    
     // Abrir modal de busca
     const globalSearchBtn = document.getElementById('global-search-btn');
     if (globalSearchBtn) {
         globalSearchBtn.addEventListener('click', function() {
+            console.log('🔍 Abrindo modal de busca');
             document.getElementById('global-search-modal').classList.remove('hidden');
             document.getElementById('global-search-input').focus();
         });
@@ -3489,6 +3722,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeSearchBtn = document.getElementById('close-global-search-btn');
     if (closeSearchBtn) {
         closeSearchBtn.addEventListener('click', function() {
+            console.log('❌ Fechando modal de busca');
             document.getElementById('global-search-modal').classList.add('hidden');
             document.getElementById('global-search-input').value = '';
             document.getElementById('search-results').innerHTML = '';
@@ -3511,20 +3745,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // Adicionar amigo
     const searchResults = document.getElementById('search-results');
     if (searchResults) {
-        searchResults.addEventListener('click', function(e) {
+        searchResults.addEventListener('click', async function(e) {
             if (e.target.classList.contains('add-friend-btn')) {
-                const userId = parseInt(e.target.dataset.userId);
-                const user = mockUsers.find(u => u.id === userId);
+                const userId = e.target.dataset.userId;
+                const userName = e.target.dataset.userName;
                 
+                // Mudar visual do botão
+                e.target.textContent = 'Enviando...';
+                e.target.disabled = true;
+                
+                // Enviar solicitação
+                await sendFriendRequest(userId, userName);
+                
+                // Atualizar botão
                 e.target.textContent = 'Enviado';
                 e.target.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 e.target.classList.add('bg-gray-600');
-                e.target.disabled = true;
-                
-                console.log(`Solicitação enviada para ${user.name}!`);
             }
         });
     }
+    
+    // Inicializar com a aba padrão (Online)
+    switchTab('online');
+    console.log('✅ Sistema de amigos e busca inicializado!');
 });
 </script>
 
