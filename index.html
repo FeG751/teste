@@ -1591,9 +1591,18 @@
             const settingsModal = document.getElementById('settings-modal');
             const closeSettingsBtn = document.getElementById('close-settings-btn');
             const editNameOption = document.getElementById('settings-edit-name-option');
-            const editStatusOption = document.getElementById('settings-edit-status-option');
-            const nameEffectsOption = document.getElementById('settings-name-effects-option');
+            const editStatusOption = document.getElementById('settings-edit-status-option');            const nameEffectsOption = document.getElementById('settings-name-effects-option');
             const logoutOption = document.getElementById('logout-option');
+            
+            // DEBUG: Capturar todos os cliques no modal de configurações
+            settingsModal?.addEventListener('click', function(e) {
+                console.log('🎯 CLIQUE no modal de configurações:', {
+                    target: e.target,
+                    targetId: e.target.id,
+                    targetClass: e.target.className,
+                    targetTagName: e.target.tagName
+                });
+            });
             
             // Fechar modal de configurações
             closeSettingsBtn?.addEventListener('click', () => {
@@ -1606,15 +1615,16 @@
                     settingsModal.classList.add('hidden');
                 }
             });
-            
-            // Abrir modal de edição de nome
-            editNameOption?.addEventListener('click', () => {
+              // Abrir modal de edição de nome
+            editNameOption?.addEventListener('click', function(e) {
+                console.log('📝 Clique em editar nome');
                 settingsModal.classList.add('hidden');
                 openEditNameModal();
             });
             
             // Abrir modal de edição de status
-            editStatusOption?.addEventListener('click', () => {
+            editStatusOption?.addEventListener('click', function(e) {
+                console.log('💬 Clique em editar status');
                 settingsModal.classList.add('hidden');
                 openEditStatusModal();
             });
@@ -2084,10 +2094,10 @@
         
         let selectedEffect = 'none';
         let currentUserName = 'Seu Nome';
-        
-        // Abrir modal de efeitos
+          // Abrir modal de efeitos
         const nameEffectsOption = document.getElementById('settings-name-effects-option');
-        nameEffectsOption?.addEventListener('click', () => {
+        nameEffectsOption?.addEventListener('click', function(e) {
+            console.log('✨ Clique em efeitos de nome');
             document.getElementById('settings-modal').classList.add('hidden');
             
             // Carregar nome atual
@@ -2483,13 +2493,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const photoViewerIcon = document.getElementById('photo-viewer-icon');
     const photoViewerUsername = document.getElementById('photo-viewer-username');
     const closePhotoViewerBtn = document.getElementById('close-photo-viewer-btn');
-    
-    // Função para abrir o modal de visualização da foto
+      // Função para abrir o modal de visualização da foto
     function openPhotoViewer() {
+        console.log('🔍 openPhotoViewer() chamada');
+        
         // Pegar a foto atual do usuário
         const settingsUserPic = document.getElementById('settings-user-pic');
         const settingsUserIcon = document.getElementById('settings-user-icon');
         const settingsUserName = document.getElementById('settings-user-name');
+        
+        console.log('📸 settingsUserPic:', settingsUserPic);
+        console.log('👤 settingsUserIcon:', settingsUserIcon);
+        console.log('📝 settingsUserName:', settingsUserName);
         
         // Atualizar o nome no modal
         if (settingsUserName) {
@@ -2498,32 +2513,44 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Verificar se tem foto personalizada ou usar ícone padrão
         if (settingsUserPic && !settingsUserPic.classList.contains('hidden')) {
+            console.log('✅ Usando foto personalizada');
             // Tem foto personalizada
             photoViewerImage.src = settingsUserPic.src;
             photoViewerImage.classList.remove('hidden');
             photoViewerIcon.classList.add('hidden');
         } else {
+            console.log('🔄 Usando ícone padrão');
             // Usar ícone padrão
             photoViewerImage.classList.add('hidden');
             photoViewerIcon.classList.remove('hidden');
         }
         
+        console.log('🎯 Mostrando modal de foto');
         // Mostrar modal
         photoViewerModal.classList.remove('hidden');
         
         // Prevenir scroll do body
         document.body.style.overflow = 'hidden';
     }
-    
-    // Função para fechar o modal
+      // Função para fechar o modal
     function closePhotoViewer() {
+        console.log('❌ closePhotoViewer() chamada');
         photoViewerModal.classList.add('hidden');
         document.body.style.overflow = 'auto';    }
     
     // Event listener para abrir o modal quando clicar na foto das configurações
     const settingsUserPhotoContainer = document.getElementById('settings-photo-container');
+    console.log('🎯 settingsUserPhotoContainer encontrado:', settingsUserPhotoContainer);
+
     if (settingsUserPhotoContainer) {
-        settingsUserPhotoContainer.addEventListener('click', openPhotoViewer);
+        settingsUserPhotoContainer.addEventListener('click', function(e) {
+            console.log('🔥 CLIQUE na foto das configurações detectado!', e);
+            e.stopPropagation(); // Impedir propagação do evento
+            openPhotoViewer();
+        });
+        console.log('✅ Event listener da foto adicionado');
+    } else {
+        console.log('❌ ERRO: settings-photo-container não encontrado!');
     }
     
     // Event listeners para fechar o modal
