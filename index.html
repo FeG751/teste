@@ -1107,50 +1107,35 @@
 
 </script>
 
-<!-- Modal de Configurações Simplificado -->
+<!-- Modal de Configurações -->
 <div id="settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
     <div class="modal-content bg-gray-800 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
-        <!-- Header -->
         <div class="modal-header flex justify-between items-center p-4">
             <h3 class="text-xl font-bold text-white">Configurações</h3>
             <button id="close-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">&times;</button>
         </div>
-        
-        <!-- Conteúdo -->
         <div class="p-4 space-y-4">
-            <!-- Barra de pesquisa -->
             <div class="relative">
                 <div class="bg-gray-700 rounded-lg px-3 py-2 flex items-center space-x-2">
                     <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
-                    <input 
-                        type="text" 
-                        placeholder="Pesquisar" 
-                        class="bg-transparent flex-1 text-white placeholder-gray-400 focus:outline-none text-sm"
-                    >
+                    <input type="text" placeholder="Pesquisar" class="bg-transparent flex-1 text-white placeholder-gray-400 focus:outline-none text-sm">
                 </div>
             </div>
-            
-            <!-- Seção do Usuário -->
             <div class="bg-gray-700 rounded-lg p-4 flex items-center space-x-3 cursor-pointer hover:bg-gray-600 transition-colors" id="settings-user-profile">
-                <!-- Foto do usuário -->
                 <div class="w-12 h-12 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden flex items-center justify-center flex-shrink-0">
                     <img id="settings-user-pic" class="w-full h-full object-cover hidden" alt="Perfil">
                     <svg id="settings-user-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                 </div>
-                
-                <!-- Informações do usuário -->
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center space-x-2">
                         <h4 id="settings-user-name" class="text-white font-medium truncate">Nome do Usuário</h4>
                     </div>
                     <p id="settings-user-status" class="text-gray-400 text-sm truncate">Olá! Eu estou usando o 7Chat...</p>
                 </div>
-                
-                <!-- QR Code Icon -->
                 <div class="flex-shrink-0">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h4v4H4V4zm16 0h4v4h-4V4zm0 16h4v4h-4v-4zM4 16h4v4H4v-4z"></path>
@@ -1164,15 +1149,11 @@
 <!-- Modal de Perfil -->
 <div id="profile-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
     <div class="modal-content bg-gray-800 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
-        <!-- Header -->
         <div class="modal-header flex justify-between items-center p-4">
             <h3 class="text-xl font-bold text-white">Perfil</h3>
             <button id="close-profile-btn" class="text-gray-500 hover:text-gray-300 text-2xl" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">&times;</button>
         </div>
-        
-        <!-- Conteúdo -->
         <div class="p-6 space-y-6">
-            <!-- Foto atual em formato oval -->
             <div class="flex justify-center">
                 <div class="w-32 h-32 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center">
                     <img id="profile-modal-pic" class="w-full h-full object-cover hidden" alt="Perfil">
@@ -1181,14 +1162,10 @@
                     </svg>
                 </div>
             </div>
-            
-            <!-- Informações do usuário -->
             <div class="text-center space-y-2">
                 <h4 id="profile-modal-name" class="text-white font-semibold text-lg">Nome do Usuário</h4>
                 <p id="profile-modal-email" class="text-gray-400">email@exemplo.com</p>
             </div>
-            
-            <!-- Botões de ação -->
             <div class="space-y-3">
                 <button id="edit-profile-btn" class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1196,7 +1173,6 @@
                     </svg>
                     <span>Editar Perfil</span>
                 </button>
-                
                 <button id="change-photo-from-profile-btn" class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
@@ -1212,7 +1188,6 @@
 <!-- Modal de Perfil Detalhado -->
 <div id="user-profile-detail-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[80] p-4">
     <div class="modal-content bg-gray-900 w-full max-w-md border-0">
-        <!-- Header -->
         <div class="modal-header flex items-center p-4 bg-gray-800">
             <button id="back-from-profile-detail-btn" class="text-white mr-4 p-2 hover:bg-gray-700 rounded-full transition-colors" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1221,10 +1196,7 @@
             </button>
             <h3 class="text-xl font-semibold text-white flex-1">Perfil</h3>
         </div>
-        
-        <!-- Conteúdo -->
         <div class="flex-1 overflow-auto bg-gray-900">
-            <!-- Foto do usuário -->
             <div class="flex flex-col items-center py-8 bg-gray-800">
                 <div class="w-32 h-32 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center mb-4">
                     <img id="profile-detail-pic" class="w-full h-full object-cover hidden" alt="Perfil">
@@ -1232,14 +1204,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                 </div>
-                <button id="edit-photo-btn" class="text-green-400 font-medium hover:text-green-300 transition-colors">
-                    Editar foto
-                </button>
+                <button id="edit-photo-btn" class="text-green-400 font-medium hover:text-green-300 transition-colors">Editar foto</button>
             </div>
-            
-            <!-- Seções do perfil -->
             <div class="bg-gray-900">
-                <!-- Nome -->
                 <div class="profile-detail-section flex items-center justify-between" id="edit-name-section">
                     <div class="flex-1">
                         <div class="profile-detail-label">Nome</div>
@@ -1249,8 +1216,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>
-                
-                <!-- Recado -->
                 <div class="profile-detail-section flex items-center justify-between" id="edit-status-section">
                     <div class="flex-1">
                         <div class="profile-detail-label">Recado</div>
@@ -1260,8 +1225,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>
-                
-                <!-- Número de telefone -->
                 <div class="profile-detail-section flex items-center justify-between" id="edit-phone-section">
                     <div class="flex-1">
                         <div class="profile-detail-label">Número de telefone</div>
@@ -1271,8 +1234,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>
-                
-                <!-- Links -->
                 <div class="profile-detail-section flex items-center justify-between" id="edit-links-section">
                     <div class="flex-1">
                         <div class="profile-detail-label">Links</div>
@@ -1290,33 +1251,19 @@
 <!-- Modal de Edição de Nome -->
 <div id="edit-name-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] p-4">
     <div class="modal-content bg-gray-800 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
-        <!-- Header -->
         <div class="modal-header flex justify-between items-center p-4">
             <h3 class="text-xl font-bold text-white">Editar Nome</h3>
             <button id="cancel-edit-name-btn" class="text-gray-500 hover:text-gray-300 text-2xl" style="min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;">&times;</button>
         </div>
-        
-        <!-- Conteúdo -->
         <div class="p-6 space-y-6">
             <div class="space-y-2">
                 <label class="block text-sm font-medium text-gray-400">Nome:</label>
-                <input 
-                    type="text" 
-                    id="edit-name-input" 
-                    placeholder="Digite seu nome..." 
-                    class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400"
-                    maxlength="30"
-                />
+                <input type="text" id="edit-name-input" placeholder="Digite seu nome..." class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" maxlength="30"/>
                 <p class="text-xs text-gray-500">Máximo 30 caracteres</p>
             </div>
-            
             <div class="flex space-x-3">
-                <button id="cancel-edit-name-btn-2" class="flex-1 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300 font-medium">
-                    Cancelar
-                </button>
-                <button id="save-name-btn" class="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 font-medium">
-                    Salvar
-                </button>
+                <button id="cancel-edit-name-btn-2" class="flex-1 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300 font-medium">Cancelar</button>
+                <button id="save-name-btn" class="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 font-medium">Salvar</button>
             </div>
         </div>
     </div>
