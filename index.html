@@ -2551,10 +2551,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.id === 'test-btn') {
                 showNotification('Aplicativo funcionando perfeitamente!', 'info');
             }
-        });
-
-        // Inicializar busca
-        initializeSearch();
+        });        // Inicializar busca
+        // initializeSearch(); // Função comentada temporariamente
 
         // Inicializar foto do usuário
         initializeUserPhoto();
@@ -2568,11 +2566,15 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeNameEffects();
         initializeNameBanners();
         initializeProfileDetail();
-    }
-
-    // INICIALIZAR APLICAÇÃO
+    }    // INICIALIZAR APLICAÇÃO
     main();
 });
+
+// Função placeholder para search
+function initializeSearch() {
+    console.log('🔍 Sistema de busca inicializado');
+    // TODO: Implementar sistema de busca
+}
 </script>
     function renderAllConversations() {
         const conversationsList = document.getElementById('all-conversations-list');
@@ -2612,41 +2614,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `).join('');
-        }
-    }
-
-    // Inicializar busca
-    function initializeSearch() {
-        const searchInput = document.getElementById('search-conversations-input');
-        
-        searchInput?.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const allConversations = document.querySelectorAll('[data-conversation-id]');
-            
-            if (searchTerm.length > 0) {
-                allConversations.forEach(conv => {
-                    const nameElement = conv.querySelector('.text-white.font-medium');
-                    const messageElement = conv.querySelector('.text-gray-400.text-sm');
-                    
-                    if (nameElement && messageElement) {
-                        const name = nameElement.textContent.toLowerCase();
-                        const lastMessage = messageElement.textContent.toLowerCase();
-                        
-                        if (name.includes(searchTerm) || lastMessage.includes(searchTerm)) {
-                            conv.style.display = 'flex';
-                        } else {
-                            conv.style.display = 'none';
-                        }
-                    }
-                });
-            } else {
-                // Mostrar todas as conversas
-                allConversations.forEach(conv => {
-                    conv.style.display = 'flex';
-                });
-            }
-        });
-    }
+        }    }
 
     // Clique nas conversas
     function initializeConversationClicks() {
