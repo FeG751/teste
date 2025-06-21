@@ -681,10 +681,105 @@
     left: 0 !important;
     width: 100% !important;
     height: 100vh !important;
-    background: #111827 !important;
-    border-radius: 0 !important;
+    background: #111827 !important;    border-radius: 0 !important;
     margin: 0 !important;
     z-index: 9999 !important;
+}
+
+/* Modal de visualização de imagem */
+#image-viewer-modal {
+    backdrop-filter: blur(10px);
+    animation: fadeInViewer 0.3s ease-out;
+}
+
+#image-viewer-modal img {
+    max-width: 90vw;
+    max-height: 90vh;
+    transition: transform 0.3s ease;
+}
+
+/* Animação de entrada */
+@keyframes fadeInViewer {
+    from { 
+        opacity: 0; 
+        backdrop-filter: blur(0px);
+    }
+    to { 
+        opacity: 1; 
+        backdrop-filter: blur(10px);
+    }
+}
+
+/* Botão de fechar responsivo */
+#close-image-viewer-btn {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 8px;
+    backdrop-filter: blur(10px);
+}
+
+#close-image-viewer-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Mobile específico */
+@media (max-width: 768px) {
+    #image-viewer-modal {
+        padding: 0;
+    }
+    
+    #image-viewer-modal img {
+        max-width: 100vw;
+        max-height: 100vh;
+    }
+    
+    #close-image-viewer-btn {
+        top: max(16px, env(safe-area-inset-top, 16px));
+        right: 16px;
+    }
+}
+
+/* Foto de perfil clicável nas configurações */
+#settings-user-pic {
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+#settings-user-pic:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+#settings-user-pic:not(.hidden) {
+    cursor: pointer;
+}
+
+/* Indicador visual de que é clicável */
+.settings-user-pic-container {
+    position: relative;
+}
+
+.settings-user-pic-container::after {
+    content: '🔍';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: rgba(59, 130, 246, 0.9);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.settings-user-pic-container:hover::after {
+    opacity: 1;
 }
 </style>
 </head>
@@ -848,10 +943,9 @@
         </div>
         
         <!-- Conteúdo -->
-        <div class="p-6">
-            <!-- Seção do Usuário -->
+        <div class="p-6">            <!-- Seção do Usuário -->
             <div class="flex items-center space-x-4 mb-8">
-                <div class="relative">
+                <div class="relative settings-user-pic-container">
                     <div class="w-16 h-16 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden">
                         <img id="settings-user-pic" class="w-full h-full object-cover hidden" alt="Perfil">
                         <svg id="settings-user-icon" class="w-8 h-8 text-gray-400 m-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1141,11 +1235,32 @@
                         <div class="w-8 h-6 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-sm relative overflow-hidden">
                             <div class="absolute inset-0 opacity-60">🌌🚀</div>
                         </div>
-                        <span class="text-white font-medium">Galáxia</span>
-                    </div>
+                        <span class="text-white font-medium">Galáxia</span>                    </div>
                     <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Visualização da Imagem -->
+<div id="image-viewer-modal" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[100]">
+    <div class="relative w-full h-full flex items-center justify-center p-4">
+        <!-- Botão Fechar -->
+        <button id="close-image-viewer-btn" class="absolute top-4 right-4 text-white hover:text-gray-300 z-20">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        
+        <!-- Imagem -->
+        <div class="max-w-full max-h-full flex items-center justify-center">
+            <img id="viewer-image" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Foto do perfil">
+        </div>
+        
+        <!-- Indicador de toque para fechar (mobile) -->
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm opacity-75">
+            Toque para fechar
         </div>
     </div>
 </div>
@@ -1341,12 +1456,12 @@
 
         // Inicializar cliques nas conversas
         initializeConversationClicks();        // Inicializar foto do usuário
-        initializeUserPhoto();        // Inicializar configurações
-        initializeSettings();        initializeProfile();
+        initializeUserPhoto();        // Inicializar configurações        initializeSettings();        initializeProfile();
         initializeEditName();
         initializeEditStatus();
         initializeNameEffects();
         initializeNameBanners(); // ADICIONE ESTA LINHA
+        initializeImageViewer(); // ADICIONE ESTA LINHA
         initializeProfileDetail();
 
         // Renderizar conversas vazias inicialmente
@@ -2276,10 +2391,67 @@
                     
                     updateBannerPreview(currentBanner);
                 }
-            } catch (error) {
-                console.error('Erro ao carregar banner atual:', error);
+            } catch (error) {                console.error('Erro ao carregar banner atual:', error);
             }
         }
+    }
+
+    // NOVA FUNÇÃO - Inicializar visualizador de imagem
+    function initializeImageViewer() {
+        const imageViewerModal = document.getElementById('image-viewer-modal');
+        const viewerImage = document.getElementById('viewer-image');
+        const closeViewerBtn = document.getElementById('close-image-viewer-btn');
+        const settingsUserPic = document.getElementById('settings-user-pic');
+        
+        // Função para abrir visualizador
+        function openImageViewer(imageSrc) {
+            if (imageSrc && !imageSrc.includes('placeholder') && !imageSrc.includes('default')) {
+                viewerImage.src = imageSrc;
+                imageViewerModal.classList.remove('hidden');
+                
+                // Prevenir scroll do body
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        // Função para fechar visualizador
+        function closeImageViewer() {
+            imageViewerModal.classList.add('hidden');
+            
+            // Restaurar scroll do body
+            document.body.style.overflow = '';
+        }
+        
+        // Clique na foto de perfil nas configurações
+        settingsUserPic?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!settingsUserPic.classList.contains('hidden')) {
+                openImageViewer(settingsUserPic.src);
+            }
+        });
+        
+        // Clique no botão fechar
+        closeViewerBtn?.addEventListener('click', closeImageViewer);
+        
+        // Clique fora da imagem para fechar
+        imageViewerModal?.addEventListener('click', (e) => {
+            if (e.target === imageViewerModal) {
+                closeImageViewer();
+            }
+        });
+        
+        // Tecla ESC para fechar
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !imageViewerModal.classList.contains('hidden')) {
+                closeImageViewer();
+            }
+        });
+        
+        // Toque na imagem para fechar (mobile)
+        viewerImage?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeImageViewer();
+        });
     }
 
     // INICIALIZAR APLICAÇÃO
