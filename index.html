@@ -2200,9 +2200,24 @@
                 settingsModal.classList.add('hidden');
                 openEditStatusModal();
             });
-            
-            // Logout
-            logoutOption?.addEventListener('click', async () => {                try {
+              // Logout
+            logoutOption?.addEventListener('click', async () => {                
+                try {
+                    // Limpar todos os listeners no logout
+                    if (window.notificationsUnsubscribe) {
+                        window.notificationsUnsubscribe();
+                        window.notificationsUnsubscribe = null;
+                    }
+                    
+                    if (window.friendsUnsubscribe) {
+                        window.friendsUnsubscribe();
+                        window.friendsUnsubscribe = null;
+                    }
+                    
+                    // Limpar dados locais
+                    friendRequests = [];
+                    updateNotificationsBadge();
+                    
                     await auth.signOut();
                     settingsModal.classList.add('hidden');
                     showNotification('Logout realizado com sucesso!', 'info');
@@ -2273,16 +2288,17 @@
                 console.error('Erro ao carregar dados do usuário:', error);
             }
         }
-        
-        // Carregar dados do usuário após login        
+          // Carregar dados do usuário após login - VERSÃO CORRIGIDA        
         async function loadUserDataOnLogin() {            
-            // Testar conexão com Firebase primeiro
-            await testFirebaseConnection();
-            
-            const user = auth.currentUser;
-            if (!user) return;
-            
             try {
+                console.log('👤 Carregando dados completos do usuário...');
+                
+                // Testar conexão com Firebase primeiro
+                await testFirebaseConnection();
+                
+                const user = auth.currentUser;
+                if (!user) return;
+                
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 const userData = userDoc.data();
                 
@@ -2307,8 +2323,25 @@
                     applyNameEffectToInterface(userData.nameEffect);
                 }
                 
+                // NOVO: Configurar todos os listeners e carregar dados
+                setTimeout(async () => {
+                    console.log('🔄 Inicializando sistema completo...');
+                    
+                    // Carregar notificações
+                    await loadNotifications();
+                    
+                    // Carregar lista de amigos
+                    await loadFriendsList();
+                    
+                    // Configurar listeners em tempo real
+                    setupNotificationsListener();
+                    setupFriendsListener();
+                    
+                    console.log('✅ Sistema completo inicializado');
+                }, 1500);
+                
             } catch (error) {
-                console.error('Erro ao carregar dados do usuário:', error);
+                console.error('❌ Erro ao carregar dados do usuário:', error);
             }
         }
         
@@ -3420,22 +3453,217 @@ document.addEventListener('DOMContentLoaded', function () {
 // Gerenciamento de notificações
 let friendRequests = [];
 
-// Função para adicionar nova solicitação de amizade (para usar quando receber uma)
-function addFriendRequest(name, avatar = null) {
-    const newRequest = {
-        id: Date.now(),
-        name: name,
-        avatar: avatar
-    };
-    friendRequests.push(newRequest);
-    updateNotificationsBadge();
+// SISTEMA REAL DE NOTIFICAÇÕES DO FIREBASE - SUBSTITUA TODO O BLOCO ANTERIOR
+friendRequests = [];
+
+// Função para carregar notificações do Firebase - VERSÃO REAL
+async function loadNotifications() {
+    try {
+        if (!currentUser) {
+            console.log('❌ Usuário não logado para carregar notificações');
+            return;
+        }
+        
+        console.log('🔔 Carregando notificações reais do Firebase...');
+        
+        // Buscar solicitações de amizade recebidas
+        const friendRequestsRef = db.collection('friend_requests');
+        const friendRequestsQuery = friendRequestsRef
+            .where('to', '==', currentUser.uid)
+            .where('status', '==', 'pending');
+        
+        const friendRequestsSnapshot = await friendRequestsQuery.get();
+        
+        console.log(`📨 Solicitações encontradas: ${friendRequestsSnapshot.size}`);
+        
+        // Limpar array de solicitações
+        friendRequests = [];
+        
+        // Adicionar solicitações encontradas
+        friendRequestsSnapshot.forEach((doc) => {
+            const requestData = doc.data();
+            friendRequests.push({
+                id: doc.id,
+                name: requestData.fromName || 'Usuário',
+                avatar: requestData.fromPhoto || null,
+                fromId: requestData.from,
+                createdAt: requestData.createdAt
+            });
+            
+            console.log('✅ Solicitação adicionada:', {
+                id: doc.id,
+                from: requestData.fromName,
+                to: requestData.toName
+            });
+        });
+        
+        // Atualizar badge e renderizar
+        updateNotificationsBadge();
+        renderFriendRequests();
+        
+        console.log(`🔔 ${friendRequests.length} notificações carregadas`);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar notificações:', error);
+    }
+}
+
+// Função para configurar listener em tempo real para notificações
+function setupNotificationsListener() {
+    if (!currentUser) return;
     
-    // Animar o sino quando receber nova notificação
-    const notificationBtn = document.getElementById('notifications-btn');
-    notificationBtn.classList.add('notification-new');
-    setTimeout(() => {
-        notificationBtn.classList.remove('notification-new');
-    }, 600);
+    console.log('👂 Configurando listener de notificações em tempo real...');
+    
+    // Listener para solicitações de amizade
+    const friendRequestsRef = db.collection('friend_requests');
+    const friendRequestsQuery = friendRequestsRef
+        .where('to', '==', currentUser.uid)
+        .where('status', '==', 'pending');
+    
+    // Escutar mudanças em tempo real
+    const unsubscribe = friendRequestsQuery.onSnapshot((snapshot) => {
+        console.log('🔄 Mudança detectada nas solicitações de amizade');
+        
+        // Limpar solicitações atuais
+        friendRequests = [];
+        
+        // Adicionar novas solicitações
+        snapshot.forEach((doc) => {
+            const requestData = doc.data();
+            friendRequests.push({
+                id: doc.id,
+                name: requestData.fromName || 'Usuário',
+                avatar: requestData.fromPhoto || null,
+                fromId: requestData.from,
+                createdAt: requestData.createdAt
+            });
+        });
+        
+        // Atualizar interface
+        updateNotificationsBadge();
+        renderFriendRequests();
+        
+        // Mostrar notificação se houver novas solicitações
+        if (friendRequests.length > 0) {
+            showNotification(`Você tem ${friendRequests.length} solicitação(ões) de amizade`, 'info');
+        }
+        
+        console.log(`🔔 Listener atualizado: ${friendRequests.length} solicitações`);
+    }, (error) => {
+        console.error('❌ Erro no listener de notificações:', error);
+    });
+    
+    // Salvar referência para poder cancelar depois
+    window.notificationsUnsubscribe = unsubscribe;
+}
+
+// Função para aceitar solicitação de amizade - VERSÃO REAL
+async function acceptFriendRequest(requestId) {
+    try {
+        console.log('✅ Aceitando solicitação:', requestId);
+        
+        // Buscar dados da solicitação
+        const requestRef = db.collection('friend_requests').doc(requestId);
+        const requestDoc = await requestRef.get();
+        
+        if (!requestDoc.exists) {
+            console.error('❌ Solicitação não encontrada');
+            showNotification('Solicitação não encontrada', 'error');
+            return;
+        }
+        
+        const requestData = requestDoc.data();
+        console.log('📋 Dados da solicitação:', requestData);
+        
+        // Usar transação para garantir consistência
+        await db.runTransaction(async (transaction) => {
+            // 1. Atualizar status da solicitação
+            transaction.update(requestRef, {
+                status: 'accepted',
+                acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // 2. Buscar dados dos usuários
+            const currentUserRef = db.collection('users').doc(currentUser.uid);
+            const friendUserRef = db.collection('users').doc(requestData.from);
+            
+            const currentUserDoc = await transaction.get(currentUserRef);
+            const friendUserDoc = await transaction.get(friendUserRef);
+            
+            // 3. Adicionar como amigos mútuos
+            const currentUserData = currentUserDoc.data() || {};
+            const friendUserData = friendUserDoc.data() || {};
+            
+            const currentUserFriends = currentUserData.friends || [];
+            const friendUserFriends = friendUserData.friends || [];
+            
+            // Adicionar IDs nas listas de amigos (se não existir)
+            if (!currentUserFriends.includes(requestData.from)) {
+                transaction.update(currentUserRef, {
+                    friends: firebase.firestore.FieldValue.arrayUnion(requestData.from)
+                });
+            }
+            
+            if (!friendUserFriends.includes(currentUser.uid)) {
+                transaction.update(friendUserRef, {
+                    friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+                });
+            }
+        });
+        
+        // Atualização imediata na interface local
+        friendRequests = friendRequests.filter(req => req.id !== requestId);
+        updateNotificationsBadge();
+        renderFriendRequests();
+        
+        // IMPORTANTE: Recarregar lista de amigos
+        console.log('🔄 Recarregando lista de amigos...');
+        await loadFriendsList();
+        
+        showNotification(`${requestData.fromName} agora é seu amigo!`, 'success');
+        console.log('✅ Solicitação aceita e amizade criada com sucesso');
+        
+    } catch (error) {
+        console.error('❌ Erro ao aceitar solicitação:', error);
+        showNotification('Erro ao aceitar solicitação: ' + error.message, 'error');
+    }
+}
+
+// Função para rejeitar solicitação de amizade
+async function rejectFriendRequest(requestId) {
+    try {
+        console.log('❌ Rejeitando solicitação:', requestId);
+        
+        // Buscar dados da solicitação
+        const requestRef = db.collection('friend_requests').doc(requestId);
+        const requestDoc = await requestRef.get();
+        
+        if (!requestDoc.exists) {
+            console.error('❌ Solicitação não encontrada');
+            showNotification('Solicitação não encontrada', 'error');
+            return;
+        }
+        
+        const requestData = requestDoc.data();
+        
+        // Atualizar status da solicitação para rejeitada
+        await requestRef.update({
+            status: 'rejected',
+            rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Atualização imediata na interface local
+        friendRequests = friendRequests.filter(req => req.id !== requestId);
+        updateNotificationsBadge();
+        renderFriendRequests();
+        
+        showNotification(`Solicitação de ${requestData.fromName} foi rejeitada`, 'info');
+        console.log('✅ Solicitação rejeitada com sucesso');
+        
+    } catch (error) {
+        console.error('❌ Erro ao rejeitar solicitação:', error);
+        showNotification('Erro ao rejeitar solicitação: ' + error.message, 'error');
+    }
 }
 
 function updateNotificationsBadge() {
@@ -3452,35 +3680,70 @@ function updateNotificationsBadge() {
 
 function renderFriendRequests() {
     const container = document.getElementById('friend-requests-list');
-    const emptyState = document.getElementById('notifications-empty-state');
+    if (!container) return;
+    
+    console.log('🎨 Renderizando solicitações de amizade:', friendRequests.length);
     
     if (friendRequests.length === 0) {
-        container.innerHTML = '';
-        emptyState.classList.remove('hidden');
+        container.innerHTML = `
+            <div class="text-center text-gray-400 py-12">
+                <i class="fas fa-bell-slash text-6xl text-gray-600 mb-4"></i>
+                <p class="text-lg mb-2">Nenhuma notificação</p>
+                <p class="text-sm">Você não tem solicitações de amizade pendentes</p>
+            </div>
+        `;
         return;
     }
     
-    emptyState.classList.add('hidden');    container.innerHTML = friendRequests.map(request => `
-        <div class="friend-request-item bg-gray-700 rounded-lg p-4 flex items-center justify-between" data-request-id="${request.id}">
-            <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 rounded-full bg-gray-600 overflow-hidden">
-                    <img src="${request.avatar || 'https://placehold.co/48x48/6b7280/ffffff?text=' + request.name.charAt(0)}" alt="Avatar" class="w-full h-full object-cover">
+    container.innerHTML = friendRequests.map(request => `
+        <div class="friend-request-item bg-gray-700 rounded-lg p-4 mb-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-gray-600 overflow-hidden">
+                        ${request.avatar ? 
+                            `<img src="${request.avatar}" alt="${request.name}" class="w-full h-full object-cover">` :
+                            `<div class="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg">${request.name.charAt(0).toUpperCase()}</div>`
+                        }
+                    </div>
+                    <div>
+                        <h4 class="text-white font-medium">${request.name}</h4>
+                        <p class="text-gray-400 text-sm">Quer ser seu amigo</p>
+                        ${request.createdAt ? `<p class="text-xs text-gray-500">${formatDate(request.createdAt)}</p>` : ''}
+                    </div>
                 </div>
-                <div>
-                    <h4 class="text-white font-medium">${request.name}</h4>
-                    <p class="text-gray-400 text-sm">Quer ser seu amigo</p>
+                <div class="flex space-x-2">
+                    <button 
+                        onclick="acceptFriendRequest('${request.id}')"
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors">
+                        Aceitar
+                    </button>
+                    <button 
+                        onclick="rejectFriendRequest('${request.id}')"
+                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors">
+                        Rejeitar
+                    </button>
                 </div>
-            </div>
-            <div class="flex space-x-2">
-                <button class="accept-friend-btn bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm transition-colors">
-                    Aceitar
-                </button>
-                <button class="reject-friend-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm transition-colors">
-                    Recusar
-                </button>
             </div>
         </div>
     `).join('');
+}
+
+// Função auxiliar para formatar data
+function formatDate(timestamp) {
+    if (!timestamp) return 'Agora';
+    
+    try {
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const now = new Date();
+        const diffMinutes = Math.floor((now - date) / (1000 * 60));
+        
+        if (diffMinutes < 1) return 'Agora';
+        if (diffMinutes < 60) return `${diffMinutes}m atrás`;
+        if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h atrás`;
+        return date.toLocaleDateString();
+    } catch (error) {
+        return 'Recente';
+    }
 }
 
 // Event listeners para notificações
@@ -3493,32 +3756,188 @@ document.getElementById('close-notifications-btn').addEventListener('click', fun
     document.getElementById('notifications-modal').classList.add('hidden');
 });
 
-// Aceitar/Recusar solicitações
-document.getElementById('friend-requests-list').addEventListener('click', function(e) {
-    if (e.target.classList.contains('accept-friend-btn')) {
-        const requestId = parseInt(e.target.closest('.friend-request-item').dataset.requestId);
-        const request = friendRequests.find(req => req.id === requestId);
-        friendRequests = friendRequests.filter(req => req.id !== requestId);
-        updateNotificationsBadge();
-        renderFriendRequests();
-        showNotification(`${request.name} foi adicionado aos seus amigos!`, 'success');
-    }
-    
-    if (e.target.classList.contains('reject-friend-btn')) {
-        const requestId = parseInt(e.target.closest('.friend-request-item').dataset.requestId);
-        const request = friendRequests.find(req => req.id === requestId);
-        friendRequests = friendRequests.filter(req => req.id !== requestId);
-        updateNotificationsBadge();
-        renderFriendRequests();
-        showNotification(`Solicitação de ${request.name} foi recusada`, 'info');
-    }
-});
-
-// Inicializar notificações (sem dados falsos)
+// Inicializar sistema de notificações
 updateNotificationsBadge();
 
-// Exemplo de como usar para adicionar uma solicitação real:
-// addFriendRequest('Nome do Usuario', 'url_da_foto');
+// Função para carregar lista de amigos do Firebase
+async function loadFriendsList() {
+    try {
+        if (!currentUser) {
+            console.log('❌ Usuário não logado para carregar amigos');
+            return;
+        }
+        
+        console.log('👥 Carregando lista de amigos...');
+        
+        // Buscar dados do usuário atual
+        const currentUserRef = db.collection('users').doc(currentUser.uid);
+        const currentUserDoc = await currentUserRef.get();
+        
+        if (!currentUserDoc.exists) {
+            console.log('❌ Documento do usuário não encontrado');
+            return;
+        }
+        
+        const userData = currentUserDoc.data();
+        const friendIds = userData.friends || [];
+        
+        console.log('📋 IDs dos amigos:', friendIds);
+        
+        if (friendIds.length === 0) {
+            renderFriendsTab('all', []);
+            renderFriendsTab('online', []);
+            return;
+        }
+        
+        // Buscar dados dos amigos
+        const friendsData = [];
+        
+        // Processar em lotes para evitar problemas com muitos amigos
+        const batchSize = 10;
+        for (let i = 0; i < friendIds.length; i += batchSize) {
+            const batchIds = friendIds.slice(i, i + batchSize);
+            
+            const friendsQuery = db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', batchIds);
+            const friendsSnapshot = await friendsQuery.get();
+            
+            friendsSnapshot.forEach((doc) => {
+                const friendData = doc.data();
+                friendsData.push({
+                    id: doc.id,
+                    name: friendData.username || friendData.displayName || friendData.email || 'Usuário',
+                    avatar: friendData.photoURL || null,
+                    status: getUserStatus(friendData.lastSeen),
+                    lastSeen: friendData.lastSeen,
+                    userStatus: friendData.status || 'Usando 7Chat'
+                });
+            });
+        }
+        
+        console.log(`✅ ${friendsData.length} amigos carregados`);
+        
+        // Separar amigos online e offline
+        const onlineFriends = friendsData.filter(friend => friend.status === 'online');
+        
+        // Renderizar nas abas
+        renderFriendsTab('all', friendsData);
+        renderFriendsTab('online', onlineFriends);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar lista de amigos:', error);
+    }
+}
+
+// Função para renderizar amigos na aba específica
+function renderFriendsTab(tabName, friends) {
+    const containerId = `content-${tabName}`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.log(`❌ Container ${containerId} não encontrado`);
+        return;
+    }
+    
+    if (friends.length === 0) {
+        const emptyMessages = {
+            'all': {
+                icon: 'fas fa-user-friends',
+                title: 'Você ainda não tem amigos',
+                subtitle: 'Use a busca para encontrar e adicionar amigos'
+            },
+            'online': {
+                icon: 'fas fa-users',
+                title: 'Nenhum amigo online',
+                subtitle: 'Seus amigos aparecerão aqui quando estiverem online'
+            }
+        };
+        
+        const message = emptyMessages[tabName];
+        container.innerHTML = `
+            <div class="text-center text-gray-400 py-12">
+                <i class="${message.icon} text-6xl text-gray-600 mb-4"></i>
+                <p class="text-lg mb-2">${message.title}</p>
+                <p class="text-sm">${message.subtitle}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="space-y-3">
+            ${friends.map(friend => `
+                <div class="bg-gray-700 rounded-lg p-4 flex items-center justify-between hover:bg-gray-600 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-600">
+                                ${friend.avatar ? 
+                                    `<img src="${friend.avatar}" alt="${friend.name}" class="w-full h-full object-cover">` :
+                                    `<div class="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg">${friend.name.charAt(0).toUpperCase()}</div>`
+                                }
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-700 user-status-${friend.status}"></div>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium">${friend.name}</h4>
+                            <p class="text-gray-400 text-sm">${friend.userStatus}</p>
+                            <p class="text-xs text-gray-500">${getStatusText(friend.status, friend.lastSeen)}</p>
+                        </div>
+                    </div>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Conversar
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Função auxiliar para texto de status
+function getStatusText(status, lastSeen) {
+    const statusTexts = {
+        'online': 'Online',
+        'away': 'Ausente',
+        'offline': getOfflineText(lastSeen)
+    };
+    return statusTexts[status] || 'Offline';
+}
+
+function getOfflineText(lastSeen) {
+    if (!lastSeen) return 'Offline';
+    
+    try {
+        const date = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
+        const now = new Date();
+        const diffMinutes = Math.floor((now - date) / (1000 * 60));
+        
+        if (diffMinutes < 60) return `Visto há ${diffMinutes}m`;
+        if (diffMinutes < 1440) return `Visto há ${Math.floor(diffMinutes / 60)}h`;
+        return `Visto há ${Math.floor(diffMinutes / 1440)}d`;
+    } catch (error) {
+        return 'Offline';
+    }
+}
+
+// Função para configurar listeners de amigos em tempo real
+function setupFriendsListener() {
+    if (!currentUser) return;
+    
+    console.log('👂 Configurando listener de amigos em tempo real...');
+    
+    // Listener para mudanças no documento do usuário (lista de amigos)
+    const currentUserRef = db.collection('users').doc(currentUser.uid);
+    
+    const unsubscribeFriends = currentUserRef.onSnapshot((doc) => {
+        if (doc.exists) {
+            console.log('🔄 Lista de amigos atualizada em tempo real');
+            loadFriendsList();
+        }
+    }, (error) => {
+        console.error('❌ Erro no listener de amigos:', error);
+    });
+    
+    // Salvar referência para poder cancelar depois
+    window.friendsUnsubscribe = unsubscribeFriends;
+}
 </script>
 
 <script>
