@@ -360,33 +360,40 @@
 
     // Função para inicializar o modal de configurações
     function initializeSettings() {
-        const settingsBtn = document.getElementById('settings-btn');
         const settingsModal = document.getElementById('settings-modal');
-        const closeSettingsBtn = document.getElementById('close-settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const photoUploadInput = document.getElementById('photo-upload-input');
-        const uploadPhotoBtn = document.getElementById('upload-photo-btn');
-        const userProfileBtn = document.getElementById('user-profile-btn'); // Botão de perfil
-
-        settingsBtn?.addEventListener('click', () => {
-            // Atualizar informações do usuário
-            updateSettingsUserInfo();
-            
-            settingsModal.classList.remove('hidden');
+        
+        // Abrir modal de perfil quando clicar no nome
+        const userNameClick = document.getElementById('settings-user-name-display');
+        const profileModal = document.getElementById('profile-modal');
+        
+        userNameClick?.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+            syncProfileData();
+            profileModal.classList.remove('hidden');
         });
-
+        
+        // Fechar modal de configurações
         closeSettingsBtn?.addEventListener('click', () => {
             settingsModal.classList.add('hidden');
         });
-
+        
+        // Fechar clicando fora
+        settingsModal?.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.add('hidden');
+            }
+        });
+        
+        // Botão de logout
         logoutBtn?.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
             document.getElementById('logout-confirm-modal').classList.remove('hidden');
         });
-
-        uploadPhotoBtn?.addEventListener('click', () => {
-            photoUploadInput.click();
-        });
-
+        
+        // Upload de foto
         photoUploadInput?.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -398,104 +405,218 @@
                 reader.readAsDataURL(file);
             }
         });
+        
+        // Inicializar confirmação de logout
+        initializeLogoutConfirmation();
+    }
 
-        // Abrir modal de perfil
-        userProfileBtn?.addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-            syncProfileData();
-            document.getElementById('profile-modal').classList.remove('hidden');
-        });
+    // Função para atualizar informações do usuário no modal de configurações
+    async function updateSettingsUserInfo() {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        const userNameElement = document.getElementById('settings-user-name-display');
+        const userEmailElement = document.getElementById('settings-user-email');
+        const userPicElement = document.getElementById('settings-user-pic');
+        const userIconElement = document.getElementById('settings-user-icon');
+        
+        try {
+            // Buscar dados do usuário no Firebase
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userData = userDoc.data();
+            
+            // Nome do usuário
+            if (user.isAnonymous) {
+                userNameElement.textContent = userData?.username || 'Usuário Convidado';
+                userEmailElement.textContent = 'Sessão temporária';
+            } else {
+                userNameElement.textContent = userData?.username || user.displayName || 'Usuário';
+                userEmailElement.textContent = user.email || 'Sem email';
+            }
+            
+            // Foto do usuário (buscar do Firebase)
+            if (userData?.photoURL) {
+                // Atualizar todas as fotos
+                const headerPic = document.getElementById('user-profile-pic');
+                const headerIcon = document.getElementById('user-profile-icon');
+                
+                headerPic.src = userData.photoURL;
+                headerPic.classList.remove('hidden');
+                headerIcon.classList.add('hidden');
+                
+                userPicElement.src = userData.photoURL;
+                userPicElement.classList.remove('hidden');
+                userIconElement.classList.add('hidden');
+            } else {
+                userPicElement.classList.add('hidden');
+                userIconElement.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados do usuário:', error);
+        }
     }
 
     // Função para inicializar o modal de perfil
     function initializeProfile() {
         const profileModal = document.getElementById('profile-modal');
-        const closeProfileModal = document.getElementById('close-profile-modal');
-
-        closeProfileModal?.addEventListener('click', () => {
+        const closeProfileBtn = document.getElementById('close-profile-modal');
+        const settingsModal = document.getElementById('settings-modal');
+        const profileUserPic = document.getElementById('profile-user-pic');
+        const profilePhotoViewer = document.getElementById('profile-photo-viewer');
+        const closeProfilePhotoBtn = document.getElementById('close-profile-photo-btn');
+        const editPhotoBtn = document.getElementById('edit-photo-btn');
+        const photoUploadInput = document.getElementById('photo-upload-input');
+        const editUserNameBtn = document.getElementById('edit-user-name-btn');
+        
+        // Fechar modal de perfil e voltar para configurações
+        closeProfileBtn?.addEventListener('click', () => {
             profileModal.classList.add('hidden');
+            settingsModal.classList.remove('hidden');
+        });
+        
+        // Clique na foto para visualizar
+        profileUserPic?.addEventListener('click', () => {
+            syncProfilePhotoViewer();
+            profilePhotoViewer.classList.remove('hidden');
+        });
+        
+        // Fechar visualizador de foto
+        closeProfilePhotoBtn?.addEventListener('click', () => {
+            profilePhotoViewer.classList.add('hidden');
+        });
+        
+        // Fechar clicando fora do visualizador
+        profilePhotoViewer?.addEventListener('click', (e) => {
+            if (e.target === profilePhotoViewer) {
+                profilePhotoViewer.classList.add('hidden');
+            }
+        });
+        
+        // Botão editar foto
+        editPhotoBtn?.addEventListener('click', () => {
+            photoUploadInput.click();
+        });
+        
+        // Editar nome do usuário
+        editUserNameBtn?.addEventListener('click', () => {
+            profileModal.classList.add('hidden');
+            syncEditNameData();
+            document.getElementById('edit-name-modal').classList.remove('hidden');
         });
     }
 
     // Função para inicializar edição de nome
     function initializeEditName() {
         const editNameModal = document.getElementById('edit-name-modal');
-        const closeEditNameModal = document.getElementById('close-edit-name-modal');
         const saveNameBtn = document.getElementById('save-name-btn');
         const cancelNameBtn = document.getElementById('cancel-name-btn');
+        const closeEditNameBtn = document.getElementById('close-edit-name-modal');
         const editNameInput = document.getElementById('edit-name-input');
-
-        closeEditNameModal?.addEventListener('click', () => {
+        const profileModal = document.getElementById('profile-modal');
+        
+        // Fechar modal
+        closeEditNameBtn?.addEventListener('click', () => {
             editNameModal.classList.add('hidden');
+            profileModal.classList.remove('hidden');
         });
-
-        cancelNameBtn?.addEventListener('click', () => {
-            editNameModal.classList.add('hidden');
-        });
-
-        saveNameBtn?.addEventListener('click', () => {
+        
+        // Salvar nome
+        saveNameBtn?.addEventListener('click', async () => {
             const newName = editNameInput.value.trim();
             if (newName) {
-                // Atualizar nome no Firebase e na interface
-                updateAllUserNames(newName);
-                
-                // Fechar modal
-                editNameModal.classList.add('hidden');
-            } else {
-                showNotification('Nome não pode ser vazio.', 'error');
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await setDoc(doc(db, 'users', user.uid), {
+                            username: newName
+                        }, { merge: true });
+                        
+                        updateAllUserNames(newName);
+                        editNameModal.classList.add('hidden');
+                        profileModal.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar nome:', error);
+                    showNotification('Erro ao atualizar nome.', 'error');
+                }
+            }
+        });
+        
+        // Cancelar edição
+        cancelNameBtn?.addEventListener('click', () => {
+            editNameModal.classList.add('hidden');
+            profileModal.classList.remove('hidden');
+        });
+        
+        // Enter para salvar
+        editNameInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveNameBtn.click();
             }
         });
     }
 
     // Sincronizar dados do perfil
     function syncProfileData() {
+        const settingsUserPic = document.getElementById('settings-user-pic');
+        const settingsUserIcon = document.getElementById('settings-user-icon');
+        const profileUserPic = document.getElementById('profile-user-pic');
+        const profileUserIcon = document.getElementById('profile-user-icon');
         const settingsUserName = document.getElementById('settings-user-name-display');
-        const settingsUserEmail = document.getElementById('settings-user-email');
         const profileUserName = document.getElementById('profile-user-name-display');
+        const settingsUserEmail = document.getElementById('settings-user-email');
         const profileUserEmail = document.getElementById('profile-user-email');
-
+        
+        // Sincronizar foto
+        if (!settingsUserPic.classList.contains('hidden')) {
+            profileUserPic.src = settingsUserPic.src;
+            profileUserPic.classList.remove('hidden');
+            profileUserIcon.classList.add('hidden');
+        } else {
+            profileUserPic.classList.add('hidden');
+            profileUserIcon.classList.remove('hidden');
+        }
+        
+        // Sincronizar nome e email
         profileUserName.textContent = settingsUserName.textContent;
         profileUserEmail.textContent = settingsUserEmail.textContent;
     }
 
     // Sincronizar visualizador de foto do perfil
     function syncProfilePhotoViewer() {
-        const settingsPic = document.getElementById('settings-user-pic');
-        const settingsIcon = document.getElementById('settings-user-icon');
-        const viewerPic = document.getElementById('photo-viewer-pic');
-        const viewerIcon = document.getElementById('photo-viewer-icon');
+        const profileUserPic = document.getElementById('profile-user-pic');
+        const profileUserIcon = document.getElementById('profile-user-icon');
+        const viewerPic = document.getElementById('profile-photo-viewer-pic');
+        const viewerIcon = document.getElementById('profile-photo-viewer-icon');
         
-        if (!settingsPic.classList.contains('hidden')) {
-            viewerPic.src = settingsPic.src;
+        if (!profileUserPic.classList.contains('hidden')) {
+            viewerPic.src = profileUserPic.src;
             viewerPic.classList.remove('hidden');
             viewerIcon.classList.add('hidden');
         } else {
             viewerPic.classList.add('hidden');
             viewerIcon.classList.remove('hidden');
         }
-    }    
+    }
+
     // Sincronizar dados para edição de nome
     function syncEditNameData() {
-        const settingsUserName = document.getElementById('settings-user-name-display');
+        const profileUserName = document.getElementById('profile-user-name-display');
         const editNameInput = document.getElementById('edit-name-input');
         
-        editNameInput.value = settingsUserName.textContent.trim();
+        editNameInput.value = profileUserName.textContent;
+        setTimeout(() => {
+            editNameInput.focus();
+            editNameInput.select();
+        }, 100);
     }
 
     // Atualizar todos os nomes do usuário
     function updateAllUserNames(newName) {
         const settingsUserName = document.getElementById('settings-user-name-display');
         const profileUserName = document.getElementById('profile-user-name-display');
-
-        // Atualizar no Firebase (se necessário)
-        const user = auth.currentUser;
-        if (user) {
-            updateDoc(doc(db, 'users', user.uid), {
-                username: newName
-            });
-        }
-
-        // Atualizar na interface
+        
         settingsUserName.textContent = newName;
         profileUserName.textContent = newName;
     }
@@ -698,34 +819,7 @@
     <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
         <div class="flex justify-between items-center">
             <h3 class="text-2xl font-bold text-white">Configurações</h3>
-            <button id="close-settings-modal" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
-        </div>
-        
-        <!-- Visualizador de foto em tela cheia -->
-        <div id="photo-viewer" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[70]">
-            <div class="relative">
-                <!-- Botão fechar no canto superior direito -->
-                <button id="close-photo-viewer" class="absolute -top-4 -right-4 w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center text-white text-xl z-10">
-                    &times;
-                </button>
-                
-                <!-- Foto oval grande -->
-                <div class="w-80 h-80 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center relative">
-                    <img id="photo-viewer-pic" class="w-full h-full object-cover hidden" alt="Perfil">
-                    <svg id="photo-viewer-icon" class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                    
-                    <!-- Botão trocar foto dentro da imagem -->
-                    <button id="change-photo-overlay-btn" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white font-medium flex items-center space-x-2 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 002-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0017.07 7H20a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <span>Trocar Foto</span>
-                    </button>
-                </div>
-            </div>
+            <button id="close-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
         </div>
         
         <!-- Informações do usuário -->
@@ -736,7 +830,8 @@
                     <svg id="settings-user-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                </div>                <div class="flex-1">
+                </div>
+                <div class="flex-1">
                     <p id="settings-user-name-display" class="text-white font-medium cursor-pointer hover:bg-gray-600 px-2 py-1 rounded transition-colors">Usuário</p>
                     <p id="settings-user-email" class="text-gray-400 text-sm">email@exemplo.com</p>
                 </div>
