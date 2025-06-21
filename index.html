@@ -803,13 +803,61 @@
         right: 10px !important;
         width: 40px !important;
         height: 40px !important;
-        font-size: 18px !important;
-        background: rgba(0, 0, 0, 0.8) !important;
+        font-size: 18px !important;        background: rgba(0, 0, 0, 0.8) !important;
     }
+}
+
+/* Estilos para notificações */
+#notifications-btn {
+    position: relative;
+}
+
+#notifications-badge {
+    animation: pulse 2s infinite;
+}
+
+/* Modal de notificações */
+#notifications-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background: #111827 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+}
+
+.friend-request-item {
+    border: 1px solid #374151;
+    transition: all 0.2s ease;
+}
+
+.friend-request-item:hover {
+    background-color: #4B5563;
+    border-color: #6B7280;
+}
+
+/* Animação para novas notificações */
+@keyframes notification-bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.notification-new {
+    animation: notification-bounce 0.6s ease-in-out;
 }
 </style>
 </head>
-<body class="bg-black text-gray-200">    <!-- Menu de Navegação Inferior -->
+<body class="bg-black text-gray-200"><!-- Menu de Navegação Inferior -->
     <div id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 shadow-lg z-50">
         <div class="flex justify-around text-gray-400">
             <a href="#" id="nav-friends" class="flex flex-col items-center justify-center p-3 text-center w-full hover:text-white transition-colors duration-300">
@@ -846,8 +894,14 @@
     </div>    <!-- CONTAINER PRINCIPAL DO APP -->
     <div id="app-container" class="hidden h-full w-full relative overflow-hidden bg-gray-900">        <!-- Header superior -->
         <div class="bg-gray-800 px-4 py-3 flex justify-between items-center border-b border-gray-700 min-h-[60px]">
-            <!-- Espaço vazio à esquerda para centralizar o título -->
-            <div class="w-10 flex-shrink-0"></div>
+            <!-- Sino de notificações (esquerda) -->
+            <div class="relative">
+                <button id="notifications-btn" class="w-10 h-10 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center hover:bg-gray-600 transition-colors duration-200">
+                    <i class="fas fa-bell text-gray-300 text-lg"></i>
+                </button>
+                <!-- Badge de notificação -->
+                <span id="notifications-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </div>
             
             <!-- Título Chats (centro) -->
             <div class="flex-1 flex justify-center">
@@ -857,13 +911,13 @@
             </div>
             
             <!-- Foto do usuário (direita) -->
-            <div id="user-profile-btn" class="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all duration-200 flex items-center justify-center flex-shrink-0">
+            <div id="user-profile-btn" class="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all duration-200">
                 <img id="user-profile-pic" class="w-full h-full object-cover hidden" alt="Perfil">
                 <svg id="user-profile-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
             </div>
-        </div>        <!-- Área de conteúdo principal -->
+        </div><!-- Área de conteúdo principal -->
         <div class="p-4 pb-20 h-full overflow-auto">
             <!-- Barra de busca (mais fina) -->
             <div class="relative mb-4">
@@ -1037,8 +1091,56 @@
                     </div>
                     <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
-                </div>            </div>
+                    </svg>                </div>            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Notificações -->
+<div id="notifications-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[80]">
+    <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
+        <!-- Header -->
+        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center px-4 py-3">
+            <button id="close-notifications-btn" class="text-gray-400 hover:text-gray-300 mr-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <h3 class="text-white font-semibold text-lg">Notificações</h3>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Lista de solicitações de amizade -->
+            <div id="friend-requests-list" class="p-4 space-y-3">
+                <!-- Exemplo de solicitação -->
+                <div class="friend-request-item bg-gray-700 rounded-lg p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-gray-600 overflow-hidden">
+                            <img src="https://placehold.co/48x48/4f46e5/ffffff?text=U" alt="Avatar" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium">João Silva</h4>
+                            <p class="text-gray-400 text-sm">Quer ser seu amigo</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="accept-friend-btn bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm transition-colors">
+                            Aceitar
+                        </button>
+                        <button class="reject-friend-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm transition-colors">
+                            Recusar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Estado vazio -->
+            <div id="notifications-empty-state" class="hidden text-center text-gray-400 py-12">
+                <i class="fas fa-bell-slash text-6xl text-gray-600 mb-4"></i>
+                <p class="text-lg mb-2">Nenhuma notificação</p>
+                <p class="text-sm">Você não tem solicitações de amizade pendentes</p>
+            </div>
         </div>
     </div>
 </div>
@@ -1274,7 +1376,8 @@
                         </div>
                         <span class="text-white font-medium">Galáxia</span>
                     </div>
-                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>                </div>            </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>            </div>
         </div>
     </div>
 </div>
@@ -2438,7 +2541,7 @@
         </div>
         <div class="p-6 space-y-6">
             <div class="flex justify-center">
-                <div class="w-32 h-32 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center">
+                <div class="w-32 h-32 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center mb-4">
                     <img id="profile-modal-pic" class="w-full h-full object-cover hidden" alt="Perfil">
                     <svg id="profile-modal-icon" class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -2458,7 +2561,7 @@
                 </button>
                 <button id="change-photo-from-profile-btn" class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 002-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 002 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                     <span>Trocar Foto</span>
@@ -2719,7 +2822,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         console.log('✅ Event listener da foto adicionado');
     } else {
-        console.log('❌ ERRO: settings-photo-container não encontrado!');
+        console.log('❌ ERRO: settingsUserPhotoContainer não encontrado!');
     }
     
     // Event listeners para fechar o modal
@@ -2767,6 +2870,111 @@ document.addEventListener('DOMContentLoaded', function () {
         photoViewerModal.classList.remove('show');
     });
 });
+</script>
+
+<script>
+// Gerenciamento de notificações
+let friendRequests = [];
+
+// Função para adicionar nova solicitação de amizade (para usar quando receber uma)
+function addFriendRequest(name, avatar = null) {
+    const newRequest = {
+        id: Date.now(),
+        name: name,
+        avatar: avatar
+    };
+    friendRequests.push(newRequest);
+    updateNotificationsBadge();
+    
+    // Animar o sino quando receber nova notificação
+    const notificationBtn = document.getElementById('notifications-btn');
+    notificationBtn.classList.add('notification-new');
+    setTimeout(() => {
+        notificationBtn.classList.remove('notification-new');
+    }, 600);
+}
+
+function updateNotificationsBadge() {
+    const badge = document.getElementById('notifications-badge');
+    const count = friendRequests.length;
+    
+    if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+function renderFriendRequests() {
+    const container = document.getElementById('friend-requests-list');
+    const emptyState = document.getElementById('notifications-empty-state');
+    
+    if (friendRequests.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    emptyState.classList.add('hidden');    container.innerHTML = friendRequests.map(request => `
+        <div class="friend-request-item bg-gray-700 rounded-lg p-4 flex items-center justify-between" data-request-id="${request.id}">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-gray-600 overflow-hidden">
+                    <img src="${request.avatar || 'https://placehold.co/48x48/6b7280/ffffff?text=' + request.name.charAt(0)}" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h4 class="text-white font-medium">${request.name}</h4>
+                    <p class="text-gray-400 text-sm">Quer ser seu amigo</p>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button class="accept-friend-btn bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm transition-colors">
+                    Aceitar
+                </button>
+                <button class="reject-friend-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm transition-colors">
+                    Recusar
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Event listeners para notificações
+document.getElementById('notifications-btn').addEventListener('click', function() {
+    document.getElementById('notifications-modal').classList.remove('hidden');
+    renderFriendRequests();
+});
+
+document.getElementById('close-notifications-btn').addEventListener('click', function() {
+    document.getElementById('notifications-modal').classList.add('hidden');
+});
+
+// Aceitar/Recusar solicitações
+document.getElementById('friend-requests-list').addEventListener('click', function(e) {
+    if (e.target.classList.contains('accept-friend-btn')) {
+        const requestId = parseInt(e.target.closest('.friend-request-item').dataset.requestId);
+        const request = friendRequests.find(req => req.id === requestId);
+        friendRequests = friendRequests.filter(req => req.id !== requestId);
+        updateNotificationsBadge();
+        renderFriendRequests();
+        showNotification(`${request.name} foi adicionado aos seus amigos!`, 'success');
+    }
+    
+    if (e.target.classList.contains('reject-friend-btn')) {
+        const requestId = parseInt(e.target.closest('.friend-request-item').dataset.requestId);
+        const request = friendRequests.find(req => req.id === requestId);
+        friendRequests = friendRequests.filter(req => req.id !== requestId);
+        updateNotificationsBadge();
+        renderFriendRequests();
+        showNotification(`Solicitação de ${request.name} foi recusada`, 'info');
+    }
+});
+
+// Inicializar notificações (sem dados falsos)
+updateNotificationsBadge();
+
+// Exemplo de como usar para adicionar uma solicitação real:
+// addFriendRequest('Nome do Usuario', 'url_da_foto');
 </script>
 
 </body>
