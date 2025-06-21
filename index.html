@@ -686,7 +686,7 @@
     z-index: 9999 !important;
 }
 
-/* Estilos para o Modal de Visualização da Foto - VERSÃO MELHORADA */
+/* Estilos para o Modal de Visualização da Foto - VERSÃO CORRIGIDA */
 #photo-viewer-modal {
     position: fixed !important;
     top: 0 !important;
@@ -696,10 +696,14 @@
     background: rgba(0, 0, 0, 0.9) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 10000 !important;
-    display: flex !important;
+    z-index: 1000 !important; /* Reduzido de 10000 para 1000 */
+    display: none !important; /* Iniciado como oculto */
     align-items: center !important;
     justify-content: center !important;
+}
+
+#photo-viewer-modal.show {
+    display: flex !important; /* Só aparece quando tem classe 'show' */
 }
 
 #photo-viewer-modal .modal-content {
@@ -2586,14 +2590,16 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🎯 Mostrando modal de foto');
         // Mostrar modal
         photoViewerModal.classList.remove('hidden');
+        photoViewerModal.classList.add('show');
         
         // Prevenir scroll do body
         document.body.style.overflow = 'hidden';
     }
-      // Função para fechar o modal
+    // Função para fechar o modal
     function closePhotoViewer() {
         console.log('❌ closePhotoViewer() chamada');
         photoViewerModal.classList.add('hidden');
+        photoViewerModal.classList.remove('show');
         document.body.style.overflow = 'auto';    }
       // Event listener para abrir o modal quando clicar na foto das configurações
     const settingsUserPhotoContainer = document.getElementById('settings-photo-container');
@@ -2627,7 +2633,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fechar modal com tecla ESC
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && photoViewerModal && !photoViewerModal.classList.contains('hidden')) {
+        if (e.key === 'Escape' && photoViewerModal && photoViewerModal.classList.contains('show')) {
             closePhotoViewer();
         }
     });
