@@ -386,12 +386,12 @@
 }
 
 /* Radio button selecionado */
-.effect-radio.selected {
+.effect-radio.selected, .banner-radio.selected {
     background-color: #3b82f6;
     border-color: #3b82f6;
 }
 
-.effect-radio.selected::after {
+.effect-radio.selected::after, .banner-radio.selected::after {
     content: '';
     display: block;
     width: 6px;
@@ -402,7 +402,7 @@
 }
 
 /* Incluir modal de efeitos na lista de modais em tela cheia */
-#name-effects-modal {
+#name-effects-modal, #name-banners-modal {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -412,6 +412,190 @@
     border-radius: 0 !important;
     margin: 0 !important;
     z-index: 9999 !important;
+}
+
+/* Banner decorativo styles - só aparecem em mensagens de chat */
+.name-banner {
+    position: relative;
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin: 2px 0;
+}
+
+.name-banner-heart-pink {
+    background: linear-gradient(135deg, #ff7eb9, #ff65b3, #ff8cc8);
+    background-size: 200% 200%;
+    animation: heartPinkGlow 3s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.name-banner-heart-pink::before {
+    content: '💖 ✨ 💖 ✨ 💖';
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 10px;
+    opacity: 0.6;
+    animation: floatingHearts 4s linear infinite;
+    pointer-events: none;
+}
+
+.name-banner-golden-stars {
+    background: linear-gradient(135deg, #ffd700, #ffed4e, #ffa502);
+    background-size: 200% 200%;
+    animation: goldenShine 3s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.name-banner-golden-stars::before {
+    content: '⭐ ✨ ⭐ ✨ ⭐';
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 10px;
+    opacity: 0.7;
+    animation: floatingStars 4s linear infinite;
+    pointer-events: none;
+}
+
+.name-banner-nature {
+    background: linear-gradient(135deg, #2ed573, #7bed9f, #5f27cd);
+    background-size: 200% 200%;
+    animation: natureFlow 4s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.name-banner-nature::before {
+    content: '🌿 🍃 🌿 🍃 🌿';
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 10px;
+    opacity: 0.6;
+    animation: floatingLeaves 5s linear infinite;
+    pointer-events: none;
+}
+
+.name-banner-tech {
+    background: linear-gradient(135deg, #0984e3, #74b9ff, #00cec9);
+    background-size: 200% 200%;
+    animation: techPulse 3s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.name-banner-tech::before {
+    content: '⚡ 🔷 ⚡ 🔷 ⚡';
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 10px;
+    opacity: 0.7;
+    animation: floatingTech 3s linear infinite;
+    pointer-events: none;
+}
+
+.name-banner-romantic {
+    background: linear-gradient(135deg, #a29bfe, #fd79a8, #fdcb6e);
+    background-size: 200% 200%;
+    animation: romanticGlow 4s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.name-banner-romantic::before {
+    content: '🌸 💜 🌸 💜 🌸';
+    position: absolute;
+    top: -2px;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 10px;
+    opacity: 0.6;
+    animation: floatingFlowers 5s linear infinite;
+    pointer-events: none;
+}
+
+/* Banner animations */
+@keyframes heartPinkGlow {
+    0%, 100% { background-position: 0% 50%; filter: brightness(1); }
+    50% { background-position: 100% 50%; filter: brightness(1.2); }
+}
+
+@keyframes goldenShine {
+    0%, 100% { background-position: 0% 50%; filter: brightness(1); }
+    50% { background-position: 100% 50%; filter: brightness(1.3); }
+}
+
+@keyframes natureFlow {
+    0%, 100% { background-position: 0% 50%; }
+    33% { background-position: 100% 50%; }
+    66% { background-position: 50% 100%; }
+}
+
+@keyframes techPulse {
+    0%, 100% { background-position: 0% 50%; filter: brightness(1); }
+    25% { background-position: 100% 50%; filter: brightness(1.1); }
+    50% { background-position: 50% 100%; filter: brightness(1.2); }
+    75% { background-position: 0% 100%; filter: brightness(1.1); }
+}
+
+@keyframes romanticGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes floatingHearts {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(50%); }
+}
+
+@keyframes floatingStars {
+    0% { transform: translateX(0) rotate(0deg); }
+    100% { transform: translateX(50%) rotate(360deg); }
+}
+
+@keyframes floatingLeaves {
+    0% { transform: translateX(0) rotate(0deg); }
+    100% { transform: translateX(50%) rotate(180deg); }
+}
+
+@keyframes floatingTech {
+    0% { transform: translateX(0) scale(1); }
+    50% { transform: translateX(25%) scale(1.1); }
+    100% { transform: translateX(50%) scale(1); }
+}
+
+@keyframes floatingFlowers {
+    0% { transform: translateX(0) rotate(0deg); }
+    100% { transform: translateX(50%) rotate(360deg); }
 }
 </style>
 </head>
@@ -552,7 +736,7 @@
             
             <!-- Botões -->
             <div class="flex space-x-3 pt-2">
-                <button id="custom-prompt-cancel-btn" class="flex-1 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300 font-medium">
+                <button id="custom-prompt-cancel-btn" class="py-2 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300 text-sm">
                     Cancelar
                 </button>
                 <button id="custom-prompt-ok-btn" class="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 font-medium">
@@ -620,6 +804,17 @@
                     <div>
                         <div class="profile-detail-label">Efeitos do Nome</div>
                         <div class="profile-detail-value">Personalizar aparência</div>
+                    </div>
+                    <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+                
+                <!-- Banner do Nome -->
+                <div id="settings-name-banners-option" class="profile-detail-section flex items-center justify-between cursor-pointer">
+                    <div>
+                        <div class="profile-detail-label">Banner do Nome</div>
+                        <div class="profile-detail-value">Fundo decorativo</div>
                     </div>
                     <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -766,6 +961,76 @@
                 <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="ocean">
                     <span class="name-effect-ocean font-medium text-lg">Oceano</span>
                     <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Banners do Nome -->
+<div id="name-banners-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
+    <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
+        <!-- Header do Modal -->
+        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
+            <button id="cancel-name-banners-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
+                Cancelar
+            </button>
+            <h3 class="text-white font-semibold text-lg">Banner do Nome</h3>
+            <button id="save-name-banners-btn" class="text-blue-400 hover:text-blue-300 font-medium">
+                Salvar
+            </button>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="p-6">
+            <!-- Preview do nome com banner -->
+            <div class="text-center mb-6">
+                <p class="text-gray-400 text-sm mb-2">Prévia (apenas em mensagens de chat):</p>
+                <div id="banner-preview-container" class="inline-block">
+                    <h2 id="banner-name-preview" class="text-xl font-bold text-white px-4 py-2">Seu Nome</h2>
+                </div>
+            </div>
+
+            <!-- Opções de banners -->
+            <div class="space-y-3">
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="none">
+                    <span class="font-medium text-lg text-white">Sem Banner</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="heart-pink">
+                    <div class="name-banner name-banner-heart-pink">
+                        <span class="font-medium text-lg text-white">Coração Rosa</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="golden-stars">
+                    <div class="name-banner name-banner-golden-stars">
+                        <span class="font-medium text-lg text-white">Estrelas Douradas</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="nature">
+                    <div class="name-banner name-banner-nature">
+                        <span class="font-medium text-lg text-white">Natureza</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="tech">
+                    <div class="name-banner name-banner-tech">
+                        <span class="font-medium text-lg text-white">Tecnológico</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="romantic">
+                    <div class="name-banner name-banner-romantic">
+                        <span class="font-medium text-lg text-white">Romântico</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
                 </div>
             </div>
         </div>
@@ -970,6 +1235,7 @@
         initializeEditName();
         initializeEditStatus();
         initializeNameEffects();
+        initializeNameBanners();
         initializeProfileDetail();
 
         // Renderizar conversas vazias inicialmente
@@ -1130,6 +1396,7 @@
             const editNameOption = document.getElementById('settings-edit-name-option');
             const editStatusOption = document.getElementById('settings-edit-status-option');
             const nameEffectsOption = document.getElementById('settings-name-effects-option');
+            const nameBannersOption = document.getElementById('settings-name-banners-option');
             const logoutOption = document.getElementById('logout-option');
             
             // Fechar modal de configurações
@@ -1154,6 +1421,12 @@
             editStatusOption?.addEventListener('click', () => {
                 settingsModal.classList.add('hidden');
                 openEditStatusModal();
+            });
+            
+            // Abrir modal de banners do nome
+            nameBannersOption?.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+                openNameBannersModal();
             });
             
             // Logout
@@ -1782,6 +2055,167 @@
                 element.textContent = status;
             }
         });
+    }
+
+    // NOVA FUNÇÃO - Abrir modal de banners do nome
+    function openNameBannersModal() {
+        const nameBannersModal = document.getElementById('name-banners-modal');
+        const bannerNamePreview = document.getElementById('banner-name-preview');
+        const currentName = document.getElementById('settings-user-name').textContent;
+        
+        bannerNamePreview.textContent = currentName;
+        nameBannersModal.classList.remove('hidden');
+    }
+
+    // NOVA FUNÇÃO - Inicializar banners do nome
+    function initializeNameBanners() {
+        const nameBannersModal = document.getElementById('name-banners-modal');
+        const bannerNamePreview = document.getElementById('banner-name-preview');
+        const bannerPreviewContainer = document.getElementById('banner-preview-container');
+        const saveBannersBtn = document.getElementById('save-name-banners-btn');
+        const cancelBannersBtn = document.getElementById('cancel-name-banners-btn');
+        const bannerOptions = document.querySelectorAll('.banner-option');
+        
+        let selectedBanner = 'none';
+        let currentUserName = 'Seu Nome';
+        
+        // Selecionar banner
+        bannerOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remover seleção anterior
+                document.querySelectorAll('.banner-radio').forEach(radio => {
+                    radio.classList.remove('selected');
+                });
+                
+                // Adicionar seleção na nova opção
+                const radio = option.querySelector('.banner-radio');
+                radio.classList.add('selected');
+                
+                // Atualizar preview
+                selectedBanner = option.dataset.banner;
+                updateBannerPreview(selectedBanner);
+            });
+        });
+        
+        // Salvar banner
+        saveBannersBtn?.addEventListener('click', async () => {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    await updateDoc(doc(db, 'users', user.uid), {
+                        userBanner: selectedBanner
+                    });
+                    
+                    nameBannersModal.classList.add('hidden');
+                    updateSettingsUserInfo();
+                    document.getElementById('settings-modal').classList.remove('hidden');
+                    
+                    showNotification('Banner aplicado com sucesso!', 'info');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar banner:', error);
+                showNotification('Erro ao aplicar banner.', 'error');
+            }
+        });
+        
+        // Cancelar
+        cancelBannersBtn?.addEventListener('click', () => {
+            nameBannersModal.classList.add('hidden');
+            updateSettingsUserInfo();
+            document.getElementById('settings-modal').classList.remove('hidden');
+        });
+        
+        // Fechar clicando fora
+        nameBannersModal?.addEventListener('click', (e) => {
+            if (e.target === nameBannersModal) {
+                nameBannersModal.classList.add('hidden');
+                updateSettingsUserInfo();
+                document.getElementById('settings-modal').classList.remove('hidden');
+            }
+        });
+        
+        // Função para atualizar preview do banner
+        function updateBannerPreview(banner) {
+            // Remover todas as classes de banner
+            bannerPreviewContainer.className = 'inline-block';
+            bannerNamePreview.className = 'text-xl font-bold text-white px-4 py-2';
+            
+            // Adicionar nova classe de banner
+            if (banner !== 'none') {
+                bannerPreviewContainer.classList.add('name-banner', `name-banner-${banner}`);
+            }
+        }
+        
+        // Carregar banner atual do usuário
+        async function loadUserCurrentBanner() {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    const userData = userDoc.data();
+                    const currentBanner = userData?.userBanner || 'none';
+                    
+                    selectedBanner = currentBanner;
+                    
+                    // Selecionar a opção correta
+                    document.querySelectorAll('.banner-radio').forEach(radio => {
+                        radio.classList.remove('selected');
+                    });
+                    
+                    const currentOption = document.querySelector(`[data-banner="${currentBanner}"]`);
+                    if (currentOption) {
+                        const radio = currentOption.querySelector('.banner-radio');
+                        radio.classList.add('selected');
+                    }
+                    
+                    updateBannerPreview(currentBanner);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar banner atual:', error);
+            }
+        }
+        
+        // Carregar banner quando modal abrir
+        nameBannersModal?.addEventListener('transitionend', () => {
+            if (!nameBannersModal.classList.contains('hidden')) {
+                loadUserCurrentBanner();
+            }
+        });
+    }
+
+    // Função para aplicar banner ao nome em mensagens de chat
+    function applyBannerToMessageName(nameElement, banner) {
+        if (!nameElement) return;
+        
+        // Remover classes anteriores de banner
+        nameElement.className = nameElement.className.replace(/name-banner[\w-]*/g, '');
+        nameElement.parentElement?.classList.remove('name-banner');
+        
+        // Aplicar novo banner se não for 'none'
+        if (banner && banner !== 'none') {
+            // Criar wrapper do banner se não existir
+            if (!nameElement.parentElement?.classList.contains('name-banner')) {
+                const bannerWrapper = document.createElement('span');
+                bannerWrapper.className = `name-banner name-banner-${banner}`;
+                nameElement.parentNode.insertBefore(bannerWrapper, nameElement);
+                bannerWrapper.appendChild(nameElement);
+            } else {
+                nameElement.parentElement.className = `name-banner name-banner-${banner}`;
+            }
+        }
+    }
+
+    // Função para carregar e aplicar banner do usuário em mensagens
+    async function loadAndApplyUserBanner(userId, nameElement) {
+        try {
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            const userData = userDoc.data();
+            const userBanner = userData?.userBanner || 'none';
+            
+            applyBannerToMessageName(nameElement, userBanner);
+        } catch (error) {
+            console.error('Erro ao carregar banner do usuário:', error);
+        }
     }
 
     // INICIALIZAR APLICAÇÃO
