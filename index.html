@@ -256,10 +256,14 @@
                 showNotification('Aplicativo funcionando perfeitamente!', 'info');
             }        });        // Inicializar busca
         initializeSearch();        // Inicializar cliques nas conversas
-        initializeConversationClicks();
-
-        // Inicializar configurações
+        initializeConversationClicks();        // Inicializar configurações
         initializeSettings();
+
+        // Inicializar perfil
+        initializeProfile();
+
+        // Inicializar edição de nome
+        initializeEditName();
 
         // Renderizar conversas vazias inicialmente
         renderAllConversations();// Renderizar conversas quando o app carregar
@@ -368,7 +372,9 @@
             viewerPic.classList.add('hidden');
             viewerIcon.classList.remove('hidden');
         }
-    }    async function updateUserPhoto(imageUrl) {
+    }
+    
+    async function updateUserPhoto(imageUrl) {
             const headerPic = document.getElementById('user-profile-pic');
             const headerIcon = document.getElementById('user-profile-icon');
             const settingsPic = document.getElementById('settings-user-pic');
@@ -397,10 +403,10 @@
                 }
             } catch (error) {
                 console.error('❌ Erro ao salvar foto:', error);
-                showNotification('Erro ao salvar foto.', 'error');            }
+                showNotification('Erro ao salvar foto.', 'error');
+            }
         }
-        
-        // Função para inicializar configurações
+          // Função para inicializar configurações
         function initializeSettings() {
             const settingsModal = document.getElementById('settings-modal');
             const closeSettingsBtn = document.getElementById('close-settings-btn');
@@ -408,16 +414,16 @@
             const logoutConfirmationModal = document.getElementById('logout-confirmation-modal');
             const cancelLogoutBtn = document.getElementById('cancel-logout-btn');
             const confirmLogoutBtn = document.getElementById('confirm-logout-btn');
-            const photoViewer = document.getElementById('photo-viewer');
-            const closePhotoViewer = document.getElementById('close-photo-viewer');
-            const settingsPhotoContainer = document.getElementById('settings-photo-container');
-            const changePhotoOverlayBtn = document.getElementById('change-photo-overlay-btn');
-            const photoUploadInput = document.getElementById('photo-upload-input');
             
-            // Nome editável
-            const nameDisplay = document.getElementById('settings-user-name-display');
-            const nameInput = document.getElementById('settings-user-name-input');
-            const editNameBtn = document.getElementById('edit-name-btn');
+            // Abrir modal de perfil quando clicar no nome
+            const userNameClick = document.getElementById('settings-user-name-display');
+            const profileModal = document.getElementById('profile-modal');
+            
+            userNameClick?.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+                syncProfileData();
+                profileModal.classList.remove('hidden');
+            });
             
             // Fechar modal de configurações
             closeSettingsBtn?.addEventListener('click', () => {
@@ -430,109 +436,6 @@
                     settingsModal.classList.add('hidden');
                 }
             });
-            
-            // Visualizador de foto
-            settingsPhotoContainer?.addEventListener('click', () => {
-                syncPhotoViewer();
-                photoViewer.classList.remove('hidden');
-            });
-            
-            // Fechar visualizador de foto
-            closePhotoViewer?.addEventListener('click', () => {
-                photoViewer.classList.add('hidden');
-            });
-            
-            // Fechar visualizador clicando fora
-            photoViewer?.addEventListener('click', (e) => {
-                if (e.target === photoViewer) {
-                    photoViewer.classList.add('hidden');
-                }
-            });
-            
-            // Trocar foto do overlay
-            changePhotoOverlayBtn?.addEventListener('click', () => {
-                photoViewer.classList.add('hidden');
-                photoUploadInput.click();
-            });
-            
-            // Upload de foto
-            photoUploadInput?.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const imageUrl = e.target.result;
-                        updateUserPhoto(imageUrl);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // Edição do nome
-            let isEditing = false;
-            
-            // Clique no nome ou no botão de editar
-            const startEditing = () => {
-                if (isEditing) return;
-                isEditing = true;
-                
-                nameInput.value = nameDisplay.textContent;
-                nameDisplay.classList.add('hidden');
-                nameInput.classList.remove('hidden');
-                nameInput.focus();
-                nameInput.select();
-            };
-            
-            nameDisplay?.addEventListener('click', startEditing);
-            editNameBtn?.addEventListener('click', startEditing);
-            
-            // Salvar nome
-            const saveName = async () => {
-                if (!isEditing) return;
-                
-                const newName = nameInput.value.trim();
-                if (newName && newName !== nameDisplay.textContent) {
-                    try {
-                        const user = auth.currentUser;
-                        if (user) {
-                            await setDoc(doc(db, 'users', user.uid), {
-                                username: newName
-                            }, { merge: true });
-                            
-                            nameDisplay.textContent = newName;
-                        }
-                    } catch (error) {
-                        console.error('Erro ao atualizar nome:', error);
-                        showNotification('Erro ao atualizar nome.', 'error');
-                    }
-                }
-                
-                // Voltar ao modo display
-                isEditing = false;
-                nameInput.classList.add('hidden');
-                nameDisplay.classList.remove('hidden');
-            };
-            
-            // Cancelar edição
-            const cancelEditing = () => {
-                isEditing = false;
-                nameInput.classList.add('hidden');
-                nameDisplay.classList.remove('hidden');
-            };
-            
-            // Enter para salvar, Escape para cancelar
-            nameInput?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveName();
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    cancelEditing();
-                }
-            });
-            
-            // Sair do input para salvar
-            nameInput?.addEventListener('blur', saveName);
             
             // Botão de logout
             logoutBtn?.addEventListener('click', () => {
@@ -562,7 +465,8 @@
                     console.error('Erro ao fazer logout:', error);
                     showNotification('Erro ao sair da conta. Tente novamente.', 'error');
                 }
-            });        }
+            });
+        }
 
         // Função para atualizar informações do usuário no modal de configurações
         async function updateSettingsUserInfo() {
@@ -606,7 +510,8 @@
                     userIconElement.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error('Erro ao carregar dados do usuário:', error);            }
+                console.error('Erro ao carregar dados do usuário:', error);
+            }
         }
 
         // Carregar dados do usuário após login
@@ -631,8 +536,6 @@
                 console.error('Erro ao carregar dados do usuário:', error);
             }
         }
-
-// ...existing code...
 
     async function handleLogin(e) {        e.preventDefault();
         try {
@@ -688,7 +591,9 @@
             uid: user.uid, 
             friends: [], 
             friendRequests: []
-        };        if (user.isAnonymous) {
+        };
+        
+        if (user.isAnonymous) {
             const guestName = prompt("Bem-vindo(a)! Digite seu nome de convidado:");
             if (!guestName || !guestName.trim()) { 
                 await signOut(auth); 
@@ -741,7 +646,8 @@
     const manifestURL = URL.createObjectURL(manifestBlob);
     const link = document.createElement('link');
     link.rel = 'manifest';
-    link.href = manifestURL;    document.head.appendChild(link);
+    link.href = manifestURL;
+    document.head.appendChild(link);
 </script>
 
 <!-- Modal de Configurações -->
@@ -770,7 +676,7 @@
                     <!-- Botão trocar foto dentro da imagem -->
                     <button id="change-photo-overlay-btn" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white font-medium flex items-center space-x-2 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0017.07 7H20a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 002-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0017.07 7H20a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         <span>Trocar Foto</span>
@@ -831,8 +737,103 @@
         <div class="flex space-x-3">
             <button id="cancel-logout-btn" class="flex-1 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300">
                 Cancelar
-            </button>            <button id="confirm-logout-btn" class="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300">
+            </button>
+            <button id="confirm-logout-btn" class="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300">
                 Sair
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Perfil -->
+<div id="profile-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
+        <div class="flex justify-between items-center">
+            <h3 class="text-2xl font-bold text-white">Perfil</h3>
+            <button id="close-profile-modal" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Visualizador de foto em tela cheia -->
+        <div id="profile-photo-viewer" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[70]">
+            <div class="relative">
+                <!-- Botão fechar no canto superior direito -->
+                <button id="close-profile-photo-btn" class="absolute -top-4 -right-4 w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center text-white text-xl z-10">
+                    &times;
+                </button>
+                
+                <!-- Foto oval grande -->
+                <div class="w-80 h-80 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center relative">
+                    <img id="profile-photo-viewer-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                    <svg id="profile-photo-viewer-icon" class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informações do usuário -->
+        <div class="bg-gray-700 rounded-lg p-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all duration-200" id="profile-user-pic-container">
+                    <img id="profile-user-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                    <svg id="profile-user-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <!-- Nome do usuário -->
+                    <p id="profile-user-name-display" class="text-white font-medium">Usuário</p>
+                    <p id="profile-user-email" class="text-gray-400 text-sm">email@exemplo.com</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Botões de ação -->
+        <div class="flex space-x-3">
+            <button id="edit-photo-btn" class="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h10"></path>
+                </svg>
+                <span>Editar Foto</span>
+            </button>
+            <button id="edit-user-name-btn" class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+                <span>Editar Nome</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição de Nome -->
+<div id="edit-name-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md space-y-4 border border-gray-700">
+        <div class="flex justify-between items-center">
+            <h3 class="text-2xl font-bold text-white">Editar Nome</h3>
+            <button id="close-edit-name-modal" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Input de nome -->
+        <div>
+            <label for="edit-name-input" class="block text-gray-300 text-sm font-medium mb-2">Nome</label>
+            <input id="edit-name-input" type="text" maxlength="30" class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white" placeholder="Digite seu nome">
+        </div>
+        
+        <!-- Botões de ação -->
+        <div class="flex space-x-3">
+            <button id="save-name-btn" class="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+                <span>Salvar</span>
+            </button>
+            <button id="cancel-name-btn" class="flex-1 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>Cancelar</span>
             </button>
         </div>
     </div>
