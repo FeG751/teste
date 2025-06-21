@@ -125,6 +125,18 @@
         z-index: 9999 !important;
     }
 
+    /* Modal de visualização da foto - estilo específico */
+    #photo-view-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        z-index: 9999 !important;
+    }
+
     /* Header dos modais com safe area específica para iOS */
     .modal-header {
         background: #1f2937 !important;
@@ -852,7 +864,7 @@
             <!-- Seção do Usuário -->
             <div class="flex items-center space-x-4 mb-8">
                 <div class="relative">
-                    <div class="w-16 h-16 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden">
+                    <div id="settings-user-photo-container" class="w-16 h-16 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden cursor-pointer hover:border-gray-400 transition-colors">
                         <img id="settings-user-pic" class="w-full h-full object-cover hidden" alt="Perfil">
                         <svg id="settings-user-icon" class="w-8 h-8 text-gray-400 m-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -1348,6 +1360,7 @@
         initializeNameEffects();
         initializeNameBanners(); // ADICIONE ESTA LINHA
         initializeProfileDetail();
+        initializePhotoViewModal(); // Inicializar modal de visualização da foto
 
         // Renderizar conversas vazias inicialmente
         renderAllConversations();// Renderizar conversas quando o app carregar
@@ -1542,6 +1555,60 @@
                 } catch (error) {
                     console.error('Erro ao fazer logout:', error);
                     showNotification('Erro ao fazer logout.', 'error');
+                }
+            });
+            
+            // Visualizar foto do usuário
+            const settingsPhotoContainer = document.getElementById('settings-user-photo-container');
+            settingsPhotoContainer?.addEventListener('click', () => {
+                openPhotoViewModal();
+            });
+        }
+        
+        // Função para abrir modal de visualização da foto
+        function openPhotoViewModal() {
+            const photoViewModal = document.getElementById('photo-view-modal');
+            const photoViewPic = document.getElementById('photo-view-pic');
+            const photoViewIcon = document.getElementById('photo-view-icon');
+            const settingsPic = document.getElementById('settings-user-pic');
+            const settingsIcon = document.getElementById('settings-user-icon');
+            
+            // Copiar estado da foto das configurações para o modal de visualização
+            if (settingsPic && !settingsPic.classList.contains('hidden')) {
+                // Usuário tem foto personalizada
+                photoViewPic.src = settingsPic.src;
+                photoViewPic.classList.remove('hidden');
+                photoViewIcon.classList.add('hidden');
+            } else {
+                // Usar ícone padrão
+                photoViewPic.classList.add('hidden');
+                photoViewIcon.classList.remove('hidden');
+            }
+            
+            // Mostrar modal
+            photoViewModal.classList.remove('hidden');
+        }
+        
+        // Função para fechar modal de visualização da foto
+        function closePhotoViewModal() {
+            const photoViewModal = document.getElementById('photo-view-modal');
+            photoViewModal.classList.add('hidden');
+        }
+        
+        // Função para inicializar modal de visualização da foto
+        function initializePhotoViewModal() {
+            const photoViewModal = document.getElementById('photo-view-modal');
+            const closePhotoViewBtn = document.getElementById('close-photo-view-btn');
+            
+            // Fechar modal com botão fechar
+            closePhotoViewBtn?.addEventListener('click', () => {
+                closePhotoViewModal();
+            });
+            
+            // Fechar modal clicando fora (no fundo)
+            photoViewModal?.addEventListener('click', (e) => {
+                if (e.target === photoViewModal) {
+                    closePhotoViewModal();
                 }
             });
         }// Função para atualizar informações do usuário no modal de configurações
@@ -2384,6 +2451,31 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Visualização da Foto -->
+<div id="photo-view-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[95]">
+    <div class="modal-content w-full h-full max-w-none max-h-none flex flex-col items-center justify-center relative">
+        <!-- Botão fechar -->
+        <button id="close-photo-view-btn" class="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        
+        <!-- Container da foto -->
+        <div class="flex items-center justify-center w-full h-full p-8">
+            <div class="relative">
+                <!-- Foto do usuário -->
+                <div class="w-80 h-80 rounded-full bg-gray-600 border-4 border-gray-500 overflow-hidden flex items-center justify-center shadow-2xl">
+                    <img id="photo-view-pic" class="w-full h-full object-cover hidden" alt="Foto do usuário">
+                    <svg id="photo-view-icon" class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
 </div>
