@@ -73,10 +73,8 @@
                 height: 100vh !important;
                 border-radius: 0 !important;
             }
-        }
-
-        /* Estilos dos modais em tela cheia */
-        #profile-modal, #edit-name-modal {
+        }        /* Estilos dos modais em tela cheia */
+        #profile-modal, #edit-name-modal, #settings-modal {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
@@ -521,22 +519,6 @@
                 reader.readAsDataURL(file);
             }
         });
-    }
-
-    function syncSettingsModalPhoto() {
-        const settingsPic = document.getElementById('settings-user-pic');
-        const settingsIcon = document.getElementById('settings-user-icon');
-        const modalPic = document.getElementById('settings-modal-user-pic');
-        const modalIcon = document.getElementById('settings-modal-user-icon');
-        
-        if (!settingsPic.classList.contains('hidden')) {
-            modalPic.src = settingsPic.src;
-            modalPic.classList.remove('hidden');
-            modalIcon.classList.add('hidden');
-        } else {
-            modalPic.classList.add('hidden');
-            modalIcon.classList.remove('hidden');
-        }
     }    async function updateUserPhoto(imageUrl) {
             const headerPic = document.getElementById('user-profile-pic');
             const headerIcon = document.getElementById('user-profile-icon');
@@ -575,14 +557,11 @@
                 console.error('❌ Erro ao salvar foto:', error);
                 showNotification('Erro ao salvar foto.', 'error');
             }
-        }// Função para inicializar configurações
+        }// Função para inicializar configurações        // Função para inicializar configurações
         function initializeSettings() {
             const settingsModal = document.getElementById('settings-modal');
             const closeSettingsBtn = document.getElementById('close-settings-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            const logoutConfirmationModal = document.getElementById('logout-confirmation-modal');
-            const cancelLogoutBtn = document.getElementById('cancel-logout-btn');
-            const confirmLogoutBtn = document.getElementById('confirm-logout-btn');
+            const settingsUserProfile = document.getElementById('settings-user-profile');
             
             // Fechar modal de configurações
             closeSettingsBtn?.addEventListener('click', () => {
@@ -596,103 +575,19 @@
                 }
             });
             
-            // Botão de logout
-            logoutBtn?.addEventListener('click', () => {
+            // Clique na seção do usuário abre o modal de perfil
+            settingsUserProfile?.addEventListener('click', () => {
                 settingsModal.classList.add('hidden');
-                logoutConfirmationModal.classList.remove('hidden');
+                updateProfileModal();
+                document.getElementById('profile-modal').classList.remove('hidden');
             });
-            
-            // Cancelar logout
-            cancelLogoutBtn?.addEventListener('click', () => {
-                logoutConfirmationModal.classList.add('hidden');
-            });
-            
-            // Fechar modal de confirmação clicando fora
-            logoutConfirmationModal?.addEventListener('click', (e) => {
-                if (e.target === logoutConfirmationModal) {
-                    logoutConfirmationModal.classList.add('hidden');
-                }
-            });
-              // Confirmar logout
-            confirmLogoutBtn?.addEventListener('click', async () => {
-                try {
-                    logoutConfirmationModal.classList.add('hidden');
-                    
-                    await signOut(auth);
-                    
-                    localStorage.removeItem('userPreferences');
-                    
-                } catch (error) {
-                    console.error('Erro ao fazer logout:', error);
-                    showNotification('Erro ao sair da conta. Tente novamente.', 'error');
-                }
-            });
-              // Botão alterar nome
-            const changeNameBtn = document.getElementById('change-name-btn');
-            changeNameBtn?.addEventListener('click', async () => {
-                const newName = await showCustomPrompt('Alterar Nome', 'Digite seu novo nome de usuário:');
-                
-                // Se o usuário cancelou (retornou null), não fazer nada
-                if (newName === null) {
-                    return;
-                }
-                
-                if (newName && newName.trim()) {
-                    try {
-                        // Atualizar no Firebase
-                        const user = auth.currentUser;
-                        if (user) {
-                            await setDoc(doc(db, 'users', user.uid), {
-                                username: newName.trim()
-                            }, { merge: true });
-                            
-                            // Atualizar na tela
-                            updateSettingsUserInfo();
-                            // Removemos a notificação de sucesso
-                        }
-                    } catch (error) {
-                        console.error('Erro ao atualizar nome:', error);
-                        showNotification('Erro ao atualizar nome.', 'error');
-                    }
-                }
-            });
-            
-            // Foto clicável nas configurações
-            const settingsPhotoContainer = document.getElementById('settings-photo-container');
-            const settingsPhotoModal = document.getElementById('settings-photo-modal');
-            const closeSettingsPhotoBtn = document.getElementById('close-settings-photo-btn');
-            const changePhotoFromSettingsBtn = document.getElementById('change-photo-from-settings-btn');
-            
-            // Abrir modal de foto das configurações
-            settingsPhotoContainer?.addEventListener('click', () => {
-                syncSettingsModalPhoto();
-                settingsPhotoModal.classList.remove('hidden');
-            });
-            
-            // Fechar modal de foto
-            closeSettingsPhotoBtn?.addEventListener('click', () => {
-                settingsPhotoModal.classList.add('hidden');
-            });
-            
-            // Fechar clicando fora
-            settingsPhotoModal?.addEventListener('click', (e) => {
-                if (e.target === settingsPhotoModal) {
-                    settingsPhotoModal.classList.add('hidden');
-                }
-            });
-            
-            // Botão trocar foto do modal das configurações
-            changePhotoFromSettingsBtn?.addEventListener('click', () => {
-                settingsPhotoModal.classList.add('hidden');
-                document.getElementById('photo-upload-input').click();
-            });
-        }// Função para atualizar informações do usuário no modal de configurações
+        }// Função para atualizar informações do usuário no modal de configurações        // Função para atualizar informações do usuário no modal de configurações
         async function updateSettingsUserInfo() {
             const user = auth.currentUser;
             if (!user) return;
             
             const userNameElement = document.getElementById('settings-user-name');
-            const userEmailElement = document.getElementById('settings-user-email');
+            const userStatusElement = document.getElementById('settings-user-status');
             const userPicElement = document.getElementById('settings-user-pic');
             const userIconElement = document.getElementById('settings-user-icon');
             
@@ -704,22 +599,14 @@
                 // Nome do usuário
                 if (user.isAnonymous) {
                     userNameElement.textContent = userData?.username || 'Usuário Convidado';
-                    userEmailElement.textContent = 'Sessão temporária';
+                    userStatusElement.textContent = 'Olá! Eu estou usando o 7Chat...';
                 } else {
                     userNameElement.textContent = userData?.username || user.displayName || 'Usuário';
-                    userEmailElement.textContent = user.email || 'Sem email';
+                    userStatusElement.textContent = 'Olá! Eu estou usando o 7Chat...';
                 }
                 
                 // Foto do usuário (buscar do Firebase)
                 if (userData?.photoURL) {
-                    // Atualizar todas as fotos
-                    const headerPic = document.getElementById('user-profile-pic');
-                    const headerIcon = document.getElementById('user-profile-icon');
-                    
-                    headerPic.src = userData.photoURL;
-                    headerPic.classList.remove('hidden');
-                    headerIcon.classList.add('hidden');
-                    
                     userPicElement.src = userData.photoURL;
                     userPicElement.classList.remove('hidden');
                     userIconElement.classList.add('hidden');
@@ -728,8 +615,9 @@
                     userIconElement.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error('Erro ao carregar dados do usuário:', error);            }
-        }        // Carregar dados do usuário após login
+                console.error('Erro ao carregar dados do usuário:', error);
+            }
+        }// Carregar dados do usuário após login
         async function loadUserDataOnLogin() {
             const user = auth.currentUser;
             if (!user) return;
@@ -976,10 +864,63 @@
         }
     }
 
-    // INICIALIZAR APLICAÇÃO
-    main();
+    // INICIALIZAR APLICAÇÃO    main();
 
 </script>
+
+<!-- Modal de Configurações Simplificado -->
+<div id="settings-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    <div class="modal-content bg-gray-800 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
+        <!-- Header -->
+        <div class="modal-header flex justify-between items-center p-4">
+            <h3 class="text-xl font-bold text-white">Configurações</h3>
+            <button id="close-settings-btn" class="text-gray-500 hover:text-gray-300 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="p-4 space-y-4">
+            <!-- Barra de pesquisa -->
+            <div class="relative">
+                <div class="bg-gray-700 rounded-lg px-3 py-2 flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input 
+                        type="text" 
+                        placeholder="Pesquisar" 
+                        class="bg-transparent flex-1 text-white placeholder-gray-400 focus:outline-none text-sm"
+                    >
+                </div>
+            </div>
+            
+            <!-- Seção do Usuário -->
+            <div class="bg-gray-700 rounded-lg p-4 flex items-center space-x-3 cursor-pointer hover:bg-gray-600 transition-colors" id="settings-user-profile">
+                <!-- Foto do usuário -->
+                <div class="w-12 h-12 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <img id="settings-user-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                    <svg id="settings-user-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                
+                <!-- Informações do usuário -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-2">
+                        <h4 id="settings-user-name" class="text-white font-medium truncate">Nome do Usuário</h4>
+                    </div>
+                    <p id="settings-user-status" class="text-gray-400 text-sm truncate">Olá! Eu estou usando o 7Chat...</p>
+                </div>
+                
+                <!-- QR Code Icon -->
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h4v4H4V4zm16 0h4v4h-4V4zM4 16h4v4H4v-4z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal de Perfil -->
 <div id="profile-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
