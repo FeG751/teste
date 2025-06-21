@@ -113,7 +113,7 @@
     }
 
     /* Estilos dos modais em tela cheia com safe area */
-    #profile-modal, #edit-name-modal, #edit-status-modal, #settings-modal, #user-profile-detail-modal, #name-effects-modal {
+    #profile-modal, #edit-name-modal, #edit-status-modal, #settings-modal, #user-profile-detail-modal, #name-effects-modal, #name-banners-modal {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -406,6 +406,279 @@
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
+    width: 100% !important;    height: 100vh !important;
+    background: #111827 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+}
+
+/* Banner decorativos para nomes - APENAS EM SALAS */
+.name-banner-heart-pink {
+    background: linear-gradient(45deg, #ff6b9d, #f093fb, #ff85c2);
+    background-size: 200% 200%;
+    animation: heartBannerMove 4s ease-in-out infinite;
+    position: relative;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin: 4px 0;
+    box-shadow: 0 2px 10px rgba(255, 107, 157, 0.4);
+}
+
+.name-banner-heart-pink::before {
+    content: '❤️ ✨ 💕 ⭐ ❤️ ✨ 💕 ⭐';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 12px;
+    opacity: 0.6;
+    animation: sparkleFloat 6s ease-in-out infinite;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    pointer-events: none;
+}
+
+.name-banner-stars-gold {
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffb347);
+    background-size: 200% 200%;
+    animation: goldBannerShine 3s ease-in-out infinite;
+    position: relative;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin: 4px 0;
+    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+}
+
+.name-banner-stars-gold::before {
+    content: '⭐ ✨ 🌟 ⭐ ✨ 🌟 ⭐ ✨';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 12px;
+    opacity: 0.7;
+    animation: starsTwinkle 4s ease-in-out infinite;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    pointer-events: none;
+}
+
+.name-banner-nature-green {
+    background: linear-gradient(45deg, #4ade80, #22c55e, #16a34a);
+    background-size: 200% 200%;
+    animation: natureBannerFlow 5s ease-in-out infinite;
+    position: relative;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin: 4px 0;
+    box-shadow: 0 2px 10px rgba(34, 197, 94, 0.4);
+}
+
+.name-banner-nature-green::before {
+    content: '🌿 🍃 🌱 🌿 🍃 🌱 🌿 🍃';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 12px;
+    opacity: 0.6;
+    animation: leavesSwing 6s ease-in-out infinite;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    pointer-events: none;
+}
+
+.name-banner-tech-blue {
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8, #1e40af);
+    background-size: 200% 200%;
+    animation: techBannerPulse 3s ease-in-out infinite;
+    position: relative;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin: 4px 0;
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+}
+
+.name-banner-tech-blue::before {
+    content: '💎 ⚡ 🔷 💎 ⚡ 🔷 💎 ⚡';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 12px;
+    opacity: 0.7;
+    animation: techGlow 4s ease-in-out infinite;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    pointer-events: none;
+}
+
+.name-banner-romantic-purple {
+    background: linear-gradient(45deg, #a855f7, #9333ea, #7c3aed);
+    background-size: 200% 200%;
+    animation: romanticBannerFlow 4s ease-in-out infinite;
+    position: relative;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin: 4px 0;
+    box-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
+}
+
+.name-banner-romantic-purple::before {
+    content: '🌸 💜 🌺 🌸 💜 🌺 🌸 💜';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 12px;
+    opacity: 0.6;
+    animation: flowersBloom 5s ease-in-out infinite;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    pointer-events: none;
+}
+
+.name-banner-galaxy-space {
+    background: linear-gradient(45deg, #4c1d95, #5b21b6, #6b21a8, #7c2d92);
+    background-size: 300% 300%;
+    animation: galaxyBannerMove 6s ease-in-out infinite;
+    position: relative;
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin: 4px 0;
+    box-shadow: 0 2px 10px rgba(76, 29, 149, 0.4);
+}
+
+.name-banner-galaxy-space::before {
+    content: '🌌 🚀 ⭐ 🪐 🌌 🚀 ⭐ 🪐';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 12px;
+    opacity: 0.7;
+    animation: spaceFloat 8s ease-in-out infinite;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    pointer-events: none;
+}
+
+/* O nome fica por cima do banner */
+.name-banner-heart-pink .user-name,
+.name-banner-stars-gold .user-name,
+.name-banner-nature-green .user-name,
+.name-banner-tech-blue .user-name,
+.name-banner-romantic-purple .user-name,
+.name-banner-galaxy-space .user-name {
+    position: relative;
+    z-index: 2;
+    font-weight: bold;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+/* Animações dos banners */
+@keyframes heartBannerMove {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes sparkleFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-2px); }
+}
+
+@keyframes goldBannerShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes starsTwinkle {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes natureBannerFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes leavesSwing {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(1deg); }
+}
+
+@keyframes techBannerPulse {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes techGlow {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+@keyframes romanticBannerFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes flowersBloom {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes galaxyBannerMove {
+    0%, 100% { background-position: 0% 50%; }
+    33% { background-position: 100% 0%; }
+    66% { background-position: 0% 100%; }
+}
+
+@keyframes spaceFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(2deg); }
+}
+
+/* Radio button selecionado para banners */
+.banner-radio.selected {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.banner-radio.selected::after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background-color: white;
+    border-radius: 50%;
+    margin: 1px;
+}
+
+/* Incluir modal de banners na lista de modais em tela cheia */
+#name-banners-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     height: 100vh !important;
     background: #111827 !important;
@@ -614,12 +887,22 @@
                     <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>                </div>
-                
-                <!-- Efeitos do Nome -->
+                  <!-- Efeitos do Nome -->
                 <div id="settings-name-effects-option" class="profile-detail-section flex items-center justify-between cursor-pointer">
                     <div>
                         <div class="profile-detail-label">Efeitos do Nome</div>
                         <div class="profile-detail-value">Personalizar aparência</div>
+                    </div>
+                    <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+                
+                <!-- Banner do Nome -->
+                <div id="settings-name-banners-option" class="profile-detail-section flex items-center justify-between cursor-pointer">
+                    <div>
+                        <div class="profile-detail-label">Banner do Nome</div>
+                        <div class="profile-detail-value">Decorações nas salas</div>
                     </div>
                     <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -644,8 +927,7 @@
 <!-- Modal de Edição de Nome com Novo Layout -->
 <div id="edit-name-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
     <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
-        <!-- Header do Modal -->        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
-            <button id="cancel-edit-name-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
+        <!-- Header do Modal -->        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">            <button id="cancel-edit-name-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
                 Cancelar
             </button>
             <h3 class="text-white font-semibold text-lg">Usuário</h3>
@@ -766,6 +1048,102 @@
                 <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="ocean">
                     <span class="name-effect-ocean font-medium text-lg">Oceano</span>
                     <div class="w-4 h-4 border-2 border-blue-400 rounded-full effect-radio"></div>
+                </div>
+            </div>        </div>
+    </div>
+</div>
+
+<!-- Modal de Banners do Nome -->
+<div id="name-banners-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
+    <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
+        <!-- Header do Modal -->
+        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
+            <button id="cancel-name-banners-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
+                Cancelar
+            </button>
+            <h3 class="text-white font-semibold text-lg">Banner do Nome</h3>
+            <button id="save-name-banners-btn" class="text-blue-400 hover:text-blue-300 font-medium">
+                Salvar
+            </button>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="p-6">
+            <!-- Preview do banner -->
+            <div class="text-center mb-6">
+                <p class="text-gray-400 text-sm mb-2">Prévia (apenas em salas):</p>
+                <div class="inline-block relative">
+                    <div id="banner-preview-bg" class="absolute inset-0 rounded-lg"></div>
+                    <h2 id="banner-preview-name" class="relative text-xl font-bold text-white px-4 py-2 z-10">Seu Nome</h2>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Banners aparecem apenas nas mensagens de chat</p>
+            </div>
+            
+            <!-- Opções de banners -->
+            <div class="space-y-3">
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="none">
+                    <span class="text-white font-medium">Sem banner</span>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="heart-pink">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-6 bg-gradient-to-r from-pink-400 to-pink-500 rounded-sm relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-60">❤️✨</div>
+                        </div>
+                        <span class="text-white font-medium">Coração Rosa</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="stars-gold">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-sm relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-60">⭐✨</div>
+                        </div>
+                        <span class="text-white font-medium">Estrelas Douradas</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="nature-green">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-6 bg-gradient-to-r from-green-400 to-green-500 rounded-sm relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-60">🌿🍃</div>
+                        </div>
+                        <span class="text-white font-medium">Natureza</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="tech-blue">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-6 bg-gradient-to-r from-blue-400 to-blue-500 rounded-sm relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-60">💎⚡</div>
+                        </div>
+                        <span class="text-white font-medium">Tecnológico</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="romantic-purple">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-6 bg-gradient-to-r from-purple-400 to-purple-500 rounded-sm relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-60">🌸💜</div>
+                        </div>
+                        <span class="text-white font-medium">Romântico</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
+                </div>
+                
+                <div class="banner-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-banner="galaxy-space">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-6 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-sm relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-60">🌌🚀</div>
+                        </div>
+                        <span class="text-white font-medium">Galáxia</span>
+                    </div>
+                    <div class="w-4 h-4 border-2 border-blue-400 rounded-full banner-radio"></div>
                 </div>
             </div>
         </div>
@@ -963,13 +1341,12 @@
 
         // Inicializar cliques nas conversas
         initializeConversationClicks();        // Inicializar foto do usuário
-        initializeUserPhoto();
-
-        // Inicializar configurações
+        initializeUserPhoto();        // Inicializar configurações
         initializeSettings();        initializeProfile();
         initializeEditName();
         initializeEditStatus();
         initializeNameEffects();
+        initializeNameBanners(); // ADICIONE ESTA LINHA
         initializeProfileDetail();
 
         // Renderizar conversas vazias inicialmente
@@ -1768,9 +2145,7 @@
                 element.textContent = name;
             }
         });
-    }
-
-    // Função para atualizar status na interface
+    }    // Função para atualizar status na interface
     function updateUserStatusInInterface(status) {
         const statusElements = [
             document.getElementById('settings-user-status'),
@@ -1782,6 +2157,129 @@
                 element.textContent = status;
             }
         });
+    }
+
+    // NOVA FUNÇÃO - Inicializar banners do nome
+    function initializeNameBanners() {
+        const nameBannersModal = document.getElementById('name-banners-modal');
+        const bannerPreviewBg = document.getElementById('banner-preview-bg');
+        const bannerPreviewName = document.getElementById('banner-preview-name');
+        const saveBannersBtn = document.getElementById('save-name-banners-btn');
+        const cancelBannersBtn = document.getElementById('cancel-name-banners-btn');
+        const bannerOptions = document.querySelectorAll('.banner-option');
+        
+        let selectedBanner = 'none';
+        let currentUserName = 'Seu Nome';
+        
+        // Abrir modal de banners
+        const nameBannersOption = document.getElementById('settings-name-banners-option');
+        nameBannersOption?.addEventListener('click', () => {
+            document.getElementById('settings-modal').classList.add('hidden');
+            
+            // Carregar nome atual
+            const currentName = document.getElementById('settings-user-name').textContent;
+            currentUserName = currentName;
+            bannerPreviewName.textContent = currentName;
+            
+            // Carregar banner atual do usuário
+            loadUserCurrentBanner();
+            
+            nameBannersModal.classList.remove('hidden');
+        });
+        
+        // Selecionar banner
+        bannerOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remover seleção anterior
+                document.querySelectorAll('.banner-radio').forEach(radio => {
+                    radio.classList.remove('selected');
+                });
+                
+                // Adicionar seleção na nova opção
+                const radio = option.querySelector('.banner-radio');
+                radio.classList.add('selected');
+                
+                // Atualizar preview
+                selectedBanner = option.dataset.banner;
+                updateBannerPreview(selectedBanner);
+            });
+        });
+        
+        // Salvar banner
+        saveBannersBtn?.addEventListener('click', async () => {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    await updateDoc(doc(db, 'users', user.uid), {
+                        userBanner: selectedBanner
+                    });
+                    
+                    nameBannersModal.classList.add('hidden');
+                    updateSettingsUserInfo();
+                    document.getElementById('settings-modal').classList.remove('hidden');
+                    
+                    showNotification('Banner aplicado com sucesso!', 'info');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar banner:', error);
+                showNotification('Erro ao aplicar banner.', 'error');
+            }
+        });
+        
+        // Cancelar
+        cancelBannersBtn?.addEventListener('click', () => {
+            nameBannersModal.classList.add('hidden');
+            updateSettingsUserInfo();
+            document.getElementById('settings-modal').classList.remove('hidden');
+        });
+        
+        // Fechar clicando fora
+        nameBannersModal?.addEventListener('click', (e) => {
+            if (e.target === nameBannersModal) {
+                nameBannersModal.classList.add('hidden');
+                updateSettingsUserInfo();
+                document.getElementById('settings-modal').classList.remove('hidden');
+            }
+        });
+        
+        // Função para atualizar preview
+        function updateBannerPreview(banner) {
+            // Remover todas as classes de banner
+            bannerPreviewBg.className = 'absolute inset-0 rounded-lg';
+            
+            // Adicionar nova classe de banner
+            if (banner !== 'none') {
+                bannerPreviewBg.classList.add(`name-banner-${banner}`);
+            }
+        }
+        
+        // Carregar banner atual do usuário
+        async function loadUserCurrentBanner() {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    const userData = userDoc.data();
+                    const currentBanner = userData?.userBanner || 'none';
+                    
+                    selectedBanner = currentBanner;
+                    
+                    // Selecionar a opção correta
+                    document.querySelectorAll('.banner-radio').forEach(radio => {
+                        radio.classList.remove('selected');
+                    });
+                    
+                    const currentOption = document.querySelector(`[data-banner="${currentBanner}"]`);
+                    if (currentOption) {
+                        currentOption.querySelector('.banner-radio').classList.add('selected');
+                    }
+                    
+                    updateBannerPreview(currentBanner);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar banner atual:', error);
+            }
+        }
     }
 
     // INICIALIZAR APLICAÇÃO
