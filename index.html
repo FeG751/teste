@@ -2079,6 +2079,51 @@
         let selectedBanner = 'none';
         let currentUserName = 'Seu Nome';
         
+        // Carregar banner atual do usuário ao abrir modal
+        async function loadUserCurrentBanner() {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    const userData = userDoc.data();
+                    const currentBanner = userData?.userBanner || 'none';
+                    
+                    selectedBanner = currentBanner;
+                    
+                    // Selecionar a opção correta
+                    document.querySelectorAll('.banner-radio').forEach(radio => {
+                        radio.classList.remove('selected');
+                    });
+                    
+                    const currentOption = document.querySelector(`[data-banner="${currentBanner}"]`);
+                    if (currentOption) {
+                        const radio = currentOption.querySelector('.banner-radio');
+                        radio.classList.add('selected');
+                    }
+                    
+                    updateBannerPreview(currentBanner);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar banner atual:', error);
+            }
+        }
+        
+        // Abrir modal de banners
+        const nameBannersOption = document.getElementById('settings-name-banners-option');
+        nameBannersOption?.addEventListener('click', () => {
+            document.getElementById('settings-modal').classList.add('hidden');
+            
+            // Carregar nome atual
+            const currentName = document.getElementById('settings-user-name').textContent;
+            currentUserName = currentName;
+            bannerNamePreview.textContent = currentName;
+            
+            // Carregar banner atual do usuário
+            loadUserCurrentBanner();
+            
+            nameBannersModal.classList.remove('hidden');
+        });
+        
         // Selecionar banner
         bannerOptions.forEach(option => {
             option.addEventListener('click', () => {
@@ -2145,42 +2190,6 @@
                 bannerPreviewContainer.classList.add('name-banner', `name-banner-${banner}`);
             }
         }
-        
-        // Carregar banner atual do usuário
-        async function loadUserCurrentBanner() {
-            try {
-                const user = auth.currentUser;
-                if (user) {
-                    const userDoc = await getDoc(doc(db, 'users', user.uid));
-                    const userData = userDoc.data();
-                    const currentBanner = userData?.userBanner || 'none';
-                    
-                    selectedBanner = currentBanner;
-                    
-                    // Selecionar a opção correta
-                    document.querySelectorAll('.banner-radio').forEach(radio => {
-                        radio.classList.remove('selected');
-                    });
-                    
-                    const currentOption = document.querySelector(`[data-banner="${currentBanner}"]`);
-                    if (currentOption) {
-                        const radio = currentOption.querySelector('.banner-radio');
-                        radio.classList.add('selected');
-                    }
-                    
-                    updateBannerPreview(currentBanner);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar banner atual:', error);
-            }
-        }
-        
-        // Carregar banner quando modal abrir
-        nameBannersModal?.addEventListener('transitionend', () => {
-            if (!nameBannersModal.classList.contains('hidden')) {
-                loadUserCurrentBanner();
-            }
-        });
     }
 
     // Função para aplicar banner ao nome em mensagens de chat
