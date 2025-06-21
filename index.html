@@ -1633,6 +1633,9 @@
     </div>
 </div>
 
+<!-- Firebase Configuration -->
+<script src="firebase-config.js"></script>
+
 <script type="module">
     // --- IMPORTAÇÕES ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -1640,19 +1643,16 @@
     import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // --- CONFIGURAÇÃO DO FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
-        authDomain: "seu-projeto-chat.firebaseapp.com",
-        databaseURL: "https://seu-projeto-chat-default-rtdb.firebaseio.com",
-        projectId: "seu-projeto-chat",
-        storageBucket: "seu-projeto-chat.firebasestorage.app",
-        messagingSenderId: "259194791953",
-        appId: "1:259194791953:web:587ea979f1f26aff2629b0"
-    };
-
-    // DEBUG - Firebase Config
-    console.log('🔧 Firebase Config:', firebaseConfig);
-    console.log('🔧 AuthDomain:', firebaseConfig.authDomain);
+    // Configuration is now loaded from firebase-config.js
+    const configValidation = validateFirebaseConfig(firebaseConfig);
+    
+    // DEBUG - Firebase Config (only show if valid)
+    if (configValidation.valid) {
+        console.log('🔧 Firebase Config: Valid configuration detected');
+        console.log('🔧 Project ID:', firebaseConfig.projectId);
+    } else {
+        console.warn('⚠️ Firebase Config:', configValidation.error);
+    }
 
     // --- VARIÁVEIS GLOBAIS ---
     let app, auth, db;
@@ -1748,10 +1748,18 @@
     function main() {
         console.log('🚀 Inicializando aplicação...');
         
+        // Verificação de configuração do Firebase
+        if (!configValidation.valid) {
+            console.error('❌ Configuração do Firebase inválida:', configValidation.error);
+            showFirebaseConfigError(configValidation.error);
+            return;
+        }
+        
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
-            db = getFirestore(app);            console.log('✅ Firebase inicializado com sucesso');
+            db = getFirestore(app);
+            console.log('✅ Firebase inicializado com sucesso');
             
             // DEBUG - Adicionar após linha 359
             console.log('🔧 Debug - Elementos encontrados:');
@@ -1766,7 +1774,43 @@
             
         } catch (error) {
             console.error('❌ Erro ao inicializar Firebase:', error);
-            showNotification('Erro de conexão. Tente recarregar a página.', 'error');        }
+            
+            // Verificar se o erro é devido a configuração inválida
+            if (error.code === 'app/invalid-api-key' || 
+                error.code === 'app/invalid-credential' ||
+                error.message.includes('API key not valid') ||
+                error.message.includes('Invalid project ID')) {
+                showFirebaseConfigError('Configuração do Firebase inválida. Verifique suas credenciais.');
+            } else {
+                showNotification('Erro de conexão. Tente recarregar a página.', 'error');
+            }
+        }
+    }
+    
+    // Função para mostrar erro de configuração do Firebase
+    function showFirebaseConfigError(errorMessage) {
+        const errorHtml = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]">
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4 text-center">
+                    <div class="text-red-500 text-6xl mb-4">⚠️</div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Configuração do Firebase Necessária</h2>
+                    <p class="text-gray-600 mb-4">${errorMessage}</p>
+                    <div class="text-sm text-gray-500 mb-4 text-left bg-gray-100 p-3 rounded">
+                        <strong>Para configurar o Firebase:</strong><br>
+                        1. Acesse o Console do Firebase<br>
+                        2. Crie um novo projeto ou selecione um existente<br>
+                        3. Vá em Configurações do Projeto > Geral<br>
+                        4. Na seção "Seus apps", adicione um app web<br>
+                        5. Copie a configuração e substitua no arquivo firebase-config.js
+                    </div>
+                    <button onclick="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Recarregar Página
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', errorHtml);
     }
 
     function bindUI() {
