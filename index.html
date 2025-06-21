@@ -2403,19 +2403,26 @@
         const closeViewerBtn = document.getElementById('close-image-viewer-btn');
         const settingsUserPic = document.getElementById('settings-user-pic');
         
+        console.log('🖼️ Inicializando visualizador de imagem...');
+        
         // Função para abrir visualizador
         function openImageViewer(imageSrc) {
+            console.log('📸 Abrindo imagem:', imageSrc);
+            
             if (imageSrc && !imageSrc.includes('placeholder') && !imageSrc.includes('default') && imageSrc.trim() !== '') {
                 viewerImage.src = imageSrc;
                 imageViewerModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
+                console.log('✅ Modal aberto com sucesso');
             } else {
+                console.log('❌ Imagem inválida');
                 showNotification('Nenhuma imagem para visualizar', 'error');
             }
         }
         
         // Função para fechar visualizador
         function closeImageViewer() {
+            console.log('❌ Fechando visualizador');
             imageViewerModal.classList.add('hidden');
             document.body.style.overflow = '';
         }
@@ -2424,16 +2431,23 @@
         if (settingsUserPic) {
             settingsUserPic.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log('🖱️ Clique na foto detectado');
+                
                 if (!settingsUserPic.classList.contains('hidden') && settingsUserPic.src) {
                     openImageViewer(settingsUserPic.src);
                 } else {
+                    console.log('❌ Foto não disponível');
                     showNotification('Nenhuma foto de perfil disponível', 'error');
                 }
             });
+            console.log('✅ Event listener adicionado à foto');
+        } else {
+            console.error('❌ Foto de perfil não encontrada!');
         }
         
         // Eventos para fechar
         closeViewerBtn?.addEventListener('click', closeImageViewer);
+        
         imageViewerModal?.addEventListener('click', (e) => {
             if (e.target === imageViewerModal || e.target.closest('.image-container')) {
                 closeImageViewer();
