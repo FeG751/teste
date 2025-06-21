@@ -195,14 +195,29 @@
         color: #9CA3AF !important;
         font-size: 24px !important;
         line-height: 1 !important;
-    }
-
-    #close-settings-btn:hover,
+    }    #close-settings-btn:hover,
     #close-profile-btn:hover,
     #cancel-edit-name-btn:hover,
     #back-from-profile-detail-btn:hover {
         color: #D1D5DB !important;
     }
+
+/* Correção específica para safe area dos modais de edição */
+#edit-name-modal .modal-header,
+#edit-status-modal .modal-header {
+    padding-top: max(16px, env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: 16px !important;
+    min-height: calc(52px + env(safe-area-inset-top, 0px)) !important;
+}
+
+/* Mobile específico */
+@media (max-width: 768px) {
+    #edit-name-modal .modal-header,
+    #edit-status-modal .modal-header {
+        padding-top: max(20px, env(safe-area-inset-top, 20px)) !important;
+        min-height: calc(60px + env(safe-area-inset-top, 20px)) !important;
+    }
+}
 </style>
 </head>
 <body class="bg-black text-gray-200">    <!-- Menu de Navegação Inferior -->
@@ -424,9 +439,8 @@
 <!-- Modal de Edição de Nome com Novo Layout -->
 <div id="edit-name-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
     <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
-        <!-- Header do Modal -->
-        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
-            <button id="cancel-edit-name-btn" class="text-blue-400 hover:text-blue-300 font-medium">
+        <!-- Header do Modal -->        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
+            <button id="cancel-edit-name-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
                 Cancelar
             </button>
             <h3 class="text-white font-semibold text-lg">Usuário</h3>
@@ -455,9 +469,8 @@
 <!-- Modal de Edição de Recados -->
 <div id="edit-status-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
     <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
-        <!-- Header do Modal -->
-        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
-            <button id="cancel-edit-status-btn" class="text-blue-400 hover:text-blue-300 font-medium">
+        <!-- Header do Modal -->        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
+            <button id="cancel-edit-status-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
                 Cancelar
             </button>
             <h3 class="text-white font-semibold text-lg">Recados</h3>
@@ -469,12 +482,11 @@
         <!-- Conteúdo do Modal -->
         <div class="p-6">
             <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-400">Status</label>
-                <textarea 
+                <label class="block text-sm font-medium text-gray-400">Status</label>                <textarea 
                     id="edit-status-input" 
                     placeholder="Adicione um recado..." 
                     class="w-full px-4 py-3 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400 resize-none"
-                    rows="4"
+                    rows="2"
                     maxlength="139"
                 ></textarea>
                 <p class="text-xs text-gray-500">Máximo 139 caracteres</p>
