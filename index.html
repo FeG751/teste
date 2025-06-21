@@ -681,10 +681,71 @@
     left: 0 !important;
     width: 100% !important;
     height: 100vh !important;
-    background: #111827 !important;
-    border-radius: 0 !important;
+    background: #111827 !important;    border-radius: 0 !important;
     margin: 0 !important;
     z-index: 9999 !important;
+}
+
+/* Estilos para o Modal de Visualização da Foto */
+#photo-viewer-modal {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+#photo-viewer-modal .modal-content {
+    animation: photoZoomIn 0.3s ease-out;
+}
+
+@keyframes photoZoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Torna a foto do usuário nas configurações clicável */
+#settings-modal .w-16.h-16.rounded-full {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#settings-modal .w-16.h-16.rounded-full:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+    #photo-viewer-modal .modal-content {
+        max-width: 280px;
+    }
+    
+    #photo-viewer-modal .w-64.h-64 {
+        width: 240px;
+        height: 240px;
+    }
+    
+    #photo-viewer-modal .w-32.h-32 {
+        width: 120px;
+        height: 120px;
+    }
+    
+    #close-photo-viewer-btn {
+        top: -8px;
+        right: -8px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
 }
 </style>
 </head>
@@ -2384,12 +2445,113 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>            </div>
+        </div>    </div>
+</div>
+
+<!-- Modal de Visualização da Foto do Usuário -->
+<div id="photo-viewer-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100]">
+    <div class="modal-content relative max-w-sm w-full mx-4">
+        <!-- Botão Fechar -->
+        <button id="close-photo-viewer-btn" class="absolute -top-12 right-0 text-white hover:text-gray-300 text-3xl font-light transition-colors duration-300 z-10">
+            &times;
+        </button>
+        
+        <!-- Container da Foto -->
+        <div class="bg-gray-800 rounded-full p-4 shadow-2xl">
+            <div class="w-64 h-64 rounded-full overflow-hidden bg-gray-600 border-4 border-gray-500 mx-auto">
+                <img id="photo-viewer-image" class="w-full h-full object-cover hidden" alt="Foto do Usuário">
+                <div id="photo-viewer-icon" class="w-full h-full flex items-center justify-center">
+                    <svg class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nome do usuário abaixo da foto -->
+        <div class="text-center mt-4">
+            <h3 id="photo-viewer-username" class="text-white font-semibold text-lg">Usuário</h3>
         </div>
     </div>
 </div>
 
 <!-- Input oculto para upload de foto -->
 <input type="file" id="photo-upload-input" accept="image/*" class="hidden">
+
+<script>
+// Funcionalidade do Modal de Visualização da Foto
+document.addEventListener('DOMContentLoaded', function() {
+    const photoViewerModal = document.getElementById('photo-viewer-modal');
+    const photoViewerImage = document.getElementById('photo-viewer-image');
+    const photoViewerIcon = document.getElementById('photo-viewer-icon');
+    const photoViewerUsername = document.getElementById('photo-viewer-username');
+    const closePhotoViewerBtn = document.getElementById('close-photo-viewer-btn');
+    
+    // Função para abrir o modal de visualização da foto
+    function openPhotoViewer() {
+        // Pegar a foto atual do usuário
+        const settingsUserPic = document.getElementById('settings-user-pic');
+        const settingsUserIcon = document.getElementById('settings-user-icon');
+        const settingsUserName = document.getElementById('settings-user-name');
+        
+        // Atualizar o nome no modal
+        if (settingsUserName) {
+            photoViewerUsername.textContent = settingsUserName.textContent || 'Usuário';
+        }
+        
+        // Verificar se tem foto personalizada ou usar ícone padrão
+        if (settingsUserPic && !settingsUserPic.classList.contains('hidden')) {
+            // Tem foto personalizada
+            photoViewerImage.src = settingsUserPic.src;
+            photoViewerImage.classList.remove('hidden');
+            photoViewerIcon.classList.add('hidden');
+        } else {
+            // Usar ícone padrão
+            photoViewerImage.classList.add('hidden');
+            photoViewerIcon.classList.remove('hidden');
+        }
+        
+        // Mostrar modal
+        photoViewerModal.classList.remove('hidden');
+        
+        // Prevenir scroll do body
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Função para fechar o modal
+    function closePhotoViewer() {
+        photoViewerModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Event listener para abrir o modal quando clicar na foto das configurações
+    const settingsUserPhotoContainer = document.querySelector('#settings-modal .w-16.h-16.rounded-full');
+    if (settingsUserPhotoContainer) {
+        settingsUserPhotoContainer.addEventListener('click', openPhotoViewer);
+    }
+    
+    // Event listeners para fechar o modal
+    if (closePhotoViewerBtn) {
+        closePhotoViewerBtn.addEventListener('click', closePhotoViewer);
+    }
+    
+    // Fechar modal clicando fora da foto
+    if (photoViewerModal) {
+        photoViewerModal.addEventListener('click', function(e) {
+            if (e.target === photoViewerModal) {
+                closePhotoViewer();
+            }
+        });
+    }
+    
+    // Fechar modal com tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && photoViewerModal && !photoViewerModal.classList.contains('hidden')) {
+            closePhotoViewer();
+        }
+    });
+});
+</script>
 
 </body>
 </html>
