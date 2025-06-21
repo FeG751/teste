@@ -1934,43 +1934,16 @@
         });
     }// Função para renderizar todas as conversas
     function renderAllConversations() {
-        const conversationsList = document.getElementById('all-conversations-list');
-        const emptyState = document.getElementById('empty-state');
-        
-        // Por enquanto, não há conversas reais
-        // Quando implementarmos o Firebase, aqui carregaremos as conversas reais
-        const conversations = []; // Array vazio - será preenchido com dados reais
-        
-        if (conversations.length === 0) {
+        // Usar a nova função do sistema de chat privado
+        if (typeof updateConversationsList === 'function') {
+            updateConversationsList();
+        } else {
+            // Fallback case - mostrar estado vazio
+            const conversationsList = document.getElementById('all-conversations-list');
+            const emptyState = document.getElementById('empty-state');
+            
             conversationsList.innerHTML = '';
             emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            
-            // Quando houver conversas, renderizar assim:
-            conversationsList.innerHTML = conversations.map(conv => `
-                <div class="flex items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors" data-conversation-id="${conv.id}">
-                    <div class="relative">
-                        <div class="w-12 h-12 ${conv.type === 'room' ? 'bg-purple-500' : 'bg-blue-500'} rounded-full flex items-center justify-center">
-                            <span class="text-white font-semibold text-sm">${conv.avatar}</span>
-                        </div>
-                        ${conv.online ? '<div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-gray-800 rounded-full"></div>' : ''}
-                    </div>
-                    <div class="flex-1 ml-3 min-w-0">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <p class="text-white font-medium truncate">${conv.name}</p>
-                                ${conv.type === 'room' ? `<span class="text-gray-500 text-xs">${conv.members} membros</span>` : ''}
-                            </div>
-                            <span class="text-gray-400 text-xs">${conv.timestamp}</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <p class="text-gray-400 text-sm truncate">${conv.lastMessage}</p>
-                            ${conv.unread > 0 ? `<span class="bg-blue-500 text-white text-xs rounded-full px-2 py-0.5 ml-2">${conv.unread}</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
         }
     }
 
@@ -2014,8 +1987,13 @@
             
             if (conversationItem) {
                 const conversationId = conversationItem.dataset.conversationId;
-                showNotification(`Abrindo conversa: ${conversationId}`, 'info');
-                // Aqui você pode abrir a tela de chat
+                
+                // Verificar se existe no sistema de chat privado
+                if (conversations[conversationId]) {
+                    openPrivateChat(conversationId);
+                } else {
+                    showNotification(`Abrindo conversa: ${conversationId}`, 'info');
+                }
             }
         });
     }
@@ -2078,6 +2056,11 @@
         updateConversationsList();
         
         console.log('✅ Sistema de chat privado inicializado');
+        
+        // Atualizar a lista também após um pequeno delay para garantir que o DOM está pronto
+        setTimeout(() => {
+            updateConversationsList();
+        }, 100);
     }
     
     // Iniciar conversa privada
@@ -2086,7 +2069,7 @@
         
         // Atualizar header da conversa
         document.getElementById('chat-user-name').textContent = friend.name;
-        document.getElementById('chat-user-status').textContent = getStatusText(friend.status);
+        document.getElementById('chat-user-status').textContent = getStatusText(friend.status, null);
         
         // Atualizar avatar
         const avatarImg = document.getElementById('chat-user-avatar-img');
