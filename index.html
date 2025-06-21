@@ -2579,6 +2579,12 @@ function initializeUserPhoto() {
     console.log('📸 Sistema de fotos de usuário inicializado');
     // TODO: Implementar sistema de fotos
 }
+
+// Função placeholder para configurações
+function initializeSettings() {
+    console.log('⚙️ Sistema de configurações inicializado');
+    // TODO: Implementar sistema de configurações
+}
 </script>
     function renderAllConversations() {
         const conversationsList = document.getElementById('all-conversations-list');
@@ -3116,10 +3122,12 @@ function initializeUserPhoto() {
         };
 
         if (user.isAnonymous) {
-            const guestName = await showCustomPrompt("Bem-vindo(a)!", "Para entrar, por favor, digite seu nome de convidado.");            if (!guestName) { 
+            const guestName = await showCustomPrompt("Bem-vindo(a)!", "Para entrar, por favor, digite seu nome de convidado.");
+            if (!guestName) { 
                 await auth.signOut(); 
                 throw new Error("Guest name not provided."); 
-            }Object.assign(baseProfile, {
+            }
+            Object.assign(baseProfile, {
                 username: `Convidado: ${guestName.trim()}`,
                 isGuest: true,
                 photoURL: null
