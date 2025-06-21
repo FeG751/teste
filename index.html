@@ -2396,37 +2396,26 @@
         }
     }
 
-    // NOVA FUNÇÃO - Inicializar visualizador de imagem    // FUNÇÃO CORRIGIDA - Inicializar visualizador de imagem
+    // NOVA FUNÇÃO - Inicializar visualizador de imagem    // FUNÇÃO - Inicializar visualizador de imagem
     function initializeImageViewer() {
         const imageViewerModal = document.getElementById('image-viewer-modal');
         const viewerImage = document.getElementById('viewer-image');
         const closeViewerBtn = document.getElementById('close-image-viewer-btn');
         const settingsUserPic = document.getElementById('settings-user-pic');
         
-        console.log('🖼️ Inicializando visualizador de imagem...');
-        console.log('Modal encontrado:', !!imageViewerModal);
-        console.log('Imagem encontrada:', !!viewerImage);
-        console.log('Foto do usuário encontrada:', !!settingsUserPic);
-        
         // Função para abrir visualizador
         function openImageViewer(imageSrc) {
-            console.log('📸 Tentando abrir imagem:', imageSrc);
-            
             if (imageSrc && !imageSrc.includes('placeholder') && !imageSrc.includes('default') && imageSrc.trim() !== '') {
                 viewerImage.src = imageSrc;
                 imageViewerModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-                
-                console.log('✅ Modal aberto com sucesso');
             } else {
-                console.log('❌ Imagem inválida ou não encontrada');
                 showNotification('Nenhuma imagem para visualizar', 'error');
             }
         }
         
         // Função para fechar visualizador
         function closeImageViewer() {
-            console.log('❌ Fechando visualizador');
             imageViewerModal.classList.add('hidden');
             document.body.style.overflow = '';
         }
@@ -2435,29 +2424,18 @@
         if (settingsUserPic) {
             settingsUserPic.addEventListener('click', (e) => {
                 e.stopPropagation();
-                console.log('🖱️ Clique na foto detectado');
-                console.log('Foto está oculta?', settingsUserPic.classList.contains('hidden'));
-                console.log('Src da imagem:', settingsUserPic.src);
-                
                 if (!settingsUserPic.classList.contains('hidden') && settingsUserPic.src) {
                     openImageViewer(settingsUserPic.src);
                 } else {
-                    console.log('❌ Foto está oculta ou sem src');
                     showNotification('Nenhuma foto de perfil disponível', 'error');
                 }
             });
-            
-            console.log('✅ Event listener adicionado à foto');
-        } else {
-            console.error('❌ Foto de perfil não encontrada!');
         }
         
-        // Clique no botão fechar
+        // Eventos para fechar
         closeViewerBtn?.addEventListener('click', closeImageViewer);
-        
-        // Clique fora da imagem para fechar
         imageViewerModal?.addEventListener('click', (e) => {
-            if (e.target === imageViewerModal) {
+            if (e.target === imageViewerModal || e.target.closest('.image-container')) {
                 closeImageViewer();
             }
         });
@@ -2465,13 +2443,6 @@
         // Tecla ESC para fechar
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !imageViewerModal.classList.contains('hidden')) {
-                closeImageViewer();
-            }
-        });
-        
-        // Toque no modal para fechar (mobile)
-        imageViewerModal?.addEventListener('click', (e) => {
-            if (e.target === imageViewerModal || e.target.closest('.image-container')) {
                 closeImageViewer();
             }
         });
