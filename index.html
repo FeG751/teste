@@ -51,6 +51,43 @@
         .modal-content { animation: slideUp .3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Responsividade mobile */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            #app-container {
+                height: 100vh;
+                overflow: hidden;
+            }
+            
+            .modal {
+                padding: 0 !important;
+            }
+            
+            .modal-content {
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100vh !important;
+                border-radius: 0 !important;
+            }
+        }
+
+        /* Estilos dos modais em tela cheia */
+        #profile-modal, #edit-name-modal, #profile-photo-viewer {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: #111827 !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            z-index: 90;
+        }
     </style>
 </head>
 <body class="bg-black text-gray-200">    <!-- Menu de Navegação Inferior -->
@@ -90,17 +127,17 @@
     </div>    <!-- CONTAINER PRINCIPAL DO APP -->
     <div id="app-container" class="hidden h-full w-full relative overflow-hidden bg-gray-900">
         <!-- Header superior -->
-        <div class="bg-gray-800 px-4 py-3 flex justify-between items-center border-b border-gray-700">
+        <div class="bg-gray-800 px-4 py-3 min-h-[60px] flex justify-between items-center border-b border-gray-700">
             <!-- Espaço vazio à esquerda para centralizar o título -->
-            <div class="w-10"></div>
+            <div class="w-10 flex-shrink-0"></div>
             
             <!-- Título Chats (centro) -->
-            <h1 class="text-white font-semibold text-xl">
+            <h1 class="text-white font-semibold text-xl flex-shrink-0 text-center">
                 Chats
             </h1>
             
             <!-- Foto do usuário (direita) -->
-            <div class="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all duration-200 flex items-center justify-center" id="user-profile-btn">
+            <div class="w-10 h-10 flex-shrink-0 rounded-full bg-gray-600 border-2 border-gray-500 overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all duration-200 flex items-center justify-center" id="user-profile-btn">
                 <img id="user-profile-pic" class="w-full h-full object-cover hidden" alt="Perfil">
                 <svg id="user-profile-icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -109,17 +146,17 @@
         </div>
         <!-- Área de conteúdo principal -->
         <div class="p-4">
-            <!-- Barra de busca (mais fina) -->
+            <!-- Barra de busca (responsiva) -->
             <div class="relative mb-4">
-                <div class="bg-gray-700 rounded-lg px-3 py-2 flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <div class="bg-gray-700 rounded-lg px-3 py-2 min-h-[44px] flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                     <input 
                         type="text" 
                         id="search-conversations-input" 
                         placeholder="Buscar" 
-                        class="bg-transparent flex-1 text-white placeholder-gray-400 focus:outline-none text-base"
+                        class="bg-transparent flex-1 min-w-0 text-white placeholder-gray-400 focus:outline-none text-base"
                     >
                 </div>
             </div>
@@ -370,6 +407,9 @@
         // Inicializar configurações
         initializeSettings();
 
+        // Inicializar novos modais
+        initializeNewModals();
+
         // Renderizar conversas vazias inicialmente
         renderAllConversations();// Renderizar conversas quando o app carregar
         document.addEventListener('DOMContentLoaded', () => {
@@ -471,10 +511,10 @@
         const changePhotoBtn = document.getElementById('change-photo-btn');
         const photoUploadInput = document.getElementById('photo-upload-input');
         
-        // Abrir modal de foto
+        // Abrir modal de perfil (novo)
         userProfileBtn?.addEventListener('click', () => {
-            syncModalPhoto();
-            userPhotoModal.classList.remove('hidden');
+            syncProfileModal();
+            document.getElementById('profile-modal').classList.remove('hidden');
         });
         
         // Fechar modal
@@ -633,31 +673,23 @@
               // Botão alterar nome
             const changeNameBtn = document.getElementById('change-name-btn');
             changeNameBtn?.addEventListener('click', async () => {
-                const newName = await showCustomPrompt('Alterar Nome', 'Digite seu novo nome de usuário:');
+                // Abrir novo modal de edição de nome
+                const editNameModal = document.getElementById('edit-name-modal');
+                const editNameInput = document.getElementById('edit-name-input');
                 
-                // Se o usuário cancelou (retornou null), não fazer nada
-                if (newName === null) {
-                    return;
-                }
-                
-                if (newName && newName.trim()) {
-                    try {
-                        // Atualizar no Firebase
-                        const user = auth.currentUser;
-                        if (user) {
-                            await setDoc(doc(db, 'users', user.uid), {
-                                username: newName.trim()
-                            }, { merge: true });
-                            
-                            // Atualizar na tela
-                            updateSettingsUserInfo();
-                            // Removemos a notificação de sucesso
-                        }
-                    } catch (error) {
-                        console.error('Erro ao atualizar nome:', error);
-                        showNotification('Erro ao atualizar nome.', 'error');
+                // Carregar nome atual
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        const userDoc = await getDoc(doc(db, 'users', user.uid));
+                        const userData = userDoc.data();
+                        editNameInput.value = userData?.username || user.displayName || '';
                     }
+                } catch (error) {
+                    console.error('Erro ao carregar nome:', error);
                 }
+                
+                editNameModal.classList.remove('hidden');
             });
             
             // Foto clicável nas configurações
@@ -756,6 +788,149 @@
                 console.error('Erro ao carregar dados do usuário:', error);
             }
         }
+
+    // Função para sincronizar dados do modal de perfil
+    function syncProfileModal() {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        const headerPic = document.getElementById('user-profile-pic');
+        const profilePic = document.getElementById('profile-modal-pic');
+        const profileIcon = document.getElementById('profile-modal-icon');
+        const profileNameInput = document.getElementById('profile-name-input');
+        const profileEmailInput = document.getElementById('profile-email-input');
+        
+        // Sincronizar foto
+        if (!headerPic.classList.contains('hidden')) {
+            profilePic.src = headerPic.src;
+            profilePic.classList.remove('hidden');
+            profileIcon.classList.add('hidden');
+        } else {
+            profilePic.classList.add('hidden');
+            profileIcon.classList.remove('hidden');
+        }
+        
+        // Sincronizar dados do usuário
+        if (user.isAnonymous) {
+            profileEmailInput.value = 'Sessão temporária';
+        } else {
+            profileEmailInput.value = user.email || '';
+        }
+        
+        // Carregar nome do Firebase
+        getDoc(doc(db, 'users', user.uid)).then(userDoc => {
+            const userData = userDoc.data();
+            profileNameInput.value = userData?.username || user.displayName || '';
+        }).catch(console.error);
+    }
+    
+    // Função para sincronizar dados do modal de visualização de foto
+    function syncPhotoViewer() {
+        const headerPic = document.getElementById('user-profile-pic');
+        const viewerPic = document.getElementById('photo-viewer-pic');
+        const viewerIcon = document.getElementById('photo-viewer-icon');
+        
+        if (!headerPic.classList.contains('hidden')) {
+            viewerPic.src = headerPic.src;
+            viewerPic.classList.remove('hidden');
+            viewerIcon.classList.add('hidden');
+        } else {
+            viewerPic.classList.add('hidden');
+            viewerIcon.classList.remove('hidden');
+        }
+    }
+
+    // Inicializar novos modais
+    function initializeNewModals() {
+        // Modal de Perfil
+        const profileModal = document.getElementById('profile-modal');
+        const profileCancel = document.getElementById('profile-modal-cancel');
+        const profileSave = document.getElementById('profile-modal-save');
+        const profilePhotoContainer = document.getElementById('profile-photo-container');
+        
+        // Modal de Edição de Nome
+        const editNameModal = document.getElementById('edit-name-modal');
+        const editNameCancel = document.getElementById('edit-name-cancel');
+        const editNameSave = document.getElementById('edit-name-save');
+        const editNameInput = document.getElementById('edit-name-input');
+        
+        // Modal de Visualização de Foto
+        const photoViewer = document.getElementById('profile-photo-viewer');
+        const photoViewerClose = document.getElementById('photo-viewer-close');
+        const photoViewerChange = document.getElementById('photo-viewer-change');
+        const photoViewerChangeBtn = document.getElementById('photo-viewer-change-btn');
+        
+        // Eventos do Modal de Perfil
+        profileCancel?.addEventListener('click', () => {
+            profileModal.classList.add('hidden');
+        });
+        
+        profileSave?.addEventListener('click', async () => {
+            const newName = document.getElementById('profile-name-input').value.trim();
+            if (newName) {
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await setDoc(doc(db, 'users', user.uid), {
+                            username: newName
+                        }, { merge: true });
+                        updateSettingsUserInfo();
+                        profileModal.classList.add('hidden');
+                        showNotification('Perfil atualizado com sucesso!', 'info');
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar perfil:', error);
+                    showNotification('Erro ao atualizar perfil.', 'error');
+                }
+            }
+        });
+        
+        profilePhotoContainer?.addEventListener('click', () => {
+            syncPhotoViewer();
+            profileModal.classList.add('hidden');
+            photoViewer.classList.remove('hidden');
+        });
+        
+        // Eventos do Modal de Edição de Nome
+        editNameCancel?.addEventListener('click', () => {
+            editNameModal.classList.add('hidden');
+        });
+        
+        editNameSave?.addEventListener('click', async () => {
+            const newName = editNameInput.value.trim();
+            if (newName) {
+                try {
+                    const user = auth.currentUser;
+                    if (user) {
+                        await setDoc(doc(db, 'users', user.uid), {
+                            username: newName
+                        }, { merge: true });
+                        updateSettingsUserInfo();
+                        editNameModal.classList.add('hidden');
+                        showNotification('Nome atualizado com sucesso!', 'info');
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar nome:', error);
+                    showNotification('Erro ao atualizar nome.', 'error');
+                }
+            }
+        });
+        
+        // Eventos do Modal de Visualização de Foto
+        photoViewerClose?.addEventListener('click', () => {
+            photoViewer.classList.add('hidden');
+        });
+        
+        photoViewerChange?.addEventListener('click', () => {
+            document.getElementById('photo-upload-input').click();
+            photoViewer.classList.add('hidden');
+        });
+        
+        photoViewerChangeBtn?.addEventListener('click', () => {
+            document.getElementById('photo-upload-input').click();
+            photoViewer.classList.add('hidden');
+        });
+    }
 
 // ...existing code...
 
@@ -987,6 +1162,133 @@
             </svg>
             <span>Trocar Foto</span>
         </button>
+    </div>
+</div>
+
+<!-- Modal de Perfil (Tela Cheia) -->
+<div id="profile-modal" class="hidden fixed inset-0 bg-gray-900 z-[90]">
+    <div class="h-full flex flex-col">
+        <!-- Header do Modal -->
+        <div class="bg-blue-600 px-4 py-3 min-h-[60px] flex items-center justify-between border-b border-blue-500">
+            <button id="profile-modal-cancel" class="text-white text-lg font-medium hover:text-blue-200 transition-colors">
+                Cancelar
+            </button>
+            <h1 class="text-white font-semibold text-xl">
+                Perfil
+            </h1>
+            <button id="profile-modal-save" class="text-white text-lg font-medium hover:text-blue-200 transition-colors">
+                Salvar
+            </button>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="flex-1 p-6 overflow-y-auto">
+            <!-- Foto do usuário -->
+            <div class="flex justify-center mb-6">
+                <div class="w-32 h-32 rounded-full bg-gray-600 border-4 border-blue-500 overflow-hidden flex items-center justify-center cursor-pointer hover:ring-4 hover:ring-blue-400 transition-all duration-200" id="profile-photo-container">
+                    <img id="profile-modal-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                    <svg id="profile-modal-icon" class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Informações do usuário -->
+            <div class="space-y-4">
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Nome de usuário</label>
+                    <input id="profile-name-input" type="text" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Digite seu nome">
+                </div>
+                
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Email</label>
+                    <input id="profile-email-input" type="email" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="seu@email.com" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição de Nome (Tela Cheia) -->
+<div id="edit-name-modal" class="hidden fixed inset-0 bg-gray-900 z-[90]">
+    <div class="h-full flex flex-col">
+        <!-- Header do Modal -->
+        <div class="bg-blue-600 px-4 py-3 min-h-[60px] flex items-center justify-between border-b border-blue-500">
+            <button id="edit-name-cancel" class="text-white text-lg font-medium hover:text-blue-200 transition-colors">
+                Cancelar
+            </button>
+            <h1 class="text-white font-semibold text-xl">
+                Alterar Nome
+            </h1>
+            <button id="edit-name-save" class="text-white text-lg font-medium hover:text-blue-200 transition-colors">
+                Salvar
+            </button>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="flex-1 p-6">
+            <div class="max-w-md mx-auto">
+                <!-- Ícone -->
+                <div class="flex justify-center mb-6">
+                    <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Campo de entrada -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Novo nome de usuário</label>
+                        <input id="edit-name-input" type="text" class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Digite seu novo nome" maxlength="30">
+                        <p class="text-xs text-gray-500 mt-2">Máximo 30 caracteres</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Visualização de Foto (Tela Cheia) -->
+<div id="profile-photo-viewer" class="hidden fixed inset-0 bg-black z-[90]">
+    <div class="h-full flex flex-col">
+        <!-- Header do Modal -->
+        <div class="bg-blue-600 px-4 py-3 min-h-[60px] flex items-center justify-between border-b border-blue-500">
+            <button id="photo-viewer-close" class="text-white text-lg font-medium hover:text-blue-200 transition-colors">
+                Fechar
+            </button>
+            <h1 class="text-white font-semibold text-xl">
+                Foto do Perfil
+            </h1>
+            <button id="photo-viewer-change" class="text-white text-lg font-medium hover:text-blue-200 transition-colors">
+                Alterar
+            </button>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="flex-1 flex items-center justify-center p-6">
+            <div class="max-w-sm w-full">
+                <!-- Foto em tela cheia -->
+                <div class="flex justify-center mb-6">
+                    <div class="w-80 h-80 rounded-full bg-gray-600 border-4 border-blue-500 overflow-hidden flex items-center justify-center">
+                        <img id="photo-viewer-pic" class="w-full h-full object-cover hidden" alt="Perfil">
+                        <svg id="photo-viewer-icon" class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Botão de trocar foto -->
+                <button id="photo-viewer-change-btn" class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0017.07 7H20a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span>Trocar Foto</span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
