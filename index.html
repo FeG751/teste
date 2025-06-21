@@ -986,6 +986,7 @@
             <!-- Preview do nome com banner -->
             <div class="text-center mb-6">
                 <p class="text-gray-400 text-sm mb-2">Prévia (apenas em mensagens de chat):</p>
+                <p class="text-gray-500 text-xs mb-3">Banners funcionam junto com efeitos de nome</p>
                 <div id="banner-preview-container" class="inline-block">
                     <h2 id="banner-name-preview" class="text-xl font-bold text-white px-4 py-2">Seu Nome</h2>
                 </div>
@@ -2196,21 +2197,23 @@
     function applyBannerToMessageName(nameElement, banner) {
         if (!nameElement) return;
         
-        // Remover classes anteriores de banner
-        nameElement.className = nameElement.className.replace(/name-banner[\w-]*/g, '');
-        nameElement.parentElement?.classList.remove('name-banner');
+        // Remover classes anteriores de banner do wrapper
+        const existingWrapper = nameElement.closest('.name-banner');
+        if (existingWrapper) {
+            existingWrapper.className = existingWrapper.className.replace(/name-banner[\w-]*/g, '');
+            existingWrapper.classList.remove('name-banner');
+        }
         
         // Aplicar novo banner se não for 'none'
         if (banner && banner !== 'none') {
             // Criar wrapper do banner se não existir
-            if (!nameElement.parentElement?.classList.contains('name-banner')) {
-                const bannerWrapper = document.createElement('span');
-                bannerWrapper.className = `name-banner name-banner-${banner}`;
+            let bannerWrapper = nameElement.closest('.name-banner');
+            if (!bannerWrapper) {
+                bannerWrapper = document.createElement('span');
                 nameElement.parentNode.insertBefore(bannerWrapper, nameElement);
                 bannerWrapper.appendChild(nameElement);
-            } else {
-                nameElement.parentElement.className = `name-banner name-banner-${banner}`;
             }
+            bannerWrapper.className = `name-banner name-banner-${banner}`;
         }
     }
 
@@ -2224,6 +2227,27 @@
             applyBannerToMessageName(nameElement, userBanner);
         } catch (error) {
             console.error('Erro ao carregar banner do usuário:', error);
+        }
+    }
+
+    // Função combinada para aplicar tanto efeito quanto banner ao nome (para mensagens)
+    async function applyUserStyleToMessageName(userId, nameElement) {
+        try {
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            const userData = userDoc.data();
+            
+            // Aplicar efeito do nome (se existir)
+            const nameEffect = userData?.nameEffect || 'none';
+            if (nameEffect !== 'none') {
+                nameElement.classList.add(`name-effect-${nameEffect}`);
+            }
+            
+            // Aplicar banner (se existir)
+            const userBanner = userData?.userBanner || 'none';
+            applyBannerToMessageName(nameElement, userBanner);
+            
+        } catch (error) {
+            console.error('Erro ao carregar estilos do usuário:', error);
         }
     }
 

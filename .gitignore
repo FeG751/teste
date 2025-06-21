@@ -1,0 +1,5 @@
+# Test files
+test-*.html
+/tmp/
+.DS_Store
+*.log
