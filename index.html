@@ -218,6 +218,103 @@
         min-height: calc(60px + env(safe-area-inset-top, 20px)) !important;
     }
 }
+
+/* Username Effects */
+.name-effect-rainbow {
+    background: linear-gradient(45deg, #ff0066, #ff6600, #ffcc00, #66ff00, #0066ff, #cc00ff);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbow-flow 3s ease-in-out infinite;
+}
+
+@keyframes rainbow-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.name-effect-golden {
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #fff700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.3));
+}
+
+.name-effect-neon {
+    color: #00ffff;
+    text-shadow: 
+        0 0 5px #00ffff,
+        0 0 10px #00ffff,
+        0 0 15px #00ffff,
+        0 0 20px #00ffff;
+    animation: neon-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes neon-glow {
+    from { 
+        text-shadow: 
+            0 0 5px #00ffff,
+            0 0 10px #00ffff,
+            0 0 15px #00ffff,
+            0 0 20px #00ffff;
+    }
+    to { 
+        text-shadow: 
+            0 0 2px #00ffff,
+            0 0 5px #00ffff,
+            0 0 8px #00ffff,
+            0 0 12px #00ffff;
+    }
+}
+
+.name-effect-holographic {
+    background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff, #00ffff);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: holographic-shift 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(255, 0, 255, 0.3));
+}
+
+@keyframes holographic-shift {
+    0%, 100% { background-position: 0% 50%; }
+    25% { background-position: 100% 0%; }
+    50% { background-position: 0% 100%; }
+    75% { background-position: 100% 50%; }
+}
+
+.name-effect-sunset {
+    background: linear-gradient(45deg, #ff6b6b, #feca57, #ff9ff3, #54a0ff);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: sunset-flow 5s ease-in-out infinite;
+}
+
+@keyframes sunset-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.name-effect-crystal {
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: crystal-shine 3s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+}
+
+@keyframes crystal-shine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
 </style>
 </head>
 <body class="bg-black text-gray-200">    <!-- Menu de Navegação Inferior -->
@@ -421,6 +518,17 @@
                     </svg>
                 </div>
                 
+                <!-- Efeitos do Nome -->
+                <div id="settings-name-effects-option" class="profile-detail-section flex items-center justify-between cursor-pointer">
+                    <div>
+                        <div class="profile-detail-label">Efeitos do Nome</div>
+                        <div id="settings-display-effect" class="profile-detail-value">Nenhum</div>
+                    </div>
+                    <svg class="w-5 h-5 profile-detail-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+                
                 <!-- Logout -->
                 <div id="logout-option" class="profile-detail-section flex items-center justify-between cursor-pointer">
                     <div>
@@ -490,6 +598,94 @@
                     maxlength="139"
                 ></textarea>
                 <p class="text-xs text-gray-500">Máximo 139 caracteres</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Efeitos do Nome -->
+<div id="name-effects-modal" class="hidden modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
+    <div class="modal-content bg-gray-800 w-full h-full max-w-none max-h-none border-radius-0">
+        <!-- Header do Modal -->
+        <div class="modal-header bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 py-3">
+            <button id="cancel-name-effects-btn" class="text-blue-400 hover:text-blue-300 font-normal text-sm">
+                Cancelar
+            </button>
+            <h3 class="text-white font-semibold text-lg">Efeitos do Nome</h3>
+            <button id="save-name-effects-btn" class="text-blue-400 hover:text-blue-300 font-medium">
+                Salvar
+            </button>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="p-6">
+            <div class="space-y-4">
+                <label class="block text-sm font-medium text-gray-400 mb-4">Escolha um efeito para seu nome:</label>
+                
+                <!-- Preview do nome -->
+                <div class="bg-gray-700 rounded-lg p-4 mb-6">
+                    <h4 class="text-gray-400 text-sm mb-2">Prévia:</h4>
+                    <div id="name-preview" class="text-white font-medium text-lg">Usuário</div>
+                </div>
+                
+                <!-- Opções de efeitos -->
+                <div class="space-y-3">
+                    <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="none">
+                        <div>
+                            <div class="font-medium text-white">Nenhum</div>
+                            <div class="text-sm text-gray-400">Texto normal</div>
+                        </div>
+                        <input type="radio" name="name-effect" value="none" checked class="text-blue-500">
+                    </div>
+                    
+                    <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="rainbow">
+                        <div>
+                            <div class="font-medium text-white name-effect-rainbow">Gradiente Arco-íris</div>
+                            <div class="text-sm text-gray-400">Cores vibrantes em movimento</div>
+                        </div>
+                        <input type="radio" name="name-effect" value="rainbow" class="text-blue-500">
+                    </div>
+                    
+                    <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="golden">
+                        <div>
+                            <div class="font-medium text-white name-effect-golden">Brilho Dourado</div>
+                            <div class="text-sm text-gray-400">Efeito luxuoso dourado</div>
+                        </div>
+                        <input type="radio" name="name-effect" value="golden" class="text-blue-500">
+                    </div>
+                    
+                    <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="neon">
+                        <div>
+                            <div class="font-medium text-white name-effect-neon">Sombra Neon</div>
+                            <div class="text-sm text-gray-400">Brilho neon azul ciano</div>
+                        </div>
+                        <input type="radio" name="name-effect" value="neon" class="text-blue-500">
+                    </div>
+                    
+                    <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="holographic">
+                        <div>
+                            <div class="font-medium text-white name-effect-holographic">Texto Holográfico</div>
+                            <div class="text-sm text-gray-400">Efeito futurista holográfico</div>
+                        </div>
+                        <input type="radio" name="name-effect" value="holographic" class="text-blue-500">
+                    </div>
+                    
+                    <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="sunset">
+                        <div>
+                            <div class="font-medium text-white name-effect-sunset">Gradiente Sunset</div>
+                            <div class="text-sm text-gray-400">Cores quentes do pôr do sol</div>
+                        </div>
+                        <input type="radio" name="name-effect" value="sunset" class="text-blue-500">
+                    </div>
+                    
+                    <div class="effect-option flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors" data-effect="crystal">
+                        <div>
+                            <div class="font-medium text-white name-effect-crystal">Efeito Cristal</div>
+                            <div class="text-sm text-gray-400">Brilho cristalino sofisticado</div>
+                        </div>
+                        <input type="radio" name="name-effect" value="crystal" class="text-blue-500">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -693,6 +889,7 @@
         initializeProfile();
         initializeEditName();
         initializeEditStatus();
+        initializeNameEffects();
         initializeProfileDetail();
 
         // Renderizar conversas vazias inicialmente
@@ -852,6 +1049,7 @@
             const closeSettingsBtn = document.getElementById('close-settings-btn');
             const editNameOption = document.getElementById('settings-edit-name-option');
             const editStatusOption = document.getElementById('settings-edit-status-option');
+            const nameEffectsOption = document.getElementById('settings-name-effects-option');
             const logoutOption = document.getElementById('logout-option');
             
             // Fechar modal de configurações
@@ -876,6 +1074,12 @@
             editStatusOption?.addEventListener('click', () => {
                 settingsModal.classList.add('hidden');
                 openEditStatusModal();
+            });
+            
+            // Abrir modal de efeitos do nome
+            nameEffectsOption?.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+                openNameEffectsModal();
             });
             
             // Logout
@@ -924,6 +1128,11 @@
                     userPicElement.classList.add('hidden');
                     userIconElement.classList.remove('hidden');
                 }
+                
+                // Aplicar efeito do nome se houver
+                const nameEffect = userData?.nameEffect || 'none';
+                applyNameEffectGlobally(nameEffect);
+                updateEffectDisplay(nameEffect);
             } catch (error) {
                 console.error('Erro ao carregar dados do usuário:', error);
             }
@@ -1116,9 +1325,10 @@
             }
         });
         
-        // Cancelar edição
+        // Cancelar edição - voltar para configurações
         cancelEditNameBtn?.addEventListener('click', () => {
             editNameModal.classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('hidden');
         });
         
         // Fechar clicando fora
@@ -1171,9 +1381,10 @@
             }
         });
         
-        // Cancelar edição
+        // Cancelar edição - voltar para configurações
         cancelEditStatusBtn?.addEventListener('click', () => {
             editStatusModal.classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('hidden');
         });
         
         // Fechar clicando fora
@@ -1215,6 +1426,169 @@
         editNameInput.value = settingsDisplayName.textContent;
         editNameModal.classList.remove('hidden');
         setTimeout(() => editNameInput.focus(), 100);
+    }
+
+    // Abrir modal de efeitos do nome
+    function openNameEffectsModal() {
+        const nameEffectsModal = document.getElementById('name-effects-modal');
+        const namePreview = document.getElementById('name-preview');
+        const settingsDisplayName = document.getElementById('settings-display-name');
+        
+        // Preencher preview com nome atual
+        namePreview.textContent = settingsDisplayName.textContent;
+        
+        // Carregar efeito atual
+        loadCurrentNameEffect();
+        
+        nameEffectsModal.classList.remove('hidden');
+    }
+
+    // Carregar efeito atual do usuário
+    async function loadCurrentNameEffect() {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        try {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userData = userDoc.data();
+            const currentEffect = userData?.nameEffect || 'none';
+            
+            // Atualizar radio button selecionado
+            const radioButtons = document.querySelectorAll('input[name="name-effect"]');
+            radioButtons.forEach(radio => {
+                radio.checked = radio.value === currentEffect;
+            });
+            
+            // Aplicar efeito no preview
+            applyEffectToPreview(currentEffect);
+            
+            // Atualizar display do settings
+            updateEffectDisplay(currentEffect);
+        } catch (error) {
+            console.error('Erro ao carregar efeito atual:', error);
+        }
+    }
+
+    // Aplicar efeito no preview
+    function applyEffectToPreview(effect) {
+        const namePreview = document.getElementById('name-preview');
+        
+        // Remover todas as classes de efeito
+        namePreview.className = 'text-white font-medium text-lg';
+        
+        // Aplicar novo efeito se não for 'none'
+        if (effect !== 'none') {
+            namePreview.classList.add(`name-effect-${effect}`);
+        }
+    }
+
+    // Atualizar display do efeito nas configurações
+    function updateEffectDisplay(effect) {
+        const settingsDisplayEffect = document.getElementById('settings-display-effect');
+        const effectNames = {
+            'none': 'Nenhum',
+            'rainbow': 'Gradiente Arco-íris',
+            'golden': 'Brilho Dourado',
+            'neon': 'Sombra Neon',
+            'holographic': 'Texto Holográfico',
+            'sunset': 'Gradiente Sunset',
+            'crystal': 'Efeito Cristal'
+        };
+        
+        settingsDisplayEffect.textContent = effectNames[effect] || 'Nenhum';
+    }
+
+    // Aplicar efeito em todos os elementos que mostram o nome
+    function applyNameEffectGlobally(effect) {
+        const nameElements = [
+            document.getElementById('settings-user-name'),
+            document.getElementById('settings-display-name'),
+            // Adicionar outros elementos que mostram o nome conforme necessário
+        ];
+        
+        nameElements.forEach(element => {
+            if (element) {
+                // Remover todas as classes de efeito
+                element.className = element.className.replace(/name-effect-\w+/g, '').trim();
+                
+                // Aplicar novo efeito se não for 'none'
+                if (effect !== 'none') {
+                    element.classList.add(`name-effect-${effect}`);
+                }
+            }
+        });
+    }
+
+    // Função para inicializar modal de efeitos do nome
+    function initializeNameEffects() {
+        const nameEffectsModal = document.getElementById('name-effects-modal');
+        const saveNameEffectsBtn = document.getElementById('save-name-effects-btn');
+        const cancelNameEffectsBtn = document.getElementById('cancel-name-effects-btn');
+        const effectOptions = document.querySelectorAll('.effect-option');
+        const radioButtons = document.querySelectorAll('input[name="name-effect"]');
+        
+        // Salvar efeito
+        saveNameEffectsBtn?.addEventListener('click', async () => {
+            const selectedEffect = document.querySelector('input[name="name-effect"]:checked')?.value || 'none';
+            
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    await setDoc(doc(db, 'users', user.uid), {
+                        nameEffect: selectedEffect
+                    }, { merge: true });
+                    
+                    // Aplicar efeito globalmente
+                    applyNameEffectGlobally(selectedEffect);
+                    updateEffectDisplay(selectedEffect);
+                    
+                    nameEffectsModal.classList.add('hidden');
+                    document.getElementById('settings-modal').classList.remove('hidden');
+                    showNotification('Efeito do nome atualizado com sucesso!', 'info');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar efeito do nome:', error);
+                showNotification('Erro ao salvar efeito do nome.', 'error');
+            }
+        });
+        
+        // Cancelar - voltar para configurações
+        cancelNameEffectsBtn?.addEventListener('click', () => {
+            nameEffectsModal.classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        });
+        
+        // Fechar clicando fora
+        nameEffectsModal?.addEventListener('click', (e) => {
+            if (e.target === nameEffectsModal) {
+                nameEffectsModal.classList.add('hidden');
+                document.getElementById('settings-modal').classList.remove('hidden');
+            }
+        });
+        
+        // Atualizar preview ao selecionar efeito
+        effectOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const effect = option.dataset.effect;
+                const radio = option.querySelector('input[type="radio"]');
+                
+                // Marcar radio button
+                radioButtons.forEach(r => r.checked = false);
+                radio.checked = true;
+                
+                // Atualizar preview
+                applyEffectToPreview(effect);
+            });
+        });
+        
+        // Também permitir clique direto no radio button
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.checked) {
+                    applyEffectToPreview(radio.value);
+                }
+            });
+        });
     }
 
     // Atualizar modal de perfil
