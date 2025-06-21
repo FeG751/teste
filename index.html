@@ -693,9 +693,14 @@
 }
 
 #image-viewer-modal img {
-    max-width: 90vw;
-    max-height: 90vh;
+    max-width: 80vw;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
     transition: transform 0.3s ease;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    object-fit: cover;
 }
 
 /* Animação de entrada */
@@ -729,8 +734,13 @@
     }
     
     #image-viewer-modal img {
-        max-width: 100vw;
-        max-height: 100vh;
+        max-width: 85vw;
+        max-height: 85vh;
+        width: auto;
+        height: auto;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 50%;
     }
     
     #close-image-viewer-btn {
@@ -742,12 +752,13 @@
 /* Foto de perfil clicável nas configurações */
 #settings-user-pic {
     cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
 }
 
 #settings-user-pic:hover {
     transform: scale(1.05);
     opacity: 0.9;
+    filter: brightness(1.1);
 }
 
 #settings-user-pic:not(.hidden) {
@@ -757,29 +768,12 @@
 /* Indicador visual de que é clicável */
 .settings-user-pic-container {
     position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
 }
 
-.settings-user-pic-container::after {
-    content: '🔍';
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: rgba(59, 130, 246, 0.9);
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-}
-
-.settings-user-pic-container:hover::after {
-    opacity: 1;
+.settings-user-pic-container:hover {
+    transform: scale(1.02);
 }
 </style>
 </head>
@@ -1255,7 +1249,7 @@
         
         <!-- Imagem -->
         <div class="max-w-full max-h-full flex items-center justify-center">
-            <img id="viewer-image" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Foto do perfil">
+            <img id="viewer-image" class="max-w-[80vw] max-h-[80vh] object-cover rounded-full shadow-2xl aspect-square" alt="Foto do perfil">
         </div>
         
         <!-- Indicador de toque para fechar (mobile) -->
@@ -2423,9 +2417,19 @@
         }
         
         // Clique na foto de perfil nas configurações
+        const settingsUserPicContainer = document.querySelector('.settings-user-pic-container');
+        
         settingsUserPic?.addEventListener('click', (e) => {
             e.stopPropagation();
             if (!settingsUserPic.classList.contains('hidden')) {
+                openImageViewer(settingsUserPic.src);
+            }
+        });
+        
+        // Clique no container da foto de perfil nas configurações
+        settingsUserPicContainer?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (settingsUserPic && !settingsUserPic.classList.contains('hidden')) {
                 openImageViewer(settingsUserPic.src);
             }
         });
