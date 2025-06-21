@@ -686,21 +686,74 @@
     z-index: 9999 !important;
 }
 
-/* Estilos para o Modal de Visualização da Foto */
+/* Estilos para o Modal de Visualização da Foto - VERSÃO MELHORADA */
 #photo-viewer-modal {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 10000 !important; /* Acima do modal de configurações */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 #photo-viewer-modal .modal-content {
-    animation: photoZoomIn 0.3s ease-out;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    position: relative !important;
+    animation: photoZoomIn 0.4s ease-out;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+/* Imagem da foto - formato oval limpo */
+#photo-viewer-modal img {
+    width: 280px !important;
+    height: 280px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: none !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Botão X elegante ao lado */
+#close-photo-viewer-btn {
+    position: absolute !important;
+    top: 20px !important;
+    right: -60px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    color: white !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#close-photo-viewer-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: scale(1.1) !important;
 }
 
 @keyframes photoZoomIn {
     from {
         opacity: 0;
-        transform: scale(0.8);
+        transform: scale(0.7);
     }
     to {
         opacity: 1;
@@ -711,41 +764,42 @@
 /* Torna a foto do usuário nas configurações clicável */
 #settings-modal .w-16.h-16.rounded-full {
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 #settings-modal .w-16.h-16.rounded-full:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
 }
 
 /* Responsividade para mobile */
 @media (max-width: 768px) {
-    #photo-viewer-modal .modal-content {
-        max-width: 280px;
-    }
-    
-    #photo-viewer-modal .w-64.h-64 {
-        width: 240px;
-        height: 240px;
-    }
-    
-    #photo-viewer-modal .w-32.h-32 {
-        width: 120px;
-        height: 120px;
+    #photo-viewer-modal img {
+        width: 240px !important;
+        height: 240px !important;
     }
     
     #close-photo-viewer-btn {
-        top: -8px;
-        right: -8px;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
+        top: 10px !important;
+        right: -50px !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 18px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #photo-viewer-modal img {
+        width: 200px !important;
+        height: 200px !important;
+    }
+    
+    #close-photo-viewer-btn {
+        top: 5px !important;
+        right: -45px !important;
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 16px !important;
     }
 }
 </style>
