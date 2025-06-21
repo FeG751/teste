@@ -686,7 +686,7 @@
     z-index: 9999 !important;
 }
 
-/* Estilos para o Modal de Visualização da Foto - VERSÃO MELHORADA */
+/* Estilos para o Modal de Visualização da Foto - VERSÃO CORRIGIDA */
 #photo-viewer-modal {
     position: fixed !important;
     top: 0 !important;
@@ -696,10 +696,15 @@
     background: rgba(0, 0, 0, 0.9) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 10000 !important;
-    display: flex !important;
+    z-index: 1000 !important; /* Reduzido de 10000 para 1000 */
+    display: none !important; /* Começa oculto */
     align-items: center !important;
     justify-content: center !important;
+}
+
+/* Classe para mostrar o modal apenas quando necessário */
+#photo-viewer-modal.show {
+    display: flex !important;
 }
 
 #photo-viewer-modal .modal-content {
