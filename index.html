@@ -923,6 +923,49 @@
 .search-pulse {
     animation: searchPulse 2s infinite;
 }
+
+/* Estilos para mensagens do chat */
+.message-sent {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    margin-left: 20%;
+    border-bottom-right-radius: 4px;
+}
+
+.message-received {
+    background-color: #374151;
+    margin-right: 20%;
+    border-bottom-left-radius: 4px;
+}
+
+.message-bubble {
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+    animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.message-time {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+/* Auto-resize textarea */
+#message-input {
+    transition: all 0.2s ease;
+}
 </style>
 </head>
 <body class="bg-black text-gray-200"><!-- Menu de Navegação Inferior -->
@@ -1088,6 +1131,58 @@
                         <p class="text-sm">Usuários bloqueados aparecerão aqui</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Conversa Privada -->
+    <div id="private-chat-screen" class="hidden h-full w-full flex flex-col bg-gray-900 text-white">
+        <!-- Header da conversa -->
+        <div class="bg-gray-800 px-4 py-3 flex items-center border-b border-gray-700 min-h-[60px]">
+            <!-- Botão voltar -->
+            <button id="back-to-conversations" class="text-gray-400 hover:text-white mr-4 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            
+            <!-- Info do usuário -->
+            <div class="flex items-center space-x-3 flex-1">
+                <div class="relative">
+                    <div id="chat-user-avatar" class="w-10 h-10 rounded-full overflow-hidden bg-gray-600">
+                        <div id="chat-user-avatar-placeholder" class="w-full h-full flex items-center justify-center text-gray-400 font-bold">U</div>
+                        <img id="chat-user-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
+                    </div>
+                    <div id="chat-user-status-indicator" class="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-800 bg-green-500"></div>
+                </div>
+                <div>
+                    <h3 id="chat-user-name" class="text-white font-medium">Usuário</h3>
+                    <p id="chat-user-status" class="text-xs text-gray-400">Online</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Área de mensagens -->
+        <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- Mensagens aparecem aqui -->
+        </div>
+        
+        <!-- Campo de digitação -->
+        <div class="bg-gray-800 p-4 border-t border-gray-700">
+            <div class="flex items-end space-x-3">
+                <div class="flex-1">
+                    <textarea 
+                        id="message-input" 
+                        placeholder="Digite sua mensagem..." 
+                        class="w-full bg-gray-700 text-white rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] max-h-32"
+                        rows="1"
+                    ></textarea>
+                </div>
+                <button id="send-message-btn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
@@ -1820,7 +1915,10 @@
         initializeSearch();
 
         // Inicializar cliques nas conversas
-        initializeConversationClicks();        // Inicializar foto do usuário
+        initializeConversationClicks();
+        
+        // Inicializar sistema de chat privado
+        initializePrivateChat();// Inicializar foto do usuário
         initializeUserPhoto();        // Inicializar configurações
         initializeSettings();        initializeProfile();
         initializeEditName();
@@ -1920,7 +2018,408 @@
                 // Aqui você pode abrir a tela de chat
             }
         });
-    }    // Funcionalidade de foto do usuário - Sistema avançado de redimensionamento
+    }
+
+    // === SISTEMA DE CHAT PRIVADO ===
+    
+    // Variáveis globais do chat
+    let currentChatUser = null;
+    let conversations = {};
+    let messageCounter = 0;
+    
+    // Inicializar sistema de chat privado
+    function initializePrivateChat() {
+        // Carregar conversas do localStorage
+        loadConversationsFromStorage();
+        
+        // Event listeners para botões "Conversar"
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('chat-btn')) {
+                const friendId = e.target.dataset.friendId;
+                const friendName = e.target.dataset.friendName;
+                const friendAvatar = e.target.dataset.friendAvatar;
+                const friendStatus = e.target.dataset.friendStatus;
+                
+                startPrivateChat({
+                    id: friendId,
+                    name: friendName,
+                    avatar: friendAvatar,
+                    status: friendStatus
+                });
+            }
+        });
+        
+        // Event listener para botão voltar
+        document.getElementById('back-to-conversations').addEventListener('click', () => {
+            closePrivateChat();
+        });
+        
+        // Event listener para enviar mensagem
+        document.getElementById('send-message-btn').addEventListener('click', () => {
+            sendMessage();
+        });
+        
+        // Event listener para Enter no campo de mensagem
+        const messageInput = document.getElementById('message-input');
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Auto-resize textarea
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 128) + 'px';
+        });
+        
+        // Atualizar lista de conversas na tela principal
+        updateConversationsList();
+        
+        console.log('✅ Sistema de chat privado inicializado');
+    }
+    
+    // Iniciar conversa privada
+    function startPrivateChat(friend) {
+        currentChatUser = friend;
+        
+        // Atualizar header da conversa
+        document.getElementById('chat-user-name').textContent = friend.name;
+        document.getElementById('chat-user-status').textContent = getStatusText(friend.status);
+        
+        // Atualizar avatar
+        const avatarImg = document.getElementById('chat-user-avatar-img');
+        const avatarPlaceholder = document.getElementById('chat-user-avatar-placeholder');
+        
+        if (friend.avatar) {
+            avatarImg.src = friend.avatar;
+            avatarImg.classList.remove('hidden');
+            avatarPlaceholder.classList.add('hidden');
+        } else {
+            avatarImg.classList.add('hidden');
+            avatarPlaceholder.classList.remove('hidden');
+            avatarPlaceholder.textContent = friend.name.charAt(0).toUpperCase();
+        }
+        
+        // Atualizar indicador de status
+        const statusIndicator = document.getElementById('chat-user-status-indicator');
+        statusIndicator.className = `absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-800 user-status-${friend.status}`;
+        
+        // Criar ou carregar conversa
+        if (!conversations[friend.id]) {
+            conversations[friend.id] = {
+                id: friend.id,
+                name: friend.name,
+                avatar: friend.avatar,
+                status: friend.status,
+                messages: [],
+                lastMessage: null,
+                unreadCount: 0,
+                lastActivity: new Date().toISOString()
+            };
+        }
+        
+        // Carregar mensagens da conversa
+        loadChatMessages(friend.id);
+        
+        // Mostrar tela de chat
+        showScreen('private-chat-screen');
+        
+        // Focar no campo de mensagem
+        setTimeout(() => {
+            document.getElementById('message-input').focus();
+        }, 100);
+        
+        console.log('🚀 Conversa iniciada com:', friend.name);
+    }
+    
+    // Fechar conversa privada
+    function closePrivateChat() {
+        currentChatUser = null;
+        
+        // Limpar campo de mensagem
+        document.getElementById('message-input').value = '';
+        document.getElementById('message-input').style.height = 'auto';
+        
+        // Voltar para tela principal
+        showScreen('app-container');
+        
+        // Atualizar lista de conversas
+        updateConversationsList();
+    }
+    
+    // Enviar mensagem
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const messageText = messageInput.value.trim();
+        
+        if (!messageText || !currentChatUser) return;
+        
+        // Criar mensagem
+        const message = {
+            id: ++messageCounter,
+            text: messageText,
+            sender: 'me',
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        // Adicionar à conversa
+        conversations[currentChatUser.id].messages.push(message);
+        conversations[currentChatUser.id].lastMessage = messageText;
+        conversations[currentChatUser.id].lastActivity = message.timestamp;
+        
+        // Limpar campo de entrada
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        
+        // Renderizar mensagem
+        renderMessage(message);
+        
+        // Salvar no localStorage
+        saveConversationsToStorage();
+        
+        // Simular resposta automática
+        setTimeout(() => {
+            simulateAutoResponse();
+        }, 1000 + Math.random() * 2000);
+        
+        // Scroll para o final
+        scrollToBottom();
+    }
+    
+    // Simular resposta automática
+    function simulateAutoResponse() {
+        if (!currentChatUser) return;
+        
+        const responses = [
+            "Oi! Tudo bem?",
+            "Como você está?",
+            "Que legal! 😊",
+            "Entendi!",
+            "Interessante...",
+            "Vamos conversar mais sobre isso!",
+            "Concordo com você",
+            "Que bom te falar!",
+            "Estou aqui! 👋",
+            "Conte-me mais sobre isso"
+        ];
+        
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        
+        const message = {
+            id: ++messageCounter,
+            text: randomResponse,
+            sender: currentChatUser.id,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        // Adicionar à conversa
+        conversations[currentChatUser.id].messages.push(message);
+        conversations[currentChatUser.id].lastMessage = randomResponse;
+        conversations[currentChatUser.id].lastActivity = message.timestamp;
+        
+        // Renderizar mensagem
+        renderMessage(message);
+        
+        // Salvar no localStorage
+        saveConversationsToStorage();
+        
+        // Scroll para o final
+        scrollToBottom();
+        
+        // Atualizar lista de conversas se não estiver na tela de chat
+        if (document.getElementById('private-chat-screen').classList.contains('hidden')) {
+            conversations[currentChatUser.id].unreadCount++;
+            updateConversationsList();
+        }
+    }
+    
+    // Carregar mensagens da conversa
+    function loadChatMessages(friendId) {
+        const messagesContainer = document.getElementById('chat-messages-container');
+        messagesContainer.innerHTML = '';
+        
+        const conversation = conversations[friendId];
+        if (!conversation || !conversation.messages.length) {
+            messagesContainer.innerHTML = `
+                <div class="text-center text-gray-400 py-8">
+                    <svg class="w-12 h-12 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.534 15.612 3 14.251 3 12.75 3 7.334 7.334 3 12.75 3S22.5 7.334 22.5 12.75c0 1.501-.534 2.862-1.475 4.23L22.5 21l-4.255-.949"></path>
+                    </svg>
+                    <p class="text-sm">Inicie uma conversa!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Renderizar todas as mensagens
+        conversation.messages.forEach(message => {
+            renderMessage(message);
+        });
+        
+        // Marcar mensagens como lidas
+        conversation.unreadCount = 0;
+        saveConversationsToStorage();
+        
+        // Scroll para o final
+        setTimeout(() => scrollToBottom(), 100);
+    }
+    
+    // Renderizar mensagem individual
+    function renderMessage(message) {
+        const messagesContainer = document.getElementById('chat-messages-container');
+        const isSent = message.sender === 'me';
+        
+        const messageElement = document.createElement('div');
+        messageElement.className = `flex ${isSent ? 'justify-end' : 'justify-start'}`;
+        
+        const time = new Date(message.timestamp).toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        messageElement.innerHTML = `
+            <div class="message-bubble ${isSent ? 'message-sent' : 'message-received'}">
+                <p class="text-white text-sm">${message.text}</p>
+                <p class="message-time text-right">${time}</p>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageElement);
+    }
+    
+    // Scroll para o final das mensagens
+    function scrollToBottom() {
+        const messagesContainer = document.getElementById('chat-messages-container');
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Atualizar lista de conversas na tela principal
+    function updateConversationsList() {
+        const conversationsList = document.getElementById('all-conversations-list');
+        const emptyState = document.getElementById('empty-state');
+        
+        const activeConversations = Object.values(conversations).filter(conv => conv.messages.length > 0);
+        
+        if (activeConversations.length === 0) {
+            conversationsList.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        
+        emptyState.classList.add('hidden');
+        
+        // Ordenar por última atividade
+        activeConversations.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+        
+        conversationsList.innerHTML = activeConversations.map(conv => {
+            const lastTime = new Date(conv.lastActivity).toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `
+                <div class="flex items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors" 
+                     data-conversation-id="${conv.id}" 
+                     onclick="openPrivateChat('${conv.id}')">
+                    <div class="relative">
+                        <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-600">
+                            ${conv.avatar ? 
+                                `<img src="${conv.avatar}" alt="${conv.name}" class="w-full h-full object-cover">` :
+                                `<div class="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg">${conv.name.charAt(0).toUpperCase()}</div>`
+                            }
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-800 user-status-${conv.status}"></div>
+                    </div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-white font-medium truncate">${conv.name}</h4>
+                            <span class="text-xs text-gray-400">${lastTime}</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                            <p class="text-gray-400 text-sm truncate">${conv.lastMessage || 'Sem mensagens'}</p>
+                            ${conv.unreadCount > 0 ? 
+                                `<span class="bg-blue-500 text-white text-xs font-bold rounded-full px-2 py-1 min-w-[20px] text-center">${conv.unreadCount}</span>` : 
+                                ''
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Abrir conversa privada pela lista
+    function openPrivateChat(friendId) {
+        const conversation = conversations[friendId];
+        if (!conversation) return;
+        
+        startPrivateChat({
+            id: conversation.id,
+            name: conversation.name,
+            avatar: conversation.avatar,
+            status: conversation.status
+        });
+    }
+    
+    // Salvar conversas no localStorage
+    function saveConversationsToStorage() {
+        try {
+            localStorage.setItem('chatConversations', JSON.stringify(conversations));
+            localStorage.setItem('chatMessageCounter', messageCounter.toString());
+        } catch (error) {
+            console.error('Erro ao salvar conversas:', error);
+        }
+    }
+    
+    // Carregar conversas do localStorage
+    function loadConversationsFromStorage() {
+        try {
+            const savedConversations = localStorage.getItem('chatConversations');
+            const savedCounter = localStorage.getItem('chatMessageCounter');
+            
+            if (savedConversations) {
+                conversations = JSON.parse(savedConversations);
+            }
+            
+            if (savedCounter) {
+                messageCounter = parseInt(savedCounter);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar conversas:', error);
+            conversations = {};
+            messageCounter = 0;
+        }
+    }
+    
+    // Função auxiliar para mostrar diferentes telas
+    function showScreen(screenId) {
+        const screens = ['app-container', 'friends-screen', 'private-chat-screen'];
+        
+        screens.forEach(screen => {
+            const element = document.getElementById(screen);
+            if (element) {
+                if (screen === screenId) {
+                    element.classList.remove('hidden');
+                } else {
+                    element.classList.add('hidden');
+                }
+            }
+        });
+        
+        // Atualizar navegação
+        if (screenId === 'app-container') {
+            updateNav(document.getElementById('nav-rooms'));
+        } else if (screenId === 'friends-screen') {
+            updateNav(document.getElementById('nav-friends'));
+        }
+    }
+    
+    // Tornar função global para uso no HTML
+    window.openPrivateChat = openPrivateChat;// Funcionalidade de foto do usuário - Sistema avançado de redimensionamento
     
     // Função para redimensionar imagem
     function resizeImage(file, maxWidth = 400, quality = 0.8) {
@@ -3884,7 +4383,11 @@ function renderFriendsTab(tabName, friends) {
                             <p class="text-xs text-gray-500">${getStatusText(friend.status, friend.lastSeen)}</p>
                         </div>
                     </div>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <button class="chat-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
+                            data-friend-id="${friend.id}" 
+                            data-friend-name="${friend.name}" 
+                            data-friend-avatar="${friend.avatar || ''}" 
+                            data-friend-status="${friend.status}">
                         Conversar
                     </button>
                 </div>
