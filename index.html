@@ -91,6 +91,12 @@
                 padding: 16px 20px;
             }
             
+            /* Botões do perfil detalhado */
+            #edit-photo-btn {
+                min-height: 48px !important;
+                padding: 12px 16px !important;
+            }
+            
             /* Inputs maiores */
             input, button {
                 font-size: 16px !important; /* Evita zoom automático no iOS */
@@ -620,6 +626,8 @@
             const profileModalIcon = document.getElementById('profile-modal-icon');
             const settingsPic = document.getElementById('settings-user-pic');
             const settingsIcon = document.getElementById('settings-user-icon');
+            const profileDetailPic = document.getElementById('profile-detail-pic');
+            const profileDetailIcon = document.getElementById('profile-detail-icon');
             
             // Atualizar foto do header
             headerPic.src = imageUrl;
@@ -636,6 +644,13 @@
                 settingsPic.src = imageUrl;
                 settingsPic.classList.remove('hidden');
                 settingsIcon.classList.add('hidden');
+            }
+            
+            // Atualizar foto do perfil detalhado
+            if (profileDetailPic && profileDetailIcon) {
+                profileDetailPic.src = imageUrl;
+                profileDetailPic.classList.remove('hidden');
+                profileDetailIcon.classList.add('hidden');
             }
             
             // Salvar no Firebase
@@ -991,6 +1006,27 @@
         editNameSection?.addEventListener('click', () => {
             profileDetailModal.classList.add('hidden');
             openEditNameModal();
+        });
+        
+        // Editar status/recado
+        const editStatusSection = document.getElementById('edit-status-section');
+        editStatusSection?.addEventListener('click', () => {
+            // TODO: Implementar edição de status
+            showNotification('Edição de recado em desenvolvimento', 'info');
+        });
+        
+        // Editar telefone
+        const editPhoneSection = document.getElementById('edit-phone-section');
+        editPhoneSection?.addEventListener('click', () => {
+            // TODO: Implementar edição de telefone
+            showNotification('Edição de telefone em desenvolvimento', 'info');
+        });
+        
+        // Editar links
+        const editLinksSection = document.getElementById('edit-links-section');
+        editLinksSection?.addEventListener('click', () => {
+            // TODO: Implementar edição de links
+            showNotification('Edição de links em desenvolvimento', 'info');
         });
         
         // Fechar clicando fora
