@@ -594,7 +594,10 @@
                 // Aqui você pode abrir a tela de chat
             }
         });
-    }    // Funcionalidade de foto do usuário    function initializeUserPhoto() {
+    }
+
+    // Funcionalidade de foto do usuário
+    function initializeUserPhoto() {
         const photoUploadInput = document.getElementById('photo-upload-input');
         
         photoUploadInput?.addEventListener('change', (e) => {
@@ -605,9 +608,9 @@
                     const imageUrl = e.target.result;
                     updateUserPhoto(imageUrl);
                     showNotification('Foto atualizada com sucesso!', 'info');
-                    
-                    // Atualizar tela de perfil detalhado se estiver aberta
-                    updateProfileDetail();                };
+                      // Atualizar tela de perfil detalhado se estiver aberta
+                    updateProfileDetail();
+                };
                 reader.readAsDataURL(file);
             }
         });
@@ -651,7 +654,10 @@
                 console.error('❌ Erro ao salvar foto:', error);
                 showNotification('Erro ao salvar foto.', 'error');
             }
-        }// Função para inicializar configurações        // Função para inicializar configurações        function initializeSettings() {
+        }
+
+        // Função para inicializar configurações
+        function initializeSettings() {
             const settingsModal = document.getElementById('settings-modal');
             const closeSettingsBtn = document.getElementById('close-settings-btn');
             
