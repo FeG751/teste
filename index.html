@@ -245,8 +245,7 @@
     import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- CONFIGURAÇÃO DO FIREBASE ---
-    const firebaseConfig = {
+    // --- CONFIGURAÇÃO DO FIREBASE ---    const firebaseConfig = {
         apiKey: "AIzaSyCyidXzqqe-rrcF0QrBQ2iSIR_mf0tpMd0",
         authDomain: "seu-projeto-chat.firebaseapp.com",
         projectId: "seu-projeto-chat",
@@ -254,6 +253,10 @@
         messagingSenderId: "259194791953",
         appId: "1:259194791953:web:587ea979f1f26aff2629b0"
     };
+
+    // ADICIONAR após linha 256:
+    console.log('🔧 Firebase Config:', firebaseConfig);
+    console.log('🔧 AuthDomain:', firebaseConfig.authDomain);
 
     // --- VARIÁVEIS GLOBAIS ---
     let app, auth, db;
@@ -352,9 +355,13 @@
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
-            db = getFirestore(app);
-
-            console.log('✅ Firebase inicializado com sucesso');
+            db = getFirestore(app);            console.log('✅ Firebase inicializado com sucesso');
+            
+            // DEBUG - Adicionar após linha 359
+            console.log('🔧 Debug - Elementos encontrados:');
+            console.log('Login form:', document.getElementById('login-form'));
+            console.log('Guest login btn:', document.getElementById('main-guest-login-btn'));
+            console.log('Auth object:', auth);
             
             bindUI();
             onAuthStateChanged(auth, handleAuthChange);
@@ -363,14 +370,31 @@
             
         } catch (error) {
             console.error('❌ Erro ao inicializar Firebase:', error);
-            showNotification('Erro de conexão. Tente recarregar a página.', 'error');
-        }
+            showNotification('Erro de conexão. Tente recarregar a página.', 'error');        }
     }
 
     function bindUI() {
+        console.log('🔧 Configurando event listeners...');
+        
         // Login
-        document.getElementById('login-form').onsubmit = handleLogin;
-        document.getElementById('main-guest-login-btn').onclick = () => signInAnonymously(auth);
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin);
+            console.log('✅ Formulário de login configurado');
+        } else {
+            console.error('❌ Formulário de login não encontrado!');
+        }
+        
+        const guestBtn = document.getElementById('main-guest-login-btn');
+        if (guestBtn) {
+            guestBtn.addEventListener('click', () => {
+                console.log('🔄 Tentando login como convidado...');
+                signInAnonymously(auth);
+            });
+            console.log('✅ Botão de convidado configurado');
+        } else {
+            console.error('❌ Botão de convidado não encontrado!');
+        }
 
         // Navegação
         const navFriends = document.getElementById('nav-friends');
@@ -644,14 +668,22 @@
             } catch (error) {
                 console.error('Erro ao carregar dados do usuário:', error);
             }
-        }
-
-    async function handleLogin(e) {        e.preventDefault();
+        }    async function handleLogin(e) {
+        e.preventDefault();
+        console.log('🔄 Tentativa de login iniciada...');
+        
         try {
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
-            await signInWithEmailAndPassword(auth, email, password);
+            
+            console.log('📧 Email:', email);
+            console.log('🔑 Senha fornecida:', password ? 'Sim' : 'Não');
+            
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            console.log('✅ Login realizado com sucesso:', result.user.uid);
+            
         } catch (err) {
+            console.error('❌ Erro no login:', err);
             showNotification("Falha no login: " + err.message, "error");
         }
     }async function handleAuthChange(user) {
@@ -860,11 +892,11 @@
                 profileModalIcon.classList.remove('hidden');
             }
         } catch (error) {
-            console.error('Erro ao carregar dados do perfil:', error);
-        }
+            console.error('Erro ao carregar dados do perfil:', error);        }
     }
 
-    // INICIALIZAR APLICAÇÃO    main();
+    // INICIALIZAR APLICAÇÃO
+    main();
 
 </script>
 
